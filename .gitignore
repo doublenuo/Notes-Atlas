@@ -1,0 +1,121 @@
+texs/
+templates/
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.cache/
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# packaging
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Node / Frontend (docs themes)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Large files (IMPORTANT)
+# =========================
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# ML models
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.bin
+
+# datasets
+data/
+datasets/
+downloads/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Build outputs (Docs)
+# =========================
+_site/
+public/
+dist/
+
+# =========================
+# Secrets
+# =========================
+.env
+.env.*
+*.key
+*.pem
+*.secret
+config.local.*
+
+# =========================
+# LaTeX (if you write papers)
+# =========================
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+*.toc
+*.lof
+*.lot
+
+# =========================
+# ROS / Robotics
+# =========================
+build/
+install/
+log/
+
+# =========================
+# Temporary files
+# =========================
+tmp/
+temp/
