@@ -1,0 +1,115 @@
+\documentclass[
+    coverwidth=14cm,
+    coverheight=21cm,
+    spinewidth=25mm,
+    flapwidth=6cm,
+    wrapwidth=5mm,
+]{bookcover}
+
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{microtype}
+
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+
+
+\definecolor{SpringGreen}{RGB}{210, 235, 200} 
+\definecolor{LeafGreen}{RGB}{100, 140, 100}   
+\definecolor{WarmWhite}{RGB}{253, 251, 245}   
+\definecolor{WoodBrown}{RGB}{90, 75, 65}      
+
+\newbookcovercomponenttype{center rotate}{
+    \vfill
+    \centering
+    \rotatebox[origin=c]{-90}{#1}
+    \vfill}
+
+\begin{document}
+
+\begin{bookcover}
+
+\begin{bookcoverelement}{tikz}{bg whole}
+\shade[top color=SpringGreen!40,
+       bottom color=WarmWhite]
+       (0,0) rectangle (\partwidth,\partheight);
+\end{bookcoverelement}
+
+\begin{bookcoverelement}{picture}{bg whole without flaps}
+./figures/covers/background.jpeg
+\end{bookcoverelement}
+
+% --- 前封面 (Front) ---
+\begin{bookcoverelement}{normal}{front}[3cm,3cm,3cm,3cm]
+    \color{WoodBrown}
+    \vspace{2cm}
+    {\LARGE\itshape 记录生活的诗意 \par} 
+    \vspace{0.5cm}
+    {\Huge\bfseries\addfontfeatures{LetterSpace=10} 春日纪事 \par} 
+    \vspace{1cm}
+    {\rule{2cm}{0.5pt}} 
+    \vspace{1cm}
+    {\large 某某 著 \par}
+    
+    \vfill
+    {\small \textit{“生活不只是呼吸，而是那些让你屏息的瞬间。”}}
+\end{bookcoverelement}
+
+% --- 书脊 (Spine) ---
+\begin{bookcoverelement}{center rotate}{spine}
+    \color{WoodBrown}
+    {\huge\bfseries\addfontfeatures{LetterSpace=10} 春日纪事 \quad \Large 某某 著}
+\end{bookcoverelement}
+
+% --- 封底 (Back) ---
+\begin{bookcoverelement}{normal}{back}[2cm,2cm,2cm,2cm]
+    \color{WoodBrown}
+    \vspace{4cm}
+    \begin{center}
+        \small
+        春天，万物复苏。\\
+        在这里记录下每一朵花的盛开，\\
+        每一场不期而至的春雨。\\
+        \vspace{1cm}
+        \textit{记录，是为了不遗忘。}
+    \end{center}
+    \begin{tikzpicture}[remember picture, overlay]
+        \node[xshift=10cm, yshift=-10cm]{
+            \begin{minipage}{3cm}
+                \centering
+                \small{礼物<2025-12-21>} \\ [0.1cm]
+                \includegraphics[width=3cm]{./figures/qrcode.png} 
+                \small{231221-251221}
+            \end{minipage}
+        };
+    \end{tikzpicture}
+\end{bookcoverelement}
+
+% --- 前折页 (Front Flap) ---
+\begin{bookcoverelement}{normal}{front flap}[1cm,1cm,1cm,2cm]
+    \color{WoodBrown}
+    \textbf{作者简介}\\[1em]
+    一个热爱生活的记录者，\\
+    喜欢在春天的午后漫步，\\
+    收集阳光、花香和琐碎的感动。\\
+    
+    \vfill
+    \centering
+    % 如果有作者头像或小插图，可以在这里添加
+    \tikz \draw[LeafGreen, thick] (0,0) circle (0.5) node {Note};
+\end{bookcoverelement}
+
+% --- 后折页 (Back Flap) ---
+\begin{bookcoverelement}{normal}{back flap}[1cm,2cm,1cm,2cm]
+    \color{WoodBrown}
+    \vfill
+    \begin{flushright}
+        {\footnotesize 出版：春日工作室 \\ 2026年 仲春}
+    \end{flushright}
+\end{bookcoverelement}
+
+\end{bookcover}
+
+\end{document}

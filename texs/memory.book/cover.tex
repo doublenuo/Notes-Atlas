@@ -1,0 +1,215 @@
+\documentclass[10pt]{ctexart}
+
+\usepackage[
+    papersize={154mm,216mm},
+    nohead,
+    nofoot, 
+    left=3mm,
+    right=3mm,
+    top=3mm,
+    bottom=3mm
+]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr,tikz}
+\usetikzlibrary{shadows, decorations.text, fadings, patterns, calc}
+\usepackage{graphicx,eso-pic}
+\usepackage{xcolor}
+\usepackage{fontspec}
+
+% \newfontfamily\SiyuanSong{Source Han Serif SC}  
+
+
+\definecolor{snowlight}{RGB}{245,255,255}
+\definecolor{snowmedium}{RGB}{220,240,255}
+\definecolor{snowdark}{RGB}{100,150,200}
+\definecolor{snowdark1}{RGB}{160,200,235}
+\definecolor{snowdark2}{RGB}{130,180,220}
+\definecolor{iceblue}{RGB}{200,230,255}
+\definecolor{subg}{HTML}{a7a8aa}
+
+\graphicspath{{figures/}{figure/}{pictures/}{picture/}{pic/}{pics/}{image/}{images/}}
+
+
+
+\begin{document}
+    \pagestyle{empty}
+
+    \AddToShipoutPictureBG*{
+    \AtPageLowerLeft{
+            \includegraphics[width=\paperwidth,height=\paperheight]{bcbg.jpg}
+        }
+    }
+
+
+    \vspace*{0.5cm}
+    \noindent\hspace*{4.5cm} {\small{\color{subg} 雪藏着一种喜欢——如初雪般纯净}}
+
+    \vspace*{0.5cm}
+
+    {\color{snowdark}
+    \begin{center}
+        \begin{minipage}{0.6\textwidth}
+            \includegraphics[width=\textwidth, keepaspectratio]{bc.png}
+            \par
+            \raggedleft 在这个世界的某个角落 \\[10pt]
+            \raggedleft 必有为你而生的人 \\[10pt]
+            \raggedleft 当你在悬崖尽头时不要失去希望 \\[10pt]
+            \raggedleft 要多坚持那么一秒钟 \\[10pt]
+            \raggedleft 等那个人一骑绝尘如狂风闪电般出现在你面前 \\[10pt]
+            \raggedleft 而我一直在等你
+        \end{minipage}
+    \end{center}}
+
+    \vfill
+
+    \begin{tikzpicture}[remember picture, overlay]
+        \node [anchor=south east, xshift=-0.5cm, yshift=0.5cm] at (current page.south east) {
+            \begin{minipage}{3cm}
+                \centering
+                \small{礼物<2025-12-21>} \\ [0.1cm]
+                \includegraphics[width=3cm]{qrcode.png} 
+                \small{231221-251221}
+            \end{minipage}
+        };
+    \end{tikzpicture}
+
+    \clearpage
+
+
+    \pdfpagewidth=7mm
+    \pdfpageheight=216mm
+
+    \newgeometry{margin=0mm}
+
+    \AddToShipoutPictureBG*{
+    \AtStockLowerLeft{
+            \includegraphics[width=\paperwidth,height=\paperheight]{cbg.jpg}
+        }
+    }
+
+    \vspace*{2cm}
+    \noindent{
+        \color{snowdark}\normalsize{\parbox{1em}{
+            雪\\[0.5cm]
+            藏\\[0.5cm]
+            着\\[0.5cm]
+            一\\[0.5cm]
+            种\\[0.5cm]
+            喜\\[0.5cm]
+            欢 \\[8cm]
+            诺 \\[0.5cm]
+            诺 \\[0.5cm]
+            著
+            }
+        }
+    }
+    
+
+    \clearpage
+    \restoregeometry
+
+    
+    \pdfpagewidth=154mm
+    \pdfpageheight=216mm
+
+    \AddToShipoutPictureBG*{
+    \AtStockLowerLeft{
+            % \hspace*{\oddsidemargin}
+            \includegraphics[width=\paperwidth,height=\paperheight]{coverbg.jpg}
+        }
+    }
+
+    \begin{center}
+        \vspace*{2cm}
+        % \noindent \includegraphics[width=0.2\textwidth,keepaspectratio]{cbg1.png}
+        \hspace*{10cm}
+        \tikz[baseline=(text.base)]{
+            \node[inner sep=1pt, outer sep=0]
+            (text) {
+                \textcolor{black!30}{\fontsize{50pt}{30}\selectfont 
+                    \begin{tabular}{c}
+                        雪
+                    \end{tabular}
+                }
+            };
+        }
+        \hspace*{8cm}
+        \tikz[baseline=(text.base)]{
+            \node[inner sep=1pt, outer sep=0]
+            (text) {
+                \textcolor{black!60}{\fontsize{50pt}{30}\selectfont 
+                    \begin{tabular}{c}
+                       藏
+                    \end{tabular}
+                }
+            };
+        }
+        \hspace*{6cm}
+        \tikz[baseline=(text.base)]{
+            \node[inner sep=1pt, outer sep=0]
+            (text) {
+                \textcolor{black!90}{\fontsize{50pt}{30}\selectfont 
+                    \begin{tabular}{c}
+                        着
+                    \end{tabular}
+                }
+            };
+        }
+        \hspace*{4cm}
+        \tikz[baseline=(text.base)]{
+            \node[inner sep=1pt, outer sep=0]
+            (text) {
+                \textcolor{iceblue}{\fontsize{50pt}{30}\selectfont 
+                    \begin{tabular}{c}
+                         一
+                    \end{tabular}
+                }
+            };
+        }
+        \hspace*{6cm}
+        \tikz[baseline=(text.base)]{
+            \node[inner sep=1pt, outer sep=0]
+            (text) {
+                \textcolor{snowdark1}{\fontsize{50pt}{30}\selectfont 
+                    \begin{tabular}{c}
+                       种
+                    \end{tabular}
+                }
+            };
+        }
+        \hspace*{8cm}
+        \tikz[baseline=(text.base)]{
+            \node[inner sep=1pt, outer sep=0]
+            (text) {
+                \textcolor{snowdark2}{\fontsize{50pt}{30}\selectfont 
+                    \begin{tabular}{c}
+                      喜
+                    \end{tabular}
+                }
+            };
+        }
+        \hspace*{10cm}
+        \tikz[baseline=(text.base)]{
+            \node[inner sep=1pt, outer sep=0]
+            (text) {
+                \textcolor{snowdark}{\fontsize{50pt}{30}\selectfont 
+                    \begin{tabular}{c}
+                       欢
+                    \end{tabular}
+                }
+            };
+        }
+        % {\fontsize{50pt}{30}\selectfont 雪藏着一种喜欢}
+        \par
+        {\Large{\color{snowdark} 诺诺——著}}
+        % \par \vspace*{0.5cm}
+        % \small{或许是不知梦的缘故} \hfill
+        % \par
+        % \small{流离的人追逐幻影} \hfill 
+        \vfill
+        {\large{\color{subg}“二零二三年十二月遇见你便是故事的开始”}}
+    \end{center}
+
+    \clearpage
+
+\end{document}

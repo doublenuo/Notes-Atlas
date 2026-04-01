@@ -1,0 +1,22 @@
+\documentclass{memory}
+
+\begin{document}
+  % \makecover
+  \makefrontpage
+  \maketitlepage  
+  \makeauthor 
+  \makepreface
+  \maketable
+  \pagenumbering{arabic}
+  \setcounter{page}{1}
+  \input{others/prequel.tex}
+  \foreach \i in {1,...,4} {
+    \IfFileExists{chapters/chapter\i.tex}{
+        \input{chapters/chapter\i.tex}
+    }{
+    }
+  }
+  \input{others/postscript.tex}
+  \input{others/extra.tex}
+  % \makebackcover
+\end{document}

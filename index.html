@@ -1,41 +1,138 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-   <meta charset="utf-8">
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
-   <meta name="description" content="">
-   <title></title>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no, viewport-fit=cover"
+    />
+    <meta name="description" content="" />
+    <title></title>
 
-   <!-- Themes (light + dark) -->
-   <link rel="stylesheet" media="(prefers-color-scheme: dark)" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
-   <link rel="stylesheet" media="(prefers-color-scheme: light)" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+    <link
+      rel="stylesheet"
+      media="(prefers-color-scheme: dark)"
+      href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css"
+    />
+    <link
+      rel="stylesheet"
+      media="(prefers-color-scheme: light)"
+      href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"
+    />
 
-   <!-- Custom Styles -->
-   <style>
-     :root {
-       /* --theme-hue: 325; */
-     }
-   </style>
-</head>
-<body>
-   <div id="app"></div>
+    <style>
+      :root {
+        --theme-hue: 325;
+        --sidebar-nav-link-color: #444;
+        --sidebar-nav-link-transition: all 0.2s ease;
+        --sidebar-nav-link-background--hover: rgba(218, 11, 132, 0.08);
+        --sidebar-nav-link-color--hover: #da0b84;
+        --sidebar-nav-link-text-decoration--hover: none;
+        --sidebar-nav-link-background--active: rgba(218, 11, 132, 0.15);
+        --sidebar-nav-link-color--active: #da0b84;
+        --sidebar-nav-link-font-weight--active: 600;
+        --sidebar-nav-link-text-decoration--active: none;
+        --sidebar-nav-link-border-width--active: 3px;
+        --sidebar-nav-link-border-color--active: #da0b84;
+        --sidebar-nav-link-border-style--active: solid;
 
-   <script>
-     window.$docsify = {
-      name: "Linux系统安装教程",
-      loadSidebar: "sidebar.md",
-      maxLevel:4,
-      subMaxLevel: 3,
-     };
-   </script>
+        --link-color: #da0b84;
+        --link-color--hover: #b0096d;
+        --link-text-decoration: underline;
+        --link-text-decoration--hover: underline;
+        --link-text-decoration-color: rgba(218, 11, 132, 0.35);
+        --link-text-decoration-color--hover: #da0b84;
+        --link-border-bottom: none;
+        --link-border-bottom--hover: none;
 
-   <!-- Required -->
-   <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
+        --code-inline-background: rgba(218, 11, 132, 0.08);
+        --code-inline-color: #b0096d;
+        --code-inline-border-radius: 6px;
+        --code-inline-padding: 0.15em 0.45em;
+        --code-inline-margin: 0 0.2em;
 
-   <!-- Recommended -->
-   <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
-</body>
+        --table-cell-border-color: #eee;
+        --table-cell-border-width: 1px;
+        --table-head-background: rgba(218, 11, 132, 0.08);
+        --table-head-border-width: 1px;
+        --table-row-even-background: #ffffff;
+        --table-row-odd-background: #fafafa;
+        --table-body-border-color: #eee;
+        --table-body-border-width: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script>
+      window.$docsify = {
+        repo: "doublenou/Notes",
+        name: "学习宇宙",
+        nameLink: "/",
+        loadSidebar: true,
+        loadNavbar: "navbar.md",
+        // coverpage: "cover.md",
+        homepage: "README.md",
+        notFoundPage: "404.md",
+        alias: {
+          "/.*/sidebar.md": "/sidebar.md",
+        },
+        auto2top: true,
+        maxLevel: 4,
+        subMaxLevel: 3,
+        mergeNavbar: true,
+        externalLinkRel: "_blank",
+        search: {
+          maxAge: 86400000,
+          paths: "auto",
+          placeholder: "点击搜索一下",
+          noData: "找不到结果",
+          depth: 5,
+        },
+        pagination: {
+          previousText: "上一章节",
+          nextText: "下一章节",
+          crossChapter: true,
+          crossChapterText: true,
+        },
+        auth: {
+          enable: true,
+          use: "sha256",
+          password:
+            "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+          title: "请输入密码以访问文档：",
+          paths: [""],
+        },
+        timeUpdater: {
+          text: ">最新更新时间: {docsify-updated}",
+          formatUpdated: "{YYYY}/{MM}/{DD}",
+          whereToPlace: "top",
+        },
+      };
+    </script>
+
+    <!-- Required -->
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
+
+    <!-- Recommended -->
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+    <script src="https://unpkg.com/docsify-copy-code@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/marked@4"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify-katex@latest/dist/docsify-katex.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-auth@1.2.0/dist/docsify-auth.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-updated/src/time-updater.min.js"></script>
+  </body>
 </html>
