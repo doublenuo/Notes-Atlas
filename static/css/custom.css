@@ -1,0 +1,73 @@
+:root {
+    --theme-hue: 174;
+    --theme-saturation: 100%;
+    --theme-lightness: 29%;
+    --theme-color: hsl(var(--theme-hue),
+            var(--theme-saturation),
+            var(--theme-lightness));
+
+    --base-background-color: #ffffff;
+    --base-color: #374151;
+    --base-font-family:
+        system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+        sans-serif;
+    --base-font-size: 16px;
+    --base-font-weight: 400;
+    --base-letter-spacing: 0;
+    --base-line-height: 1.75;
+
+    --heading-color: #111827;
+    --heading-font-weight: 600;
+    --heading-margin: 2.5rem 0 1rem;
+    --heading-h1-color: #111827;
+    --heading-h1-font-size: 2.2rem;
+    --heading-h1-font-weight: 700;
+    --heading-h1-margin: 2.8rem 0 1.2rem;
+    --heading-h2-color: #111827;
+    --heading-h2-font-size: 1.6rem;
+    --heading-h2-font-weight: 650;
+    --heading-h2-margin: 2.4rem 0 1rem;
+    --heading-h2-border-width: 0 0 1px 0;
+    --heading-h2-border-color: #e5e7eb;
+    --heading-h3-font-size: 1.3rem;
+    --heading-h3-font-weight: 600;
+    --heading-h3-margin: 2rem 0 0.6rem;
+    --heading-h4-color: #374151;
+    --heading-h5-color: #4b5563;
+    --heading-h6-color: #6b7280;
+
+    --sidebar-background: #f9fafb;
+    --sidebar-border-color: #e5e7eb;
+    --sidebar-border-width: 1px;
+    --sidebar-nav-link-color: #374151;
+    --sidebar-nav-link-padding: 6px 10px;
+    --sidebar-nav-link-border-radius: 6px;
+    --sidebar-nav-link-background--hover: #eef2f7;
+    --sidebar-nav-link-background--active: #e0f2f1;
+    --sidebar-nav-link-color--active: #00695c;
+    --sidebar-nav-link-font-weight--active: 600;
+
+    --link-color: #009688;
+    --link-color--hover: #00796b;
+    --link-text-decoration: none;
+    --link-text-decoration--hover: underline;
+    --link-text-decoration-color: rgba(0, 150, 136, 0.35);
+    --link-text-decoration-color--hover: #009688;
+    --link-border-bottom: none;
+    --link-border-bottom--hover: none;
+
+    --code-inline-background: rgba(0, 150, 136, 0.08);
+    --code-inline-color: #00695c;
+    --code-inline-border-radius: 4px;
+    --code-inline-padding: 0.15em 0.4em;
+    --code-inline-margin: 0 0.15em;
+
+    --table-cell-border-color: #e5e7eb;
+    --table-cell-border-width: 1px;
+    --table-head-background: #f3f4f6;
+    --table-head-border-width: 1px;
+    --table-row-even-background: #ffffff;
+    --table-row-odd-background: #fafafa;
+    --table-body-border-color: #e5e7eb;
+    --table-body-border-width: 1px;
+}

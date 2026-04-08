@@ -178,7 +178,6 @@ sudo lsblk -f
 
 ![查看 U 盘是否制作成功](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260320150213518.png)
 
-
 ### 磁盘管理
 
 要安装双系统，首先需要 **给 Linux 系统创建一个空白分区**，注意不要在 windows 中格式化为 NTFS 或者 FAT32，Linux 系统在安装时会自动格式化为 ext4，swap 等。
@@ -340,7 +339,6 @@ sudo vim /etc/default/grub
 注意修改完之后记得使用 `sudo update-grub` 来更新 grub 启动菜单
 
 ![更新 grub 启动菜单](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260320174733941.png)
-
 
 ### 输入法中英文切换
 

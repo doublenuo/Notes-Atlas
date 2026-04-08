@@ -9,4 +9,5 @@
 
 ---
 [![Github logo](./figures/Github.svg ":size=10%") Github](https://github.com/doublenuo/Notes-Atlas)
-[![Email logo](./figures/Email.png ":size=10%") Email](mailto:zwn200401@gmail.com)
+[![Email logo](./figures/email.svg ":size=10%") Email](mailto:zwn200401@gmail.com)
+

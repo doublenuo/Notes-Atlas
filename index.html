@@ -24,48 +24,15 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"
     />
-
-    <style>
-      :root {
-        --theme-hue: 325;
-        --sidebar-nav-link-color: #444;
-        --sidebar-nav-link-transition: all 0.2s ease;
-        --sidebar-nav-link-background--hover: rgba(218, 11, 132, 0.08);
-        --sidebar-nav-link-color--hover: #da0b84;
-        --sidebar-nav-link-text-decoration--hover: none;
-        --sidebar-nav-link-background--active: rgba(218, 11, 132, 0.15);
-        --sidebar-nav-link-color--active: #da0b84;
-        --sidebar-nav-link-font-weight--active: 600;
-        --sidebar-nav-link-text-decoration--active: none;
-        --sidebar-nav-link-border-width--active: 3px;
-        --sidebar-nav-link-border-color--active: #da0b84;
-        --sidebar-nav-link-border-style--active: solid;
-
-        --link-color: #da0b84;
-        --link-color--hover: #b0096d;
-        --link-text-decoration: underline;
-        --link-text-decoration--hover: underline;
-        --link-text-decoration-color: rgba(218, 11, 132, 0.35);
-        --link-text-decoration-color--hover: #da0b84;
-        --link-border-bottom: none;
-        --link-border-bottom--hover: none;
-
-        --code-inline-background: rgba(218, 11, 132, 0.08);
-        --code-inline-color: #b0096d;
-        --code-inline-border-radius: 6px;
-        --code-inline-padding: 0.15em 0.45em;
-        --code-inline-margin: 0 0.2em;
-
-        --table-cell-border-color: #eee;
-        --table-cell-border-width: 1px;
-        --table-head-background: rgba(218, 11, 132, 0.08);
-        --table-head-border-width: 1px;
-        --table-row-even-background: #ffffff;
-        --table-row-odd-background: #fafafa;
-        --table-body-border-color: #eee;
-        --table-body-border-width: 1px;
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/docsify-breadcrumb@latest/dist/breadcrumb.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css"
+    />
+    <link rel="stylesheet" href="static/css/custom.css" />
   </head>
   <body>
     <div id="app"></div>
@@ -114,6 +81,22 @@
           formatUpdated: "{YYYY}/{MM}/{DD}",
           whereToPlace: "top",
         },
+        breadcrumb: {
+          showHome: true,
+          homeText: "Home",
+          separator: " &rsaquo; ",
+          casing: "capitalize",
+          linkColor: "var(--theme-color, #42b983)",
+          size: "small",
+        },
+        pseudocode: {
+          indentSize: "1.2em",
+          commentDelimiter: "//",
+          lineNumber: false,
+          lineNumberPunc: ":",
+          noEnd: false,
+          titlePrefix: "Algorithm",
+        },
       };
     </script>
 
@@ -133,6 +116,20 @@
     <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docsify-auth@1.2.0/dist/docsify-auth.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify-footnote/dist/docsify-footnote.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-breadcrumb@latest/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/Sumsung524/docsify-backTop/dist/docsify-backTop.min.js"></script>
+    <script>
+      docsifyBackTop = {
+        size: 64,
+        bottom: 30,
+        right: 30,
+        logo: '<svg t="1775643211259" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7424" width="200" height="200"><path d="M510.293333 513.706667m-469.333333 0a469.333333 469.333333 0 1 0 938.666667 0 469.333333 469.333333 0 1 0-938.666667 0Z" fill="#52C41A" p-id="7425"></path><path d="M725.333333 575.146667l-188.16-188.586667a36.693333 36.693333 0 0 0-50.773333 0L298.666667 575.146667a35.84 35.84 0 0 0 50.773333 50.773333l125.44-125.44v348.586667a35.84 35.84 0 0 0 71.68 0v-352.426667l128 128A35.84 35.84 0 0 0 725.333333 575.146667zM746.666667 302.933333h-469.333334a35.84 35.84 0 0 1 0-71.68h469.333334a35.84 35.84 0 0 1 0 71.68z" fill="#FFFFFF" p-id="7426"></path></svg>',
+        bgColor: "",
+      };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/docsify-updated/src/time-updater.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/h-hg/docsify-pseudocode/dist/docsify-pseudocode.min.js"></script>
   </body>
 </html>
