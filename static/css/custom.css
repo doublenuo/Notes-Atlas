@@ -70,8 +70,120 @@
     --table-row-odd-background: #fafafa;
     --table-body-border-color: #e5e7eb;
     --table-body-border-width: 1px;
-}
 
+
+    --code-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
+    --code-font-size: calc(var(--font-size-m) * 0.92);
+    --code-font-weight: 400;
+    --code-tab-size: 2;
+    --code-block-border-radius: 10px;
+    --code-block-line-height: 1.65;
+    --code-block-margin: 1.4em 0;
+    --code-block-padding: 1.4em 1.5em;
+    --code-inline-background: #f3f4f6;
+    --code-inline-color: #0f172a;
+    --code-inline-border-radius: 6px;
+    --code-inline-margin: 0 0.2em;
+    --code-inline-padding: 0.15em 0.45em;
+    --code-theme-background: #f8fafc;
+    --code-theme-text: #1f2937;
+    --code-theme-comment: #9ca3af;
+    --code-theme-keyword: #7c3aed;
+    --code-theme-function: #2563eb;
+    --code-theme-variable: #0f766e;
+    --code-theme-operator: #475569;
+    --code-theme-punctuation: #64748b;
+    --code-theme-selector: #db2777;
+    --code-theme-tag: #dc2626;
+    --code-theme-selection: rgba(16, 163, 127, 0.18);
+
+    --kbd-background: #f3f4f6;
+    --kbd-border: 1px solid #d1d5db;
+    --kbd-border-radius: 6px;
+    --kbd-color: #111827;
+    --kbd-font-size: 0.85em;
+    --kbd-margin: 0 0.25em;
+    --kbd-min-width: 1.8em;
+    --kbd-padding: 0.25em 0.5em;
+
+
+
+    --blockquote-background: #f8fafc;
+    --blockquote-border-color: #10a37f;
+    --blockquote-border-style: solid;
+    --blockquote-border-width: 0 0 0 4px;
+    --blockquote-border-radius: 8px;
+    --blockquote-color: #374151;
+    --blockquote-font-family: var(--base-font-family);
+    --blockquote-font-size: 0.98em;
+    --blockquote-font-style: normal;
+    --blockquote-font-weight: 400;
+    --blockquote-em-font-family: inherit;
+    --blockquote-em-font-size: inherit;
+    --blockquote-em-font-style: italic;
+    --blockquote-em-font-weight: 500;
+    --blockquote-quotes-open: "";
+    --blockquote-quotes-close: "";
+    --blockquote-quotes-color: transparent;
+    --blockquote-padding: 1em 1.25em;
+
+    --navbar-root-background: transparent;
+    --navbar-root-background--active: transparent;
+    --navbar-root-background--hover: transparent;
+    --navbar-root-border-color: transparent;
+    --navbar-root-border-width: 0;
+    --navbar-root-border-radius: 6px;
+    --navbar-root-color: #374151;
+    --navbar-root-color--hover: #111827;
+    --navbar-root-color--active: #10a37f;
+    --navbar-root-padding: 0.35em 0.2em;
+    --navbar-root-text-decoration: none;
+    --navbar-root-text-decoration--hover: none;
+    --navbar-root-text-decoration--active: none;
+    --navbar-root-text-decoration-color: transparent;
+    --navbar-root-text-decoration-color--hover: transparent;
+    --navbar-root-text-decoration-color--active: transparent;
+    --navbar-menu-background: #ffffff;
+    --navbar-menu-border-color: #e5e7eb;
+    --navbar-menu-border-width: 1px;
+    --navbar-menu-border-radius: 10px;
+    --navbar-menu-box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        0 2px 4px rgba(0, 0, 0, 0.04);
+    --navbar-menu-padding: 0.4em;
+    --navbar-menu-root-background: transparent;
+    --navbar-menu-root-background--hover: #f3f4f6;
+    --navbar-menu-root-background--active: #ecfdf5;
+    --navbar-menu-root-padding: 0.35em 0.6em;
+    --navbar-menu-link-background: transparent;
+    --navbar-menu-link-background--hover: #f3f4f6;
+    --navbar-menu-link-background--active: #ecfdf5;
+    --navbar-menu-link-border-color: transparent;
+    --navbar-menu-link-border-width: 0;
+    --navbar-menu-link-border-radius: 6px;
+    --navbar-menu-link-color: #374151;
+    --navbar-menu-link-color--hover: #111827;
+    --navbar-menu-link-color--active: #10a37f;
+    --navbar-menu-link-padding: 0.35em 0.6em;
+    --navbar-menu-link-text-decoration: none;
+    --navbar-menu-link-text-decoration--hover: none;
+    --navbar-menu-link-text-decoration--active: none;
+    --navbar-menu-link-text-decoration-color: transparent;
+    --navbar-menu-link-text-decoration-color--hover: transparent;
+    --navbar-menu-link-text-decoration-color--active: transparent;
+
+    --pagination-border-top: 1px solid #e5e7eb;
+    --pagination-chevron-height: 0.75em;
+    --pagination-chevron-stroke: currentColor;
+    --pagination-chevron-stroke-linecap: round;
+    --pagination-chevron-stroke-width: 1.5px;
+    --pagination-label-color: #9ca3af;
+    --pagination-label-font-size: 0.75rem;
+    --pagination-title-color: #111827;
+    --pagination-title-font-size: 1.05rem;
+
+}
 
 
 .docsify-footer-enhanced {
@@ -80,6 +192,7 @@
     color: #6b7280;
     font-size: 14px;
 }
+
 .footer-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -100,6 +213,7 @@
     text-decoration: none;
     line-height: 1.9;
 }
+
 .footer-grid a:hover {
     color: #009688;
 }
@@ -111,4 +225,25 @@
     border-top: 1px solid #e5e7eb;
     font-size: 13px;
     color: #9ca3af;
+}
+
+
+/* 图片 caption */
+.markdown-section figure {
+    text-align: center;
+    margin: 1.5em auto;
+}
+
+.markdown-section figcaption {
+    font-size: 0.9em;
+    color: var(--mono-tint3);
+    margin-top: 0.5em;
+}
+
+/* 表格 caption */
+.markdown-section .table-caption {
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--mono-tint3);
+    margin: 1em 0 0.3em;
 }
