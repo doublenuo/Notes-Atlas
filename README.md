@@ -1,47 +1,17 @@
 # 🧠 欢迎来到我的学习宇宙 🚀
 
-一个正在 **持续进化** 的技术学习基地（偶尔严肃，经常踩坑，长期更新）
-
----
-
-```algorithm
-% This quicksort algorithm is extracted from Chapter 7, Introduction to Algorithms (3rd edition)
-\begin{algorithm}
-\caption{Quicksort}
-\begin{algorithmic}
-\PROCEDURE{Quicksort}{$A, p, r$}
-    \IF{$p < r$} 
-        \STATE $q = $ \CALL{Partition}{$A, p, r$}
-        \STATE \CALL{Quicksort}{$A, p, q - 1$}
-        \STATE \CALL{Quicksort}{$A, q + 1, r$}
-    \ENDIF
-\ENDPROCEDURE
-\PROCEDURE{Partition}{$A, p, r$}
-    \STATE $x = A[r]$
-    \STATE $i = p - 1$
-    \FOR{$j = p$ \TO $r - 1$}
-        \IF{$A[j] < x$}
-            \STATE $i = i + 1$
-            \STATE exchange
-            $A[i]$ with $A[j]$
-        \ENDIF
-        \STATE exchange $A[i]$ with $A[r]$
-    \ENDFOR
-\ENDPROCEDURE
-\end{algorithmic}
-\end{algorithm}
-```
+一个正在**持续进化**的技术学习基地（偶尔严肃，经常踩坑，长期更新）
 
 ## 👋 这里是什么？
 
 这里不是教程站，也不是博客。
 
-这是一个 **正在生长的学习系统**：
+这是一个**正在生长的学习系统**：
 
-* 📚 记录我真正学过的东西（不是复制粘贴）
+* 📚 记录我真正学过的东西
 * 🔬 拆解论文与技术原理
 * 🛠️ 积累项目实践经验
-* 🤖 探索 AI / 机器人 / 强化学习的可能性
+* 🤖 探索 AI/机器人/强化学习/深度学习的可能性
 * ☕ 顺便和未来的自己对话
 
 如果某篇内容帮到了你 ——说明我当时至少掉进过同一个坑。
@@ -62,13 +32,9 @@
 
 ## 🔥 最近在折腾什么？
 
-* ⚙️ Linux 环境深度定制
+* ⚙️ Linux环境深度定制
 * 🤯 强化学习训练问题
-* 🤖 星海图R1机器人部署问题
-* ☄️ 如何让知识真正可复用
-
-（也可能在修 bug）
-
+* 🤖 机器人真机部署问题
 
 ## 🧪 项目实践区
 
@@ -106,11 +72,6 @@
 
 ### 🚀 本站由「永不关机的服务器」强力驱动
 
-<!-- tabs:start -->
-
-<!-- dashboard -->
-
-<!-- tabs:end -->
 
 是的，这个网站：
 
