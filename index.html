@@ -97,6 +97,49 @@
           noEnd: false,
           titlePrefix: "Algorithm",
         },
+        footer: {
+          copy: `
+      <div class="footer-grid">
+
+        <div>
+          <h4>📚 Documentation</h4>
+          <a href="#/">Home</a><br>
+          <a href="#/guide">Guide</a><br>
+          <a href="#/api">API Reference</a>
+        </div>
+
+        <div>
+          <h4>🚀 Project</h4>
+          <a href="https://github.com/yourrepo" target="_blank">GitHub</a><br>
+          <a href="#/changelog">Changelog</a><br>
+          <a href="#/roadmap">Roadmap</a>
+        </div>
+
+        <div>
+          <h4>💬 Community</h4>
+          <a href="#">Discussions</a><br>
+          <a href="#">Issues</a><br>
+          <a href="#">Contact</a>
+        </div>
+
+        <div>
+          <h4>⚙️ Built With</h4>
+          Docsify<br>
+          Markdown<br>
+          Open Source ❤️
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        © 2026 Your Project · Built with Docsify
+      </div>
+    `,
+          auth: "",
+          pre: "<hr/>",
+          style: "",
+          class: "docsify-footer-enhanced",
+        },
       };
     </script>
 
@@ -131,5 +174,6 @@
     <script src="https://cdn.jsdelivr.net/npm/docsify-updated/src/time-updater.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/h-hg/docsify-pseudocode/dist/docsify-pseudocode.min.js"></script>
+    <script src="//unpkg.com/docsify-footer-enh/dist/docsify-footer-enh.min.js"></script>
   </body>
 </html>

@@ -71,3 +71,44 @@
     --table-body-border-color: #e5e7eb;
     --table-body-border-width: 1px;
 }
+
+
+
+.docsify-footer-enhanced {
+    margin-top: 60px;
+    padding-top: 20px;
+    color: #6b7280;
+    font-size: 14px;
+}
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 32px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.footer-grid h4 {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #111827;
+    font-weight: 600;
+}
+
+.footer-grid a {
+    color: #6b7280;
+    text-decoration: none;
+    line-height: 1.9;
+}
+.footer-grid a:hover {
+    color: #009688;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 35px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 13px;
+    color: #9ca3af;
+}
