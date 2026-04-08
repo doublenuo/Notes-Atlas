@@ -64,37 +64,6 @@
 
 > 少折腾配置，多折腾思想。
 
----
-
-## 🖥️ 友情赞助（服务器不自己长出来的 😭）
-
-<div style="border:2px dashed #da0b84;padding:16px;border-radius:12px">
-
-### 🚀 本站由「永不关机的服务器」强力驱动
-
-
-是的，这个网站：
-
-* 🌙 半夜 3 点还能访问
-* ⚡ 页面加载比我的学习速度快
-* 🔥 扛得住我频繁 rebuild
-
-如果你也想：
-
-- ✅ 搭建自己的知识库
-- ✅ 部署一些稀奇古怪的网站
-- ✅ 拥有一台属于自己的云服务器
-
-👉 **可以考虑入手一台服务器**：
-
-💻 稳定 · 便宜 · 不会突然摆烂
-
-（认真说：有服务器真的会更愿意做项目。）
-
-</div>
-
----
-
 ## 🧩 关于这个站点
 
 这里不会追求：
@@ -122,5 +91,5 @@
 ---
 
 <p align="center">
-🛰️ <i>Last deployed somewhere between curiosity and caffeine.</i>
+    <i>Last deployed somewhere between curiosity and caffeine.</i>
 </p>
