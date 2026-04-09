@@ -8,6 +8,6 @@
 - [其他资源](/others/)
 
 ---
-[![Github logo](./figures/Github.svg ":size=10%") Github](https://github.com/doublenuo/Notes-Atlas)
-[![Email logo](./figures/email.svg ":size=10%") Email](mailto:zwn200401@gmail.com)
+[![Github logo](./static/images/Github.svg ":size=10%") Github](https://github.com/doublenuo/Notes-Atlas)
+[![Email logo](./static/images/email.svg ":size=10%") Email](mailto:zwn200401@gmail.com)
 

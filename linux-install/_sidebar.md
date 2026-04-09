@@ -1,4 +1,4 @@
-- [Windows安装Ubuntu 24.04双系统教程](/linux-install/docs/dualboot)
-- [虚拟机安装Linux系统](/linux-install/docs/virtual)
-- [WSL安装](/linux-install/docs/wsl)
-- [装机必备工具](/linux-install/docs/tools)
+- [Windows安装Ubuntu 24.04双系统教程](/linux-install/dualboot)
+- [虚拟机安装Linux系统](/linux-install/virtual)
+- [WSL安装](/linux-install/wsl)
+- [装机必备工具](/linux-install/tools)
