@@ -8,6 +8,7 @@ This repository is a Docsify-based Markdown knowledge base and currently has **n
 - **Full test suite:** Not configured
 - **Lint:** Not configured
 - **Run a single test:** Not available (no test framework configured in tracked files)
+- **Update per-page last-modified data:** `./scripts/generate-last-updated.sh` (regenerates `static/last-updated.json` from git history)
 
 ## High-level architecture
 

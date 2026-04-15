@@ -59,6 +59,11 @@
         subMaxLevel: 3,
         mergeNavbar: true,
         externalLinkRel: "_blank",
+        routerMode: "history",
+        crossOriginLinks: ["*"],
+        onlyCover: false,
+        topMargin: 90,
+        formatUpdated: "{MM}/{DD} {HH}:{mm}",
         search: {
           maxAge: 86400000,
           paths: "auto",
@@ -80,11 +85,58 @@
           title: "请输入密码以访问文档：",
           paths: ["/others"],
         },
-        timeUpdater: {
-          text: ">最新更新时间: {docsify-updated}",
-          formatUpdated: "{YYYY}/{MM}/{DD}",
-          whereToPlace: "top",
-        },
+        plugins: [
+          function (hook, vm) {
+            const UPDATED_MAP_URL = "/static/last-updated.json";
+            let updatedMapPromise = null;
+
+            function fetchUpdatedMap() {
+              if (!updatedMapPromise) {
+                updatedMapPromise = fetch(UPDATED_MAP_URL, {
+                  cache: "no-cache",
+                })
+                  .then((res) => (res.ok ? res.json() : {}))
+                  .catch(() => ({}));
+              }
+              return updatedMapPromise;
+            }
+
+            function pad2(n) {
+              return String(n).padStart(2, "0");
+            }
+
+            function formatUnixTimestamp(unixSeconds) {
+              const date = new Date(Number(unixSeconds) * 1000);
+              if (Number.isNaN(date.getTime())) return "";
+              return `${date.getFullYear()}/${pad2(date.getMonth() + 1)}/${pad2(date.getDate())}`;
+            }
+
+            function renderUpdatedLabel(text) {
+              const section = document.querySelector(".markdown-section");
+              if (!section) return;
+              const old = section.querySelector("#docs-last-updated");
+              if (old) old.remove();
+
+              const label = document.createElement("blockquote");
+              label.id = "docs-last-updated";
+              label.textContent = text;
+              section.prepend(label);
+            }
+
+            hook.doneEach(async function () {
+              const routeFile = vm.route.file;
+              if (!routeFile || !routeFile.endsWith(".md")) return;
+
+              const updatedMap = await fetchUpdatedMap();
+              const unixSeconds = updatedMap[routeFile];
+              if (!unixSeconds) return;
+
+              const dateText = formatUnixTimestamp(unixSeconds);
+              if (!dateText) return;
+              renderUpdatedLabel(`最新更新时间: ${dateText}`);
+            });
+          },
+        ],
         breadcrumb: {
           showHome: true,
           homeText: "Home",
@@ -169,7 +221,6 @@
         bgColor: "",
       };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/docsify-updated/src/time-updater.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/h-hg/docsify-pseudocode/dist/docsify-pseudocode.min.js"></script>
     <script src="//unpkg.com/docsify-footer-enh/dist/docsify-footer-enh.min.js"></script>
