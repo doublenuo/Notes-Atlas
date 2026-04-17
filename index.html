@@ -123,17 +123,262 @@
               section.prepend(label);
             }
 
+            function clearUpdatedLabel() {
+              const section = document.querySelector(".markdown-section");
+              if (!section) return;
+              const old = section.querySelector("#docs-last-updated");
+              if (old) old.remove();
+            }
+
+            function getExportBaseName() {
+              const routePath = (vm.route && vm.route.path) || "";
+              const normalized = routePath
+                .replace(/^\/+/, "")
+                .replace(/\/+$/, "");
+              const base = normalized || "README";
+              return base
+                .replace(/[\\/:*?"<>|#%{}]+/g, "-")
+                .replace(/-+/g, "-");
+            }
+
+            function makeHtmlDocument(title, bodyHtml) {
+              const styles = Array.from(
+                document.querySelectorAll('link[rel="stylesheet"]')
+              )
+                .map((link) => {
+                  const href = link.href || link.getAttribute("href");
+                  return href ? `<link rel="stylesheet" href="${href}">` : "";
+                })
+                .join("");
+
+              return `<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${title}</title>
+    ${styles}
+  </head>
+  <body>
+    <main class="markdown-section">${bodyHtml}</main>
+  </body>
+</html>`;
+            }
+
+            function downloadBlob(content, filename, type) {
+              const blob = new Blob([content], { type });
+              const link = document.createElement("a");
+              link.href = URL.createObjectURL(blob);
+              link.download = filename;
+              document.body.appendChild(link);
+              link.click();
+              URL.revokeObjectURL(link.href);
+              link.remove();
+            }
+
+            function setExportLoading(loading) {
+              const controls = document.querySelector("#docs-export-controls");
+              if (!controls) return;
+              controls.classList.toggle("is-loading", loading);
+              if (loading) {
+                const dropdown = controls.querySelector(".docs-export-dropdown");
+                if (dropdown) dropdown.removeAttribute("open");
+              }
+              controls
+                .querySelectorAll("button")
+                .forEach((button) => (button.disabled = loading));
+            }
+
+            function buildPdfRenderContainer(section) {
+              const sectionWidth = Math.max(section.clientWidth, 800);
+              const wrapper = document.createElement("div");
+              wrapper.style.position = "fixed";
+              wrapper.style.left = "-100000px";
+              wrapper.style.top = "0";
+              wrapper.style.width = `${sectionWidth}px`;
+              wrapper.style.padding = "0";
+              wrapper.style.margin = "0";
+              wrapper.style.background = "#ffffff";
+              wrapper.style.zIndex = "-1";
+
+              const clone = section.cloneNode(true);
+              clone.style.width = `${sectionWidth}px`;
+              clone.style.maxWidth = "none";
+              clone.style.margin = "0";
+              clone.style.paddingTop = "0";
+              clone.style.transform = "none";
+              clone.style.position = "static";
+
+              const controlsNode = clone.querySelector("#docs-export-controls");
+              if (controlsNode) controlsNode.remove();
+
+              wrapper.appendChild(clone);
+              document.body.appendChild(wrapper);
+              return { wrapper, clone, sectionWidth };
+            }
+
+            async function waitForRenderAssets(root) {
+              const images = Array.from(root.querySelectorAll("img"));
+              const imageTasks = images.map((img) => {
+                if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+                return new Promise((resolve) => {
+                  img.addEventListener("load", resolve, { once: true });
+                  img.addEventListener("error", resolve, { once: true });
+                });
+              });
+
+              const fontTask =
+                document.fonts && document.fonts.ready
+                  ? document.fonts.ready
+                  : Promise.resolve();
+
+              await Promise.all([fontTask, ...imageTasks]);
+            }
+
+            async function exportCurrentPdf(baseName) {
+              const section = document.querySelector(".markdown-section");
+              if (!section) return;
+
+              if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+                alert("PDF 导出依赖未加载完成，请稍后重试。");
+                return;
+              }
+
+              setExportLoading(true);
+              let wrapper = null;
+              try {
+                const renderTarget = buildPdfRenderContainer(section);
+                wrapper = renderTarget.wrapper;
+                await waitForRenderAssets(renderTarget.clone);
+
+                const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+                const canvas = await window.html2canvas(renderTarget.clone, {
+                  scale: pixelRatio,
+                  useCORS: true,
+                  backgroundColor: "#ffffff",
+                  width: renderTarget.sectionWidth,
+                  windowWidth: renderTarget.sectionWidth,
+                  scrollX: 0,
+                  scrollY: 0,
+                });
+
+                const pdf = new window.jspdf.jsPDF("p", "pt", "a4");
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const margin = 24;
+                const imageWidth = pageWidth - margin * 2;
+                const imageHeight = (canvas.height * imageWidth) / canvas.width;
+                const pageBodyHeight = pageHeight - margin * 2;
+                const imageData = canvas.toDataURL("image/png");
+                let leftHeight = imageHeight;
+                let offsetY = margin;
+
+                pdf.addImage(
+                  imageData,
+                  "PNG",
+                  margin,
+                  offsetY,
+                  imageWidth,
+                  imageHeight
+                );
+                leftHeight -= pageBodyHeight;
+
+                while (leftHeight > 0) {
+                  pdf.addPage();
+                  offsetY = margin - (imageHeight - leftHeight);
+                  pdf.addImage(
+                    imageData,
+                    "PNG",
+                    margin,
+                    offsetY,
+                    imageWidth,
+                    imageHeight
+                  );
+                  leftHeight -= pageBodyHeight;
+                }
+
+                pdf.save(`${baseName}.pdf`);
+              } finally {
+                if (wrapper) wrapper.remove();
+                setExportLoading(false);
+              }
+            }
+
+            function renderExportControls() {
+              const section = document.querySelector(".markdown-section");
+              if (!section) return;
+
+              const old = section.querySelector("#docs-export-controls");
+              if (old) old.remove();
+
+              const controls = document.createElement("div");
+              controls.id = "docs-export-controls";
+              controls.className = "docs-export-controls";
+
+              const dropdown = document.createElement("details");
+              dropdown.className = "docs-export-dropdown";
+
+              const trigger = document.createElement("summary");
+              trigger.className = "docs-export-trigger";
+              trigger.textContent = "导出";
+
+              const menu = document.createElement("div");
+              menu.className = "docs-export-menu";
+
+              const exportPdfButton = document.createElement("button");
+              exportPdfButton.type = "button";
+              exportPdfButton.className = "docs-export-menu-item";
+              exportPdfButton.textContent = "导出为 PDF";
+
+              const exportHtmlButton = document.createElement("button");
+              exportHtmlButton.type = "button";
+              exportHtmlButton.className = "docs-export-menu-item";
+              exportHtmlButton.textContent = "导出为 HTML";
+
+              exportPdfButton.addEventListener("click", async () => {
+                dropdown.removeAttribute("open");
+                await exportCurrentPdf(getExportBaseName());
+              });
+
+              exportHtmlButton.addEventListener("click", () => {
+                const currentSection = document.querySelector(".markdown-section");
+                if (!currentSection) return;
+                dropdown.removeAttribute("open");
+                const contentNode = currentSection.cloneNode(true);
+                const controlsNode = contentNode.querySelector(
+                  "#docs-export-controls"
+                );
+                if (controlsNode) controlsNode.remove();
+                const baseName = getExportBaseName();
+                const html = makeHtmlDocument(
+                  document.title || "Notes-Atlas",
+                  contentNode.innerHTML
+                );
+                downloadBlob(html, `${baseName}.html`, "text/html;charset=utf-8");
+              });
+
+              menu.appendChild(exportPdfButton);
+              menu.appendChild(exportHtmlButton);
+              dropdown.appendChild(trigger);
+              dropdown.appendChild(menu);
+              controls.appendChild(dropdown);
+              section.prepend(controls);
+            }
+
             hook.doneEach(async function () {
               const routeFile = vm.route.file;
               if (!routeFile || !routeFile.endsWith(".md")) return;
+              clearUpdatedLabel();
 
               const updatedMap = await fetchUpdatedMap();
               const unixSeconds = updatedMap[routeFile];
-              if (!unixSeconds) return;
-
-              const dateText = formatUnixTimestamp(unixSeconds);
-              if (!dateText) return;
-              renderUpdatedLabel(`最新更新时间: ${dateText}`);
+              if (unixSeconds) {
+                const dateText = formatUnixTimestamp(unixSeconds);
+                if (dateText) {
+                  renderUpdatedLabel(`最新更新时间: ${dateText}`);
+                }
+              }
+              renderExportControls();
             });
           },
         ],
@@ -209,6 +454,8 @@
     <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docsify-auth@1.2.0/dist/docsify-auth.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/docsify-footnote/dist/docsify-footnote.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docsify-breadcrumb@latest/dist/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/Sumsung524/docsify-backTop/dist/docsify-backTop.min.js"></script>

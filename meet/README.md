@@ -22,4 +22,4 @@
 - [Diffusion-Based Imaginative Coordination for Bimanual Manipulation](/meet/docs/20260331)
 - [SafeBimanual: Diffusion-based Trajectory Optimization for Safe Bimanual Manipulation](/meet/docs/20260408)
 - [RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation](/meet/docs/20260415)
-- [Fabrica: Dual-Arm Assembly of General Multi-Part Objects via Integrated Planning and Learning](/meet/docs/20260415)
+- [Fabrica: Dual-Arm Assembly of General Multi-Part Objects via Integrated Planning and Learning](/meet/docs/20260422)
