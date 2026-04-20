@@ -1,0 +1,16 @@
+{
+  "name": "notes-atlas",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev .",
+    "docs:build": "vitepress build .",
+    "docs:preview": "vitepress preview .",
+    "test": "node --test tests/vitepress/*.test.mjs"
+  },
+  "devDependencies": {
+    "katex": "^0.16.11",
+    "markdown-it-katex": "^2.0.3",
+    "vitepress": "^1.6.4"
+  }
+}
