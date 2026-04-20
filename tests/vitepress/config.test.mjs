@@ -12,3 +12,9 @@ test('config exposes nav and local search', () => {
   assert.equal(config.themeConfig.search.provider, 'local');
 });
 
+test('config includes concise Chinese footer with GitHub link', () => {
+  assert.ok(config.themeConfig.footer);
+  assert.match(config.themeConfig.footer.message, /知识库/);
+  assert.match(config.themeConfig.footer.copyright, /©\s*2026/);
+  assert.match(config.themeConfig.footer.copyright, /<a[^>]+href="https:\/\/github\.com\/doublenuo\/Notes-Atlas"[^>]*>GitHub<\/a>/);
+});

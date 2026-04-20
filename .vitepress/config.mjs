@@ -29,12 +29,9 @@ export default defineConfig({
   lang: 'zh-CN',
   base: '/',
   cleanUrls: true,
-  lastUpdated: false,
+  lastUpdated: true,
   rewrites: {
     'README.md': 'index.md',
-    'meet/README.md': 'meet/index.md',
-    'study/README.md': 'study/index.md',
-    'linux-install/README.md': 'linux-install/index.md'
   },
   markdown: {
     config: (md) => {
@@ -47,9 +44,8 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '论文笔记', link: '/meet/' },
       { text: '学习笔记', link: '/study/' },
-      { text: 'Linux 安装', link: '/linux-install/' },
-      { text: '面试', link: '/interview/' },
-      { text: '其他资源', link: '/others/' }
+      { text: '工具与资源', link: '/tools/'},
+      { text: '归档资源', link: '/archive/' }
     ],
     search: {
       provider: 'local'
@@ -73,23 +69,13 @@ export default defineConfig({
           ]
         }
       ],
-      '/linux-install/': [
+
+      '/tools/': [
         {
-          text: 'Linux 安装教程',
+          text: '常用工具',
           items: [
-            { text: '目录', link: '/linux-install/' },
-            { text: '双系统安装', link: '/linux-install/dualboot' },
-            { text: '虚拟机安装 (VirtualBox)', link: '/linux-install/virtual-virtualbox' },
-            { text: '虚拟机安装 (VMware)', link: '/linux-install/virtual-vmware' },
-            { text: 'WSL 安装', link: '/linux-install/wsl' },
-            { text: '装机必备工具', link: '/linux-install/tools' }
+            { text: '面试资源', link: '/tools/interview/' }
           ]
-        }
-      ],
-      '/interview/': [
-        {
-          text: '面试',
-          items: toItems('interview/docs', '/interview/docs/')
         }
       ],
       '/others/': [
@@ -99,7 +85,11 @@ export default defineConfig({
         }
       ]
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/doublenuo/Notes-Atlas' }]
+    socialLinks: [{ icon: 'github', link: 'https://github.com/doublenuo/Notes-Atlas' }, ],
+    footer: {
+      message: '持续更新的中文知识库',
+      copyright:
+        '© 2026 Notes-Atlas · <a href="https://github.com/doublenuo/Notes-Atlas" target="_blank" rel="noopener noreferrer">GitHub</a>'
+    }
   }
 });
-
