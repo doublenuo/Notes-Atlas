@@ -93,16 +93,3 @@
 <p align="center">
     <i>Last deployed somewhere between curiosity and caffeine.</i>
 </p>
-
-## 本地开发（VitePress）
-
-```bash
-npm install
-npm run docs:dev
-```
-
-## 构建静态站点
-
-```bash
-npm run docs:build
-```
