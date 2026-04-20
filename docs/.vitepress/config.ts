@@ -170,8 +170,8 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/doublenuo/Notes-Atlas' }
     ],
     footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2019-present Evan You'
+      message: '📚 构建你的知识地图 · 持续学习，持续记录',
+      copyright: '© 2026 NotesAtlas · Powered by VitePress'
     }
   },
   markdown: {
