@@ -169,6 +169,10 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/doublenuo/Notes-Atlas' }
     ],
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2019-present Evan You'
+    }
   },
   markdown: {
     math: true
