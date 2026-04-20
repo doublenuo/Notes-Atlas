@@ -5,6 +5,7 @@ export default defineConfig({
   base: "/",
   title: "NotesAtlas",
   description: "NotesAtlas",
+  cleanUrls: true,
   themeConfig: {
     logo: '/static/images/logo.svg',
     editLink: {
@@ -12,9 +13,9 @@ export default defineConfig({
       text: '在 GitHub 上编辑此页面'
     },
     lastUpdated: {
-      text: '最后更新于:',
+      text: '最后更新于',
       formatOptions: {
-        dateStyle: 'full',
+        dateStyle: 'long',
         timeStyle: 'medium'
       }
     },
