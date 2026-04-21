@@ -1,0 +1,7 @@
+* [🏠 首页](/)
+* [📚 学习](/study)
+* [📄 论文](/meet)
+* [🐧 Linux](/linux)
+* [🧰 工具](/tools)
+* [🔒 其他](/others)
+* [GitHub](https://github.com/doublenuo/Notes-Atlas)
