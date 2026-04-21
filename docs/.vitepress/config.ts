@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 import lightbox from "vitepress-plugin-lightbox"
 import footnote from 'markdown-it-footnote'
+import taskLists from 'markdown-it-task-lists'
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -180,8 +181,11 @@ export default defineConfig({
     config(md) {
       md.use(lightbox, {});
       md.use(footnote);
+      md.use(taskLists, {
+        enabled: true,
+        label: true,
+        labelAfter: true
+      })
     }
   },
 })
-
-
