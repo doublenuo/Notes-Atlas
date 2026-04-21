@@ -1,5 +1,13 @@
 # 🧠 欢迎来到我的学习宇宙 🚀
 
+![Status](https://img.shields.io/badge/Status-Active-2ea44f?style=flat-square)
+![Type](https://img.shields.io/badge/Type-Knowledge%20Base-0969da?style=flat-square)
+![Focus-AI](https://img.shields.io/badge/Focus-AI-8a2be2?style=flat-square)
+![Focus-Robotics](https://img.shields.io/badge/Focus-Robotics-ff8c00?style=flat-square)
+![Focus-Linux](https://img.shields.io/badge/Focus-Linux-fcc624?style=flat-square&logo=linux&logoColor=black)
+![Maintained](https://img.shields.io/badge/Maintained-Yes-31c653?style=flat-square)
+![Notes](https://img.shields.io/badge/Notes-Continuously%20Updated-1f6feb?style=flat-square)
+
 一个正在**持续进化**的技术学习基地（偶尔严肃，经常踩坑，长期更新）
 
 ## 👋 这里是什么？
