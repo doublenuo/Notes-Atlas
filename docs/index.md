@@ -2,33 +2,47 @@
 layout: home
 
 hero:
-  name: "NotesAtlas"
-  text: "知识笔记地图"
+  name: "知识星球"
+  # text: "Just do it"
   tagline: 一个结构化整理技术笔记与学习路线的知识库
   actions:
     - theme: brand
       text: 快速开始
       link: /homepage
     - theme: alt
-      text: Github
+      text: View On Github
       link: https://github.com/doublenuo/Notes-Atlas
 
 features:
-  - title: 📚 知识体系化整理
-    details: 将碎片化笔记整理成结构清晰的知识网络，支持长期学习与回顾
+  - icon: 📚 
+    title: “人是为了活着本身而活着，而不是为了活着之外的任何事物。”
+    details: —— 余华
 
-  - title: ⚡ Markdown 驱动
-    details: 使用 Markdown 编写内容，轻量、高效，专注内容本身
+  - icon: ⚡ 
+    title: “凡是过去，皆为序章。”
+    details: —— 威廉·莎士比亚
 
-  - title: 🧠 学习路径可视化
-    details: 将学习路线结构化呈现，帮助建立完整知识图谱
+  - icon: 🧠 
+    title: “我渐渐能意会到，深刻并不等于接近事实。”
+    details: —— 钱钟书
 
-  - title: 🚀 快速访问
-    details: 支持侧边栏导航与全局搜索，快速定位任何笔记内容
+  - icon: 🚀
+    title: ”一个人知道自己为什么而活，就可以忍受任何一种生活。“
+    details: —— 弗里德里希·尼采
 
-  - title: 🛠 可扩展结构
-    details: 支持模块化目录组织，适用于技术文档、学习笔记与博客
+  - icon: 🛠 
+    title: “我们听到的一切都是一个观点，不是事实；我们看见的一切都是一个视角，不是真相。”
+    details: —— 马可·奥勒留
 
-  - title: 🌐 开源友好
-    details: 基于 VitePress 构建，易于部署与二次开发
+  - icon: 🌐
+    title: “我年纪越大，越觉得人与人之间比较少有真正的理解。”
+    details: —— 村上春树
+  
+  - icon: 🌆
+    title: “世上只有一种真正的英雄主义，就是认清生活的真相后依然热爱生活。”
+    details: —— 罗曼·罗兰
+
+  - icon: 🧩
+    title: “人的一切痛苦，本质上都是对自己无能的愤怒。”
+    details: —— 王小波
 ---
