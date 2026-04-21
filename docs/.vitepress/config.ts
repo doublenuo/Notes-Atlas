@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitepress'
-// https://vitepress.dev/reference/site-config
+
+import lightbox from "vitepress-plugin-lightbox"
+import footnote from 'markdown-it-footnote'
+
 export default defineConfig({
   lang: 'zh-CN',
   base: "/Notes-Atlas/",
@@ -8,6 +11,7 @@ export default defineConfig({
   cleanUrls: true,
   themeConfig: {
     logo: '/static/images/logo.svg',
+    outline: [2, 3],
     editLink: {
       pattern: 'https://github.com/doublenuo/Notes-Atlas/edit/main/docs/:path',
       text: '在 GitHub 上编辑此页面'
@@ -37,29 +41,10 @@ export default defineConfig({
 
     sidebar: {
 
-      // ==================== Linux ====================
-      '/linux/': [
-        {
-          text: 'Linux',
-          items: [
-            { text: '首页', link: '/linux/index.md' },
-            { text: '文档总览', link: '/linux/docs/docs.md' },
-            { text: '双系统', link: '/linux/docs/dualboot.md' },
-            { text: '软件', link: '/linux/docs/software.md' },
-            { text: '工具', link: '/linux/docs/tools.md' },
-            { text: '虚拟化', link: '/linux/docs/virtual.md' },
-            { text: 'VirtualBox', link: '/linux/docs/virtual-virtualbox.md' },
-            { text: 'VMware', link: '/linux/docs/virtual-vmware.md' },
-            { text: 'WSL', link: '/linux/docs/wsl.md' }
-          ]
-        }
-      ],
-
-      // ==================== Meet（论文笔记） ====================
       '/meet/': [
         {
-          text: '组会记录',
-          collapsed: true,
+          text: '组会论文',
+          // collapsed: true,
           items: [
             { text: '2025-10-20', link: '/meet/docs/20251020.md' },
             { text: '2025-10-27', link: '/meet/docs/20251027.md' },
@@ -135,17 +120,30 @@ export default defineConfig({
         }
       ],
 
-      // ==================== Tools ====================
       '/tools/': [
         {
-          text: '工具和资源',
+          text: 'Linux',
           items: [
-            { text: 'Git', link: '/tools/git.md' }
+            // { text: '首页', link: '/tools/linux/index.md' },
+            // { text: '文档总览', link: '/tools/linux/docs/docs.md' },
+            { text: 'Windows安装Ubuntu双系统', link: '/tools/linux/docs/dualboot.md' },
+            { text: 'Ubuntu常用软件', link: '/tools/linux/docs/software.md' },
+            { text: 'Ubuntu装机必备工具', link: '/tools/linux/docs/tools.md' },
+            { text: 'Windows安装虚拟机', link: '/tools/linux/docs/virtual.md' },
+            // { text: 'VirtualBox', link: '/tools/linux/docs/virtual-virtualbox.md' },
+            // { text: 'VMware', link: '/tools/linux/docs/virtual-vmware.md' },
+            { text: 'Windows安装WSL教程', link: '/tools/linux/docs/wsl.md' }
           ]
         },
         {
-          text: '面试',
-          collapsed: true,
+          text: '工具和资源',
+          items: [
+            { text: 'Git', link: '/tools/git.md' },
+            { text: 'Docker', link: '/tools/docker.md' },
+          ]
+        },
+        {
+          text: '面试题',
           items: [
             { text: '首页', link: '/tools/interview/index.md' },
             { text: '基础', link: '/tools/interview/docs/base.md' },
@@ -175,7 +173,14 @@ export default defineConfig({
     }
   },
   markdown: {
-    math: true
+    math: true,
+    image: {
+      lazyLoading: true
+    },
+    config(md) {
+      md.use(lightbox, {});
+      md.use(footnote);
+    }
   },
 })
 
