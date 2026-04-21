@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   lang: 'zh-CN',
-  base: "/",
+  base: "/Notes-Atlas/",
   title: "NotesAtlas",
   description: "NotesAtlas",
   themeConfig: {
@@ -12,9 +12,9 @@ export default defineConfig({
       text: '在 GitHub 上编辑此页面'
     },
     lastUpdated: {
-      text: '最后更新于:',
+      text: '最后更新于',
       formatOptions: {
-        dateStyle: 'full',
+        dateStyle: 'long',
         timeStyle: 'medium'
       }
     },
