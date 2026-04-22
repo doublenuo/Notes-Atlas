@@ -22,6 +22,7 @@ git push origin
 - `git pull --rebase`:拉取远程最新代码，并线性合并到当前分支；
 - `git add *`:将修改加入暂存区, `*`不会包含隐藏文件，`.`是当前目录递归添加，会包括隐藏文件；
 - `git commit -m "提交信息"`:提交代码到本地仓库,提交规范真的很重要，两个月以后你自己看git log会感谢当时认真写commit的自己，具体案例可以参考以下信息。
+
 ```bash
 feat: 新增登录功能
 fix: 修复接口超时问题
@@ -108,7 +109,7 @@ git switch -c dev # 新建并切换分支
 
 ### 分支合并
 
-开发完一个分支以后，要把功能分支合并到主分支，主要使用merge命令。
+开发完一个分支以后，要把功能分支合并到主分支，或者协作的代码被队友修改了，你需要进行分支合并，主要使用merge命令。
 
 ```bash
 # 切换到主分支
@@ -131,13 +132,65 @@ Creating a new branch is quick AND simple.
 >>>>>>> feature1
 ```
 
-### 多人协作
+### 远程分支
+
+当你从远程仓库克隆时，实际上Git自动把本地的main分支和远程的main分支对应起来了，并且，远程仓库的默认名称是origin。可以通过以下命令来查看远程分支的详细信息。
+
+```bash
+# 查看远程分支的详细信息 
+git remote -v
+```
+
+这条命令会显示可以抓取和推送的`origin`的地址，如果没有推送权限，就看不到`push`的地址。
+
+还有一种情况是你克隆了你队友的远程仓库，这时候会发现默认只有`main`分支，你需要先创建本地分支来关联远程分支。
+
+```bash
+# 创建本地develop分支并关联远程develop分支
+git checkout -b develop origin/develop
+# 也可以选择先创建分支，在push阶段进行关联远程分支
+git checkout -b develop
+git push -u origin develop # 一定要指定 -u 参数
+```
+
+注意并不是所有分支都需要往推送到远程分支，这取决你需不需要与团队进行协作，一般情况下`main`和`dev`分支需要推送到远程分支，`bug`和`feature`分支不推送。
 
 ### rebase
 
+多人在同一个分支上协作时，很容易出现冲突。即使没有冲突，后push的童鞋不得不先pull，在本地合并，然后才能push成功。
+
+每次使用merge合并后，Git的提交历史信息会变得很乱，这时候就需要另一种合并分支的方式——`rebase`
+
+```bash
+# 例如你在 feature 分支开发了一段时间，main 已经有新提交了，你想要合并分支
+git checkout feature # 切换到feature分支
+git rebase main # 合并feature分支到main分支后面
+```
+
 ## 标签管理
 
+Git 标签用于对**某个特定提交**打标记，通常用于**版本发布**、**里程碑标记**或**重要节点记录**。团队应统一采用**附注标签**并遵循语义化版本规范，只在 `main` 或 `release` 分支上打标签。标签一旦发布即视为**不可变版本快照**，用于部署、回滚和审计，因此必须保证其稳定性和唯一性。
+
+```bash
+git tag -a v1.0.0 -m "Release version 1.0.0" # 创建标签
+git push origin v1.0.0 # 推送单个标签
+git tag -d v1.0.0 # 删除本地标签
+git push origin :refs/tags/v1.0.0 # 删除远程标签
+```
+
 ## GitHub
+
+GitHub 是基于 Git 的代码托管与协作平台，团队开发应以 **Pull Request** 为核心流程进行代码集成。标准流程为：从 `main`（或 `develop`）分支拉取最新代码，创建 feature 分支进行开发，完成后通过 PR 发起合并请求，经过Code Review和自动化 CI 校验后再合并到主分支。主分支通常开启保护策略（如禁止直接 push、必须通过 PR、必须通过 CI），以保证代码质量和稳定性。
+
+例如你想要参与我这个开源项目，你可以访问我的项目主页：[https://github.com/doublenuo/Notes-Atlas](https://github.com/doublenuo/Notes-Atlas)，点Fork就在自己的账号下克隆了一个仓库，然后，从自己的账号下clone：
+
+```bash
+git clone git@github.com:doublenuo/Notes-Atlas.git
+```
+
+一定要从自己的账号下clone仓库，这样你才能推送修改。如果你想修复其中一个非常小的bug，或者新增一个功能，立刻就可以开始干活，干完后，往自己的仓库推送。
+
+如果你希望我的仓库能接受你的修改，你就可以在GitHub上发起一个pull request。如果你的内容对我有一点点的帮助，我会毫不吝啬地接受你的PR。
 
 ## 速查表
 
