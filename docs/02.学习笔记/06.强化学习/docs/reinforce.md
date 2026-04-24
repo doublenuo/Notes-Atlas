@@ -1,0 +1,15 @@
+---
+date: 2026-04-24 11:51:53
+title: reinforce
+categories:
+  - study
+  - rl
+  - docs
+permalink: /study/rl/reinforce
+---
+# 基于策略的算法
+
+基于策略的算法直接显式学习一个目标策略。
+
+## 策略梯度
+

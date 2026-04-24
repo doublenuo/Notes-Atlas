@@ -1,0 +1,205 @@
+---
+date: 2026-04-24 11:51:53
+title: git
+categories:
+  - tools
+  - resources
+  - docs
+permalink: /tools/resources/git
+---
+# Git基础教程
+
+Git 是一种分布式版本控制系统，它可以不受网络连接的限制，加上其它众多优点，目前已经成为程序开发人员做项目版本管理时的首选，非开发人员也可以用 Git 来做自己的文档版本管理工具。
+
+Git的api非常多，但其实90%的需求都只需要用到几个基本功能即可。
+
+动手学Git：[https://learngitbranching.js.org/?locale=zh_CN](https://learngitbranching.js.org/?locale=zh_CN)
+
+## 日常提交
+
+每天用的最多的就是这几个命令，拉取最新代码，写完代码提交推送，整个流程就是`status->pull->add->commit->push`
+
+```bash
+git status
+git pull --rebase
+git add *
+git commit -m "这是一份提交信息"
+git push origin
+```
+
+- `git status`查看当前工作区的状态,包括已修改但未暂存的文件，已暂存待提交的文件，未跟踪文件，add之前先status看一眼这是一个好习惯；
+- `git pull --rebase`:拉取远程最新代码，并线性合并到当前分支；
+- `git add *`:将修改加入暂存区, `*`不会包含隐藏文件，`.`是当前目录递归添加，会包括隐藏文件；
+- `git commit -m "提交信息"`:提交代码到本地仓库,提交规范真的很重要，两个月以后你自己看git log会感谢当时认真写commit的自己，具体案例可以参考以下信息。
+
+```bash
+feat: 新增登录功能
+fix: 修复接口超时问题
+refactor: 重构用户模块
+docs: 更新文档
+```
+
+## 撤销与回退
+
+写错了代码想要撤回，或者提交了不该提交的东西想回退，根据情况不同，使用的命令也不同。
+
+### 工作区
+
+当你修改了文件，但是还没有add，想要回复原样。以下命令会把指定文件恢复成最近一次commit的状态，注意恢复之后这个文件的改动就没了，找不回来。
+
+```bash
+git checkout demo.py # 将demo.py恢复成上一次commit的状态
+git restore demo.py # 与上述命令效果一样，更现代化的命令，语义化较强
+```
+
+有时候你需要恢复的文件较多，也可以将本地所有改动全部不要，回到最近一次commit的状态。
+
+```bash
+# 将本地所有改动恢复成上一次commit的状态
+git reset --hard 
+# 与上述命令效果一样，更现代化的命令，语义化较强，git restore不会删除新文件
+git restore . & git clean -fd 
+```
+
+### 暂存区
+
+当你修改了文件，已经add了，但还没有commit，这时候直接取消暂存,并按照上述工作区的处理方案即可。
+
+```bash
+git restore --staged demo.py # 取消暂存文件
+```
+
+### commit区
+
+当你已经修改好了文件并且进行了commit操作，需要撤回这次commit，主要操作有以下三种：
+
+```bash
+# 撤销commit，代码停留在暂存区
+git reset --soft HEAD~1
+# 撤销commit，代码停留在工作区
+git reset --mixed HEAD~1
+# 撤销commit，代码全部回退到上一次commit
+git reset --hard HEAD~1
+```
+
+如果要回退两个commit，也可以使用`HEAD~2`来实现。回退之后，本地的提交历史落后于远程分支，这时候直接`git push`会被拒绝，因为远程有你本地没有的提交，这时候需要强制`push`
+
+```bash
+# 强制push，覆盖远程历史，删除远程 commit
+git push -f 
+# 这个命令较安全，会检查远程分支有没有被别人改动，如果有则会拒绝提交，这对团队协作比较安全
+git push --force-with-lease 
+```
+
+
+## 分支管理
+
+团队协作离不开分支管理，日常用的分支命令就以下几个。
+
+```bash
+git branch # 查看本地分支
+git branch -r # 查看远程分支
+git branch -a # 查看本地和远程分支
+git checkout -b dev # 新建并切换到该分支
+git checkout dev # 切换到某个分支
+git branch -D dev # 强制删除某个分支
+```
+
+`git checkout`切换分支要注意一点，如果当前分支有修改还没提交，且这些修改与目标分支存在冲突，则Git会拒绝切换分支，提示你要先处理掉冲突，这些要么先commit，要么先`git stash`暂存起来。
+
+`git branch -D`强制删除本地不再使用的分支，若使用`git branch -d`则会检查这个分支是否已经合并到当前分支，若没合并会拒绝删除该分支，日常使用下推荐使用强制删除。
+
+现代Git已经全面使用`switch`命令来替代`checkout`命令，因此也可以使用`switch`命令来创建和切换分支，语义化更强。
+
+```bash
+git switch dev # 切换分支
+git switch -c dev # 新建并切换分支
+```
+
+### 分支合并
+
+开发完一个分支以后，要把功能分支合并到主分支，或者协作的代码被队友修改了，你需要进行分支合并，主要使用merge命令。
+
+```bash
+# 切换到主分支
+git switch main 
+# 拉取最新代码
+git pull
+# 合并功能分支
+git merge feature/login
+# 推送到远程
+git push
+```
+
+如果两个分支修改了同一部分代码，会产生冲突，Git无法自动合并分支，需要手动处理冲突，打开冲突文件，会有类似这样的标记。
+
+```text
+<<<<<<< HEAD
+Creating a new branch is quick & simple.
+=======
+Creating a new branch is quick AND simple.
+>>>>>>> feature1
+```
+
+### 远程分支
+
+当你从远程仓库克隆时，实际上Git自动把本地的main分支和远程的main分支对应起来了，并且，远程仓库的默认名称是origin。可以通过以下命令来查看远程分支的详细信息。
+
+```bash
+# 查看远程分支的详细信息 
+git remote -v
+```
+
+这条命令会显示可以抓取和推送的`origin`的地址，如果没有推送权限，就看不到`push`的地址。
+
+还有一种情况是你克隆了你队友的远程仓库，这时候会发现默认只有`main`分支，你需要先创建本地分支来关联远程分支。
+
+```bash
+# 创建本地develop分支并关联远程develop分支
+git checkout -b develop origin/develop
+# 也可以选择先创建分支，在push阶段进行关联远程分支
+git checkout -b develop
+git push -u origin develop # 一定要指定 -u 参数
+```
+
+注意并不是所有分支都需要往推送到远程分支，这取决你需不需要与团队进行协作，一般情况下`main`和`dev`分支需要推送到远程分支，`bug`和`feature`分支不推送。
+
+### rebase
+
+多人在同一个分支上协作时，很容易出现冲突。即使没有冲突，后push的童鞋不得不先pull，在本地合并，然后才能push成功。
+
+每次使用merge合并后，Git的提交历史信息会变得很乱，这时候就需要另一种合并分支的方式——`rebase`
+
+```bash
+# 例如你在 feature 分支开发了一段时间，main 已经有新提交了，你想要合并分支
+git checkout feature # 切换到feature分支
+git rebase main # 合并feature分支到main分支后面
+```
+
+## 标签管理
+
+Git 标签用于对**某个特定提交**打标记，通常用于**版本发布**、**里程碑标记**或**重要节点记录**。团队应统一采用**附注标签**并遵循语义化版本规范，只在 `main` 或 `release` 分支上打标签。标签一旦发布即视为**不可变版本快照**，用于部署、回滚和审计，因此必须保证其稳定性和唯一性。
+
+```bash
+git tag -a v1.0.0 -m "Release version 1.0.0" # 创建标签
+git push origin v1.0.0 # 推送单个标签
+git tag -d v1.0.0 # 删除本地标签
+git push origin :refs/tags/v1.0.0 # 删除远程标签
+```
+
+## GitHub
+
+GitHub 是基于 Git 的代码托管与协作平台，团队开发应以 **Pull Request** 为核心流程进行代码集成。标准流程为：从 `main`（或 `develop`）分支拉取最新代码，创建 feature 分支进行开发，完成后通过 PR 发起合并请求，经过Code Review和自动化 CI 校验后再合并到主分支。主分支通常开启保护策略（如禁止直接 push、必须通过 PR、必须通过 CI），以保证代码质量和稳定性。
+
+例如你想要参与我这个开源项目，你可以访问我的项目主页：[https://github.com/doublenuo/Notes-Atlas](https://github.com/doublenuo/Notes-Atlas)，点Fork就在自己的账号下克隆了一个仓库，然后，从自己的账号下clone：
+
+```bash
+git clone git@github.com:doublenuo/Notes-Atlas.git
+```
+
+一定要从自己的账号下clone仓库，这样你才能推送修改。如果你想修复其中一个非常小的bug，或者新增一个功能，立刻就可以开始干活，干完后，往自己的仓库推送。
+
+如果你希望我的仓库能接受你的修改，你就可以在GitHub上发起一个pull request。如果你的内容对我有一点点的帮助，我会毫不吝啬地接受你的PR。
+
+## 速查表
+
