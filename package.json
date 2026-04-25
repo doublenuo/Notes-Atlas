@@ -1,16 +1,17 @@
 {
-  "name": "notes-atlas",
-  "private": true,
   "type": "module",
+  "devDependencies": {
+    "markdown-it-mathjax3": "^5.2.0",
+    "sass-embedded": "^1.99.0",
+    "vitepress": "^1.6.4",
+    "vitepress-theme-teek": "^1.5.6"
+  },
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "test": "node --test tests/vitepress/*.test.mjs"
+    "docs:preview": "vitepress preview docs"
   },
-  "devDependencies": {
-    "@types/node": "^25.6.0",
-    "markdown-it-mathjax3": "^4.3.2",
-    "vitepress": "^2.0.0-alpha.17"
+  "dependencies": {
+    "echarts": "^6.0.0"
   }
 }

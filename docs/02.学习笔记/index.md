@@ -1,8 +1,9 @@
 ---
 date: 2026-04-24 11:51:53
-title: index
+title: 快速导航
 categories:
-  - study
-permalink: /study/
+  - 学习笔记
+permalink: /study/index
 ---
+
 # study

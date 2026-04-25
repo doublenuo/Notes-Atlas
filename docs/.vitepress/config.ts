@@ -1,6 +1,10 @@
 import { defineConfig } from 'vitepress'
+
+import { teekConfig } from './teekConfig'
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  extends: teekConfig,
   lang: 'zh-CN',
   base: "/Notes-Atlas/",
   title: "NotesAtlas",
@@ -31,7 +35,16 @@ export default defineConfig({
       { text: '论文笔记', link: '/meet/' },
       { text: '学习笔记', link: '/study/' },
       { text: '工具和资源', link: '/tools/' },
-      { text: '归档资源', link: '/archive/' }
+      {
+        text: '清单与归档', items: [
+          {
+            text: "文章清单", link: "/articles"
+          },
+          {
+            text: "归档资源", link: "/archives"
+          }
+        ]
+      }
     ],
 
     sidebar: {
