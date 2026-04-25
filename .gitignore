@@ -124,3 +124,6 @@ temp/
 # Git worktrees
 # =========================
 .worktrees/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+node_modules
