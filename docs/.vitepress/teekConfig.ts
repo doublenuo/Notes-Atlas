@@ -2,7 +2,7 @@ import { defineTeekConfig } from "vitepress-theme-teek/config";
 import { version } from "vitepress-theme-teek/es/version";
 import { categoryIcon, tagIcon, topArticleIcon, rocketIcon } from "vitepress-theme-teek/icons";
 
-const base = "/Notes-Atlas/";
+const base = "/Notes-Atlas";
 
 const formatNumericTitle = (value: unknown) => {
   const text = String(value ?? "").trim();
