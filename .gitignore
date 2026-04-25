@@ -80,7 +80,6 @@ downloads/
 # Build outputs (Docs)
 # =========================
 _site/
-public/
 dist/
 
 # =========================
