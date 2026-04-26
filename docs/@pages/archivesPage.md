@@ -1,5 +1,5 @@
 ---
-title: 归档
+title: 归档页
 permalink: /archives
 archivesPage: true
 layout: page

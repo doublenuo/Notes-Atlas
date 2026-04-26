@@ -1,5 +1,5 @@
 ---
-title: 分类
+title: 文章分类
 permalink: /categories
 categoriesPage: true
 layout: home
