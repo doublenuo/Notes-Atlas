@@ -24,13 +24,14 @@ export default defineConfig({
     },
 
     search: {
-      provider: 'algolia',
-      options: {
-        appId: 'QG9ZLZ5K7X',
-        apiKey: 'd9c8b1e5c0a7f2b3e4f5g6h7i8j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3y4z5',
-        indexName: 'notes-atlas',
-        placeholder: '搜索文档...',
-      }
+      provider: 'local',
+      // provider: 'algolia',
+      // options: {
+      //   appId: 'QG9ZLZ5K7X',
+      //   apiKey: 'd9c8b1e5c0a7f2b3e4f5g6h7i8j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3y4z5',
+      //   indexName: 'notes-atlas',
+      //   placeholder: '搜索文档...',
+      // }
     },
     docFooter: {
       prev: '上一页',
