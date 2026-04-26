@@ -16,7 +16,7 @@ export const teekConfig = defineTeekConfig({
   teekTheme: true,
   teekHome: true,
   vpHome: true,
-  loading: true,
+  loading: "拼命加载中...",
   anchorScroll: true,
   sidebarTrigger: true,
   pageStyle: "default",
@@ -70,6 +70,24 @@ export const teekConfig = defineTeekConfig({
       defaultValue: true,
     },
   },
+  comment: {
+    provider: "giscus",
+    options: {
+      repo: "doublenuo/Notes-Atlas",
+      repoId: "R_kgDOR25XhQ",
+      category: "General",
+      categoryId: "DIC_kwDOR25Xhc4C7Vch",
+      lang: "zh-CN",
+    }
+  },
+  // appreciation: {
+  //   position: "doc-after-popper",
+  //   options: {
+  //     icon: "weChatPay",
+  //     title: "打赏支持",
+  //     content: `<img src='/teek-logo-large.png'>`,
+  //   },
+  // },
   author: {
     name: "doublenuo",
     link: "https://github.com/doublenuo",
