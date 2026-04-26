@@ -301,10 +301,10 @@ export const teekConfig = defineTeekConfig({
     dateUTC: true,
     showInfo: true,
     showAuthor: true,
-    showCreateDate: true,
+    showCreateDate: false,
     showUpdateDate: false,
-    showCategory: false,
-    showTag: false,
+    showCategory: true,
+    showTag: true,
   },
   articleShare: {
     enabled: true,

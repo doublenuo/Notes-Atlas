@@ -2,19 +2,24 @@ import { defineConfig } from 'vitepress'
 
 import { teekConfig } from './teekConfig'
 
-// https://vitepress.dev/reference/site-config
 export default defineConfig({
   extends: teekConfig,
   lang: 'zh-CN',
   base: "/Notes-Atlas/",
   title: "NotesAtlas",
   description: "NotesAtlas",
+  head: [
+    ['link', { rel: 'icon', href: '/favicon.svg' }],
+    ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
+  ],
+  cleanUrls: true,
   themeConfig: {
-    logo: '/static/images/logo.svg',
+    logo: '/favicon.svg',
     editLink: {
       pattern: 'https://github.com/doublenuo/Notes-Atlas/edit/main/docs/:path',
       text: '在 GitHub 上编辑此页面'
     },
+    outline: [2, 4],
     lastUpdated: {
       text: '最后更新于',
       formatOptions: {
@@ -22,7 +27,6 @@ export default defineConfig({
         timeStyle: 'medium'
       }
     },
-
     search: {
       provider: 'local',
       // provider: 'algolia',
@@ -55,8 +59,6 @@ export default defineConfig({
     ],
 
     sidebar: {
-
-      // ==================== Linux ====================
       '/linux/': [
         {
           text: 'Linux',
@@ -73,8 +75,6 @@ export default defineConfig({
           ]
         }
       ],
-
-      // ==================== Meet（论文笔记） ====================
       '/meet/': [
         {
           text: '组会记录',
@@ -110,8 +110,6 @@ export default defineConfig({
           ]
         }
       ],
-
-      // ==================== Study ====================
       '/study/': [
         {
           text: '深度学习 (DL)',
@@ -153,8 +151,6 @@ export default defineConfig({
           ]
         }
       ],
-
-      // ==================== Tools ====================
       '/tools/': [
         {
           text: '工具和资源',
@@ -172,8 +168,6 @@ export default defineConfig({
           ]
         }
       ],
-
-      // ==================== Archive ====================
       '/archive/': [
         {
           text: '归档资源',
@@ -184,7 +178,6 @@ export default defineConfig({
         }
       ]
     },
-
     socialLinks: [
       { icon: 'github', link: 'https://github.com/doublenuo/Notes-Atlas' }
     ],
