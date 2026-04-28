@@ -206,7 +206,7 @@ export const teekConfig = defineTeekConfig({
     emptyLabel: "暂无文章",
     coverImgMode: "full",
     showCapture: true,
-    splitSeparator: tru e,
+    splitSeparator: true,
     transition: true,
     transitionName: "tk-slide-fade",
     listStyleTitleTagPosition: "right",
