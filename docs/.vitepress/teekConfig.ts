@@ -94,7 +94,7 @@ export const teekConfig = defineTeekConfig({
   },
   banner: {
     enabled: true,
-    name: "NotesAtlas",
+    name: "Hi, I'm weno 👋",
     bgStyle: "fullImg",
     imgSrc: ["/bg.png"],
     imgWaves: true,
@@ -105,30 +105,30 @@ export const teekConfig = defineTeekConfig({
     descFontSize: "1.1rem",
     descStyle: "types",
     description: [
-      "把论文、学习与工具资料整理成可复用的知识地图。",
-      "围绕机器人、具身智能、深度学习与工程实践持续积累。",
-      "从碎片记录走向结构化归档，降低检索、回顾与复用成本。",
+      "写下来，是为了更好地理解",
+      "构建自己的知识索引，而不是依赖记忆",
+      "长期主义者",
     ],
     typesInTime: 100,
     typesOutTime: 50,
     typesNextTime: 1200,
-    features: [
-      {
-        title: "结构化入口",
-        details: "通过分区首页、目录、分类和侧边栏快速定位内容",
-        link: "/study/",
-      },
-      {
-        title: "持续沉淀",
-        details: "围绕论文、课程和工具链持续建立可回顾的知识脉络",
-        link: "/meet/",
-      },
-      {
-        title: "工程复用",
-        details: "把零散记录沉淀为后续检索、复习和分享都能复用的资产",
-        link: "/tools/",
-      },
-    ],
+    // features: [
+    //   {
+    //     title: "结构化入口",
+    //     details: "通过分区首页、目录、分类和侧边栏快速定位内容",
+    //     link: "/study/",
+    //   },
+    //   {
+    //     title: "持续沉淀",
+    //     details: "围绕论文、课程和工具链持续建立可回顾的知识脉络",
+    //     link: "/meet/",
+    //   },
+    //   {
+    //     title: "工程复用",
+    //     details: "把零散记录沉淀为后续检索、复习和分享都能复用的资产",
+    //     link: "/tools/",
+    //   },
+    // ],
   },
   wallpaper: {
     enabled: true,
@@ -137,7 +137,7 @@ export const teekConfig = defineTeekConfig({
   },
   blogger: {
     name: "小诺同学",
-    slogan: "把短期输入沉淀成长期可复用的知识地图。",
+    slogan: "斜杠青年 / 长期主义者 / 内向生长",
     avatar: "/atavar.jpg",
     status: {
       icon: "😪",
@@ -190,7 +190,13 @@ export const teekConfig = defineTeekConfig({
   },
   friendLink: {
     // https://vp.teek.top/reference/card-config.html#friendlink
-    enabled: false,
+    enabled: true,
+    emptyLabel: "暂无友情链接",
+    limit: 5,
+    autoScroll: false,
+    scrollSpeed: 2500,
+    autoPage: false,
+    pageSpeed: 4000,
   },
   post: {
     postStyle: "list",
@@ -200,7 +206,7 @@ export const teekConfig = defineTeekConfig({
     emptyLabel: "暂无文章",
     coverImgMode: "full",
     showCapture: true,
-    splitSeparator: false,
+    splitSeparator: tru e,
     transition: true,
     transitionName: "tk-slide-fade",
     listStyleTitleTagPosition: "right",
@@ -301,10 +307,10 @@ export const teekConfig = defineTeekConfig({
     dateUTC: true,
     showInfo: true,
     showAuthor: true,
-    showCreateDate: false,
+    showCreateDate: true,
     showUpdateDate: false,
     showCategory: true,
-    showTag: true,
+    showTag: false,
   },
   articleShare: {
     enabled: true,

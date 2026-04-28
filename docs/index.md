@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "知识星球"
-  text: "Just do it"
-  tagline: 一个结构化整理技术笔记与学习路线的知识库
+  name: "Hi，I'm Weno"
+  text: "A dreamer, Just do it"
+  tagline: "斜杠青年 / 长期主义 / 内向生长"
   actions:
     - theme: brand
       text: 快速开始
