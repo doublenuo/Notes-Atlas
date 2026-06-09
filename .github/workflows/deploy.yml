@@ -40,6 +40,6 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             mkdir -p /data/stacks/blogs
-            rsync -avz /github/workspace/docs/.vitepress/dist/ /data/stacks/blogs/
+            rsync -avz --delete /github/workspace/docs/.vitepress/dist/ /data/stacks/blogs/
             chown -R root:root /data/stacks/blogs
             cd /data/stacks/caddy && docker compose restart
