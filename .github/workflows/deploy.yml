@@ -41,6 +41,8 @@ jobs:
           script: |
             mkdir -p /data/stacks/blogs
             rm -rf /data/stacks/blogs/*
-            rsync -avz --delete docs/.vitepress/dist/ /data/stacks/blogs/
+            # 使用 scp 传输文件
+            scp -r docs/.vitepress/dist/* /data/stacks/blogs/
             chown -R root:root /data/stacks/blogs
-            systemctl reload caddy
+            # 由于 Caddy 使用 Docker，需要重启容器
+            cd /data/stacks/caddy && docker-compose restart caddy
