@@ -40,5 +40,5 @@ jobs:
             mkdir -p /data/stacks/blogs
             rm -rf /data/stacks/blogs/*
             rsync -avz --delete docs/.vitepress/dist/ /data/stacks/blogs/
-          chown -R root:root /data/stacks/blogs
+            chown -R root:root /data/stacks/blogs
             systemctl reload caddy
