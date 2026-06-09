@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitepress'
 
 import { teekConfig } from './teekConfig'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   extends: teekConfig,
   lang: 'zh-CN',
   base: "/Notes-Atlas/",
@@ -47,12 +48,18 @@ export default defineConfig({
       { text: '学习笔记', link: '/study/' },
       { text: '工具和资源', link: '/tools/' },
       {
-        text: '清单与归档', items: [
+        text: '快速访问', items: [
           {
             text: "文章清单", link: "/articles"
           },
           {
             text: "归档资源", link: "/archives"
+          },
+          {
+            text: "文章分类", link: "/categories"
+          },
+          {
+            text: "标签云", link: "/tags"
           }
         ]
       }
@@ -185,6 +192,5 @@ export default defineConfig({
   markdown: {
     math: true
   },
-})
-
+}))
 
