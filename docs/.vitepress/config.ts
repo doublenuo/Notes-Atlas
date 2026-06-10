@@ -6,7 +6,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(defineConfig({
   extends: teekConfig,
   lang: 'zh-CN',
-  base: "/Notes-Atlas/",
+  base: "/",
   title: "NotesAtlas",
   description: "NotesAtlas",
   head: [
