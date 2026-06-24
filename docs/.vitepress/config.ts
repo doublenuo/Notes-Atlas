@@ -44,7 +44,7 @@ export default withMermaid(defineConfig({
     },
     nav: [
       { text: '首页', link: '/' },
-      { text: '论文笔记', link: '/meet/' },
+      { text: '组会内容', link: '/meet/' },
       { text: '学习笔记', link: '/study/' },
       { text: '工具和资源', link: '/tools/' },
       {

@@ -247,28 +247,28 @@ export const teekConfig = defineTeekConfig({
     {
       title: "关于",
       links: [
-        { name: "关于本站", link: base + "/about" },
-        { name: "隐私政策", link: base + "/privacy" },
-        { name: "免责声明", link: base + "/disclaimer" },
-        { name: "赞助支持", link: base + "/sponsor" },
+        { name: "关于本站", link: "/about" },
+        { name: "隐私政策", link: "/privacy" },
+        { name: "免责声明", link: "/disclaimer" },
+        { name: "赞助支持", link: "/sponsor" },
       ],
     },
     {
       title: "内容",
       links: [
-        { name: "论文笔记", link: base + "/meet/" },
-        { name: "深度学习", link: base + "/study/dl" },
-        { name: "强化学习", link: base + "/study/rl" },
-        { name: "ROS", link: base + "/study/ros" },
+        { name: "组会内容", link: "/meet/" },
+        { name: "深度学习", link: "/study/dl" },
+        { name: "强化学习", link: "/study/rl" },
+        { name: "ROS", link: "/study/ros" },
       ],
     },
     {
       title: "导航",
       links: [
-        { name: "标签页", link: base + "/tags" },
-        { name: "文章清单", link: base + "/articles" },
-        { name: "归档资源", link: base + "/archives" },
-        { name: "文章分类", link: base + "/categories" }
+        { name: "标签页", link: "/tags" },
+        { name: "文章清单", link: "/articles" },
+        { name: "归档资源", link: "/archives" },
+        { name: "文章分类", link: "/categories" }
       ],
     },
     {
@@ -276,7 +276,7 @@ export const teekConfig = defineTeekConfig({
       links: [
         { name: "GitHub", link: "https://github.com/doublenuo" },
         { name: "邮箱", link: "mailto:zwn200401@gmail.com" },
-        { name: "友链", link: base + "/links" },
+        { name: "友链", link: "/links" },
       ],
     },
   ],
@@ -293,7 +293,7 @@ export const teekConfig = defineTeekConfig({
       suffix: "NotesAtlas",
     },
     icpRecord: {
-      name: "",
+      name: "赣ICP备2026011923号",
       link: "http://beian.miit.gov.cn/",
     },
     bottomMessage: "Powered by <a href='https://vitepress.dev/' target='_blank'>VitePress</a>",
