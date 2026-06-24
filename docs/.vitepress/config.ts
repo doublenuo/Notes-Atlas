@@ -12,8 +12,49 @@ export default withMermaid(defineConfig({
   head: [
     ['link', { rel: 'icon', href: '/favicon.svg' }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
+    // 预连接外部资源，减少 DNS/TLS 握手延迟
+    ['link', { rel: 'preconnect', href: 'https://www.googletagmanager.com', crossorigin: 'anonymous' }],
+    ['link', { rel: 'preconnect', href: 'https://www.google-analytics.com', crossorigin: 'anonymous' }],
+    ['link', { rel: 'preconnect', href: 'https://busuanzi.ibruce.info', crossorigin: 'anonymous' }],
+    ['link', { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: 'anonymous' }],
   ],
   cleanUrls: true,
+  // 打包构建优化
+  vite: {
+    build: {
+      target: 'es2020',                    // 现代浏览器目标，减小 polyfill 体积
+      cssMinify: 'esbuild',                // 使用 esbuild 压缩 CSS（比 lightningcss 稳定）
+      minify: 'esbuild',                   // 使用 esbuild 压缩 JS
+      rollupOptions: {
+        output: {
+          // 手动代码分割：将重依赖拆分为独立 chunk，按需加载
+          manualChunks(id: string) {
+            if (id.includes('node_modules/echarts')) return 'echarts'
+            if (id.includes('node_modules/mermaid')) return 'mermaid'
+            if (id.includes('node_modules/mathjax')) return 'mathjax'
+            if (id.includes('node_modules/@giscus')) return 'giscus'
+            if (id.includes('node_modules/monaco')) return 'monaco'
+          },
+          // 资源文件命名
+          chunkFileNames: 'assets/js/[name]-[hash].js',
+          assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+        },
+      },
+      // 内联小资源，减少 HTTP 请求
+      assetsInlineLimit: 4096,             // 4KB 以下资源内联为 base64
+      chunkSizeWarningLimit: 3000,         // mermaid/mathjax 等大依赖已手动分割，无需警告
+    },
+    // 开发服务器优化
+    server: {
+      warmup: {
+        clientFiles: ['./**/*.md'],
+      },
+    },
+    // CSS 处理
+    css: {
+      devSourcemap: false,
+    },
+  },
   themeConfig: {
     logo: '/favicon.svg',
     editLink: {

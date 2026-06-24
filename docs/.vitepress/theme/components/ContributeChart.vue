@@ -1,5 +1,4 @@
 <script setup lang="ts" name="ContributeChart">
-import * as echarts from "echarts";
 import { ref, watch, nextTick, computed, useTemplateRef, onMounted } from "vue";
 import { useData } from "vitepress";
 import { formatDate, usePosts, useIntersectionObserver } from "vitepress-theme-teek";
@@ -100,8 +99,21 @@ const option = {
   },
 };
 
+// ECharts 模块引用（动态加载）
+let echartsModule: any = null;
+
+// 动态按需加载 ECharts（仅首屏可见时加载，减少初始包体积 ~1MB）
+const loadECharts = async () => {
+  if (!echartsModule) {
+    echartsModule = await import("echarts");
+  }
+  return echartsModule;
+};
+
 // 渲染贡献图
-const renderChart = (data: any) => {
+const renderChart = async (data: any) => {
+  const echarts = await loadECharts();
+
   option.calendar.itemStyle.borderColor = isDark.value ? "#1b1b1f" : "#fff";
   option.calendar.itemStyle.color = isDark.value ? "#787878" : "#ebedf0";
 
