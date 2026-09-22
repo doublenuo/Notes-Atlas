@@ -1,0 +1,466 @@
+{
+  "main": {
+    "id": "e2f227c794bb9905",
+    "type": "split",
+    "children": [
+      {
+        "id": "f73fd5585cd4ef40",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "93ad153a9c9ad1ef",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "others/01.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "01"
+            }
+          },
+          {
+            "id": "f7629b051ff0e0b6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/02.学习笔记/02.Python/001.Python基础入门.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "001.Python基础入门"
+            }
+          },
+          {
+            "id": "d5c4e42e37576e78",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/02.学习笔记/02.Python/0010.异步编程.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "0010.异步编程"
+            }
+          },
+          {
+            "id": "6688da39907d77ee",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/01.计算机基础.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "01.计算机基础"
+            }
+          },
+          {
+            "id": "96950fed50c0d7b8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/02. 后端技术.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "02. 后端技术"
+            }
+          },
+          {
+            "id": "8d574aaa9307748f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/03. 强化学习算法基础.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "03. 强化学习算法基础"
+            }
+          },
+          {
+            "id": "2df8781893e900e1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/04. 机器人学基础.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "04. 机器人学基础"
+            }
+          },
+          {
+            "id": "07e9474db8e18ca5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/05. 深度学习基础.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "05. 深度学习基础"
+            }
+          },
+          {
+            "id": "10153481a8dd374c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/06. sim2real.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "06. sim2real"
+            }
+          },
+          {
+            "id": "7476229562311a38",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/07. 基础控制算法.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "07. 基础控制算法"
+            }
+          }
+        ],
+        "currentTab": 9
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3917ee40b028b24f",
+    "type": "split",
+    "children": [
+      {
+        "id": "e406d5ba7693f16f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "155e46f9920de415",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "1e1f5af4d6527521",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "2c8c65b31af94b46",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 331.5110321044922
+  },
+  "right": {
+    "id": "ea142c096ca3ce81",
+    "type": "split",
+    "children": [
+      {
+        "id": "5eb4808145473139",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2d15980497f70287",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/02.学习笔记/10.开发工具/001.Docker/第四章：Docker核心概念.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "第四章：Docker核心概念 的反向链接列表"
+            }
+          },
+          {
+            "id": "d7cd76299ff2f6e3",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/02.学习笔记/10.开发工具/001.Docker/第四章：Docker核心概念.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "第四章：Docker核心概念 的出链列表"
+            }
+          },
+          {
+            "id": "9b818c3456f7710a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "246e4861a4d07fcc",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "9a920603b2e67787",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/011.工具与资源/02.面试相关/07. 基础控制算法.md",
+                "followCursor": true,
+                "showSearch": true,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "07. 基础控制算法 的大纲"
+            }
+          },
+          {
+            "id": "ef8f5b60e6313325",
+            "type": "leaf",
+            "state": {
+              "type": "llm-translator-sidebar",
+              "state": {},
+              "icon": "languages",
+              "title": "LLM Translator"
+            }
+          }
+        ],
+        "currentTab": 4
+      }
+    ],
+    "direction": "horizontal",
+    "width": 301.5
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false,
+      "llm-translator:LLM Translator": false
+    }
+  },
+  "active": "7476229562311a38",
+  "lastOpenFiles": [
+    "docs/011.工具与资源/02.面试相关/04. 机器人学基础.md",
+    "docs/011.工具与资源/02.面试相关/05. 深度学习基础.md",
+    "docs/011.工具与资源/02.面试相关/07. 基础控制算法.md",
+    "docs/011.工具与资源/02.面试相关/06. sim2real.md",
+    "docs/011.工具与资源/02.面试相关/03. 强化学习算法基础.md",
+    "docs/011.工具与资源/02.面试相关/02. 后端技术.md",
+    "docs/011.工具与资源/02.面试相关/01.计算机基础.md",
+    "docs/02.学习笔记/02.Python/0010.异步编程.md",
+    "docs/02.学习笔记/02.Python/001.Python基础入门.md",
+    "others/01.md",
+    "docs/02.学习笔记/index.md",
+    "docs/011.工具与资源/02.面试相关/未命名",
+    "docs/01.组会材料/01.组会内容/20260916.md",
+    "docs/01.组会材料/02.论文笔记/ViBe.md",
+    "docs/01.组会材料/02.论文笔记/HEFT.md",
+    "docs/01.组会材料/02.论文笔记/Learning a Unified Policy for Position and ForceControl in Legged Loco-Manipulation.md",
+    "docs/01.组会材料/02.论文笔记/Thor.md",
+    "docs/01.组会材料/02.论文笔记/HAFO.md",
+    "Pasted image 20260915231709.png",
+    "docs/01.组会材料/01.组会内容/20260715.md",
+    "Pasted image 20260912122848.png",
+    "others",
+    "docs/02.学习笔记/0000.目录.md",
+    "docs/01.组会材料/02.论文笔记/DemoBot.md",
+    "docs/01.组会材料/02.论文笔记/DemoHLM.md",
+    "docs/01.组会材料/03.pdfs/2609.09918v1.pdf",
+    "docs/01.组会材料/03.pdfs/Unconfirmed 252684.crdownload",
+    "docs/011.工具与资源/03.其他资源/001.必备工具/03.ssh.md",
+    "docs/011.工具与资源/03.其他资源/001.必备工具/Docker从入门到实践.md",
+    "docs/011.工具与资源/03.其他资源/999.其他项/Ubuntu.md",
+    "docs/01.组会材料/02.论文笔记/GMR.md",
+    "docs/01.组会材料/01.组会内容/20260708.md",
+    "docs/01.组会材料/03.pdfs/ResMimic_paper.pdf",
+    "docs/01.组会材料/03.pdfs/Unconfirmed 26588.crdownload",
+    "docs/01.组会材料/03.pdfs/AdaptManip-Arxiv.pdf",
+    "docs/01.组会材料/03.pdfs/Unconfirmed 933251.crdownload",
+    "docs/01.组会材料/03.pdfs/2603.07165v1.pdf",
+    "docs/01.组会材料/03.pdfs/Unconfirmed 446429.crdownload",
+    "未命名.canvas"
+  ]
+}

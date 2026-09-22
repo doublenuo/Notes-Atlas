@@ -1,0 +1,9 @@
+# AnyBimanual: Transferring Unimanual Policy for General Bimanual  Manipulation
+
+-   Project Link:[https://anybimanual.github.io/](https://anybimanual.github.io/)
+-   Github Link[https://github.com/Tengbo-Yu/AnyBimanual](https://github.com/Tengbo-Yu/AnyBimanual)
+-   Paper Link: [https://arxiv.org/abs/2412.06779](https://arxiv.org/abs/2412.06779)
+
+## 模型架构图
+
+![image-20260326144425205](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326144425283.png)

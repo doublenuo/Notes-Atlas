@@ -1,0 +1,26 @@
+# HAIC: Humanoid Agile Object Interaction Controlvia Dynamics-Aware World Model
+
+- Project Link: [https://haic-humanoid.github.io/](https://haic-humanoid.github.io/)
+- Github Link: [https://github.com/ldt29/HAIC](https://github.com/ldt29/HAIC)
+- Paper Link: [https://arxiv.org/abs/2602.11758](https://arxiv.org/abs/2602.11758)
+
+## 模型框架
+
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260901110150085.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260901110159850.png)
+
+HAIC这篇工作主要解决的是人形机器人和欠驱动物体进行动态交互的问题，传统的人形机器人操作方法很多是在处理机器人和物体刚性耦合的情况，比如机器人抓住一个箱子以后，物体基本跟随机器人运动，但是对于滑板、推车、轮椅这类欠驱动物体，物体本身具有独立的动力学，而且还存在惯性、轮子约束以及非完整约束，同时机器人身体在交互过程中还可能把物体遮挡住，所以机器人不能只根据物体当前的位置来控制，而是需要知道物体接下来会怎么运动。HAIC的核心思想就是引入一个动力学感知的世界模型，让机器人只利用自己的本体感觉历史，就能够推断物体的高阶动力学状态，比如物体的位置、速度、加速度以及角速度等，然后再把这些预测出来的动力学状态和物体的几何先验结合起来形成动态占据表示，最终提供给策略进行全身控制。论文强调的一个重要特点就是不依赖外部的物体状态估计，而是希望通过机器人自身受到的运动反馈来反推物体的运动状态。
+
+从整个训练流程来看，HAIC首先是在Isaac Sim和Isaac Lab里面从头训练Teacher Policy，而不是直接拿真实机器人数据训练。官方代码目前提供了G1人形机器人以及箱子、滑板、推车、轮椅等交互物体的仿真资产，同时提供了对应的任务环境和训练代码。在Teacher阶段，因为仿真器能够提供完整的特权状态，所以Teacher可以获得机器人完整的本体状态、参考运动以及物体的真实状态等信息，然后通过PPO与环境不断交互，产生大量机器人和物体交互的仿真轨迹。也就是说，这里的训练数据并不是传统意义上预先采集好的一个数据集，而主要是强化学习过程中由仿真环境在线产生的数据，每一个时间步都可以获得机器人本体状态、物体真实状态、参考状态以及动作，因此仿真器实际上提供了世界模型训练所需要的ground-truth物体动力学信息。官方训练流程也是先运行`ppo_haic_train`训练Teacher，再使用训练得到的模型进入`ppo_haic_finetune`阶段训练Student。
+
+然后进入HAIC最关键的World Model部分。这里的World Model和我们通常理解的视觉世界模型不太一样，它不是去预测下一帧图像，也不是学习一个可以生成未来视频的模型，而是一个针对机器人—物体交互的动力学预测器。它的输入主要是机器人过去一段时间的proprioception，也就是关节位置、关节速度、身体姿态等本体感觉历史，模型根据这些历史信息去预测物体的动力学状态。论文特别强调的是预测物体的高阶状态，包括velocity和acceleration，因为对于滑板或者推车这种物体来说，仅仅知道“物体在哪里”是不够的，更重要的是知道“物体正在往哪里运动、运动速度是多少、接下来会不会继续加速”。例如机器人推动一个推车的时候，机器人自身的身体姿态、关节状态和运动变化实际上包含了推车受到的反作用信息，World Model就是通过这些本体感觉变化来反推推车的动力学状态。
+
+在得到物体动力学预测之后，HAIC还有一个比较关键的设计，就是把预测出来的动力学状态进一步进行空间上的显式投影。因为World Model本身预测出来的是物体的状态变量，比如位置、姿态、速度和加速度，但是Student Policy最终需要知道的是这个物体在机器人周围具体会占据什么空间，所以HAIC使用物体的静态几何先验，把预测的物体状态投影到几何模型上，从而形成一个spatially grounded dynamic occupancy，也就是动态占据表示。这样做以后，World Model提供给策略的就不只是一个抽象的速度或者加速度，而是一个具有空间意义的动态物体表示。这样即使机器人当前因为身体遮挡而看不到物体，它也可以根据之前的本体感觉推断物体未来可能出现的位置以及碰撞边界，从而帮助策略进行接触决策。
+
+接下来就是Student Policy。Teacher和Student的最大区别就是信息量不同，Teacher可以使用仿真器提供的完整特权信息，而Student最终必须满足真实机器人部署的要求，所以Student不能依赖仿真器中的物体真实状态，也不能依赖外部运动捕捉或者额外的物体状态估计。Student主要使用机器人本体状态、参考状态、物体几何先验以及World Model预测出来的动力学表示。训练的时候，Teacher输出动作作为一个监督目标，Student则利用自己能够获得的观测去复现Teacher的控制行为，因此框架图中Teacher Actor和Student Actor之间存在MSE约束，同时World Model预测的潜在动力学表示也和Teacher侧对应的特权表示进行MSE对齐。这样实际上就形成了一个两层知识迁移过程：第一层是World Model学习如何从可部署的proprioception恢复Teacher所拥有的物体动力学信息，第二层是Student利用这个恢复出来的动力学表示去模仿Teacher的控制策略。
+
+这里HAIC还有一个我认为比较重要的创新，就是它没有简单地“训练好World Model以后固定住，再训练Student”，而是采用了asymmetric fine-tuning。因为Teacher和Student的状态分布是不一样的，Student真正开始探索以后会进入Teacher没有覆盖过的一些状态，如果World Model始终只在Teacher的数据分布上训练，那么Student一旦遇到新的状态，World Model的预测就可能产生误差。因此HAIC让World Model随着Student Policy的探索不断适应，也就是Student在仿真环境中产生新的交互轨迹，然后利用这些新的proprioception历史和仿真器提供的物体ground truth继续调整World Model，使World Model逐渐适应Student自己的状态分布，这实际上是在解决Teacher到Student之间的distribution shift问题。
+
+所以整个训练过程可以概括成一个闭环：首先在Isaac Sim里面建立G1和滑板、推车等物体的交互环境，然后利用仿真器提供的完整特权状态，通过PPO训练Teacher，让Teacher先学会稳定完成交互任务；Teacher在和环境交互的过程中产生大量仿真轨迹，这些轨迹同时包含机器人本体感觉和物体真实动力学状态，然后利用这些数据训练Dynamics-aware World Model，让它学习从机器人本体感觉历史预测物体的高阶动力学；接下来把World Model和Student Actor结合起来，Student只能使用部署阶段能够获得的信息，并通过模仿Teacher获得控制能力；在Student不断探索的过程中，再利用Student产生的新轨迹对World Model进行非对称微调，最终得到一个适应Student自身状态分布的动力学感知世界模型。官方代码目前已经开放了环境、资产、World Model、训练和评估代码，并且提供了从Isaac Sim到MuJoCo的Sim2Sim部署流程。
+
+最后到了真实机器人部署阶段，整个系统就不再需要Teacher，也不需要仿真器提供的特权状态。真实G1只需要获得自身的proprioception，然后把历史本体感觉输入World Model，由World Model预测物体的动力学状态，再结合物体几何先验得到动态占据表示，最后交给Student Policy输出机器人动作。这样机器人就形成了一个“**本体感觉历史 → 物体动力学预测 → 动态空间表示 → 全身控制**”的闭环。实验上作者主要验证了滑板、推车推拉以及不同负载和复杂地形下的交互，并进一步展示了多物体长时序任务，核心目标就是证明机器人不需要额外的物体状态传感器，也可以通过自身运动反馈提前感知和补偿物体的惯性扰动。

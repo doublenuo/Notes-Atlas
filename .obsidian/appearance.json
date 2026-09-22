@@ -1,0 +1,8 @@
+{
+  "baseFontSize": 15,
+  "baseFontSizeAction": true,
+  "enabledCssSnippets": [
+    "style"
+  ],
+  "cssTheme": "Cupertino"
+}
