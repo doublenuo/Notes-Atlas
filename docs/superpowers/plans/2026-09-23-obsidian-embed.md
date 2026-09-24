@@ -205,8 +205,10 @@ test('支持带路径的目标（相对 docs 根）', () => {
   assert.equal(r.relPath, '02.学习笔记/第三章：测试.md');
 });
 
-test('目标不存在返回 null', () => {
+test('目标不存在或越界逃逸 vault 均返回 null', () => {
   assert.equal(resolveNote('压根没有这个笔记'), null);
+  // vault 外真实存在的 .md：必须命中 toRel 的 `..` 防护而非 existsSync 分支
+  assert.equal(resolveNote('../../../README'), null);
 });
 
 test('排除目录（@fragment、.vitepress）不参与解析', () => {
@@ -216,6 +218,7 @@ test('排除目录（@fragment、.vitepress）不参与解析', () => {
 
 test('可剥掉 .md 后缀', () => {
   const r = resolveNote('Alpha.md');
+  assert.ok(r);
   assert.equal(r.relPath, '01.组会材料/02.论文笔记/Alpha.md');
 });
 
@@ -257,7 +260,7 @@ import matter from "gray-matter";
 export const PAPER_NOTES_DIR = "01.组会材料/02.论文笔记";
 const EXCLUDED_DIRS = new Set([".vitepress", "node_modules", "dist", "public", "@fragment"]);
 
-/** 创建带缓存的文件解析器：(target) => { absPath, relPath } | null */
+/** 创建带缓存的文件解析器：(target) => { absPath, relPath } | null。target 为纯路径——`#标题`/`|别名` 写法属规格非目标，按字面目标解析、未命中回退原文渲染 */
 export function createResolver(docsRoot) {
   const cache = new Map();
 
@@ -306,7 +309,7 @@ export function createResolver(docsRoot) {
         if (matches.length) result = toRel(matches[0]);
       }
     }
-    cache.set(key, result);
+    if (result) cache.set(key, result); // 负结果不缓存：dev 下新建笔记可被即时解析
     return result;
   };
 }
