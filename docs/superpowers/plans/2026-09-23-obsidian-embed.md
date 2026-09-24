@@ -874,10 +874,12 @@ import { makeMd, VAULT, DOCS } from "./helpers.mjs";
 
 test("[[ ]] 行内引用 → 站内链接（真实库）", async () => {
   const md = await makeMd(DOCS);
-  const html = md.render("请先阅读[[第三章：Docker安装与基础配置]]再操作。");
-  const expected = encodeURI(
-    "/02.学习笔记/10.开发工具/001.Docker/第三章：Docker安装与基础配置"
-  );
+  // 与生产渲染一致：站点 cleanUrls:true；vitepress linkPlugin 对内部 link_open 必做
+  // 「非 cleanUrls 时加 .html + 末尾 decodeURI」，故断言生产终态（原文中文、无 .html）
+  const html = md.render("请先阅读[[第三章：Docker安装与基础配置]]再操作。", {
+    cleanUrls: true,
+  });
+  const expected = "/02.学习笔记/10.开发工具/001.Docker/第三章：Docker安装与基础配置";
   assert.ok(html.includes(`href="${expected}"`), `链接应指向笔记源页，实际：${html}`);
   assert.ok(html.includes(">第三章：Docker安装与基础配置</a>"));
 });
@@ -895,6 +897,8 @@ test("行中 ! [[]] 保持原文（块规则只处理独立成行）", async () 
   assert.ok(!html.includes("na-embed"));
 });
 ```
+
+注（linkPlugin 三组对照实测）：`[[...]]` 产出的 `link_open` 必经 vitepress `linkPlugin.normalizeHref` 重写——① `env.cleanUrls` 为假时追加 `.html`（测试默认 env 无此标志，故须显式传入 `{ cleanUrls: true }`）；② 末尾必做 `decodeURI(href)`，`encodeURI` 形态的断言在该管线内永不可能命中（`decodeURI(encodeURI(x)) ≡ x`，往返无损）。故本用例断言**生产终态**（`cleanUrls:true` + 原文中文 + 无 `.html`），这比原 `encodeURI` 断言更强（原断言针对管线永不输出的形态）。嵌入卡片来源条的 `encodeURI` 断言（任务 2 用例）不受影响——渲染器模板输出裸 HTML 字符串，不经 `linkPlugin`；两类回链浏览器导航等价，仅 view-source 呈现风格不同。实现保持 `push("link_open")`——与手写 markdown 链接同管线（base 前缀、dev 死链提示等 vitepress 能力不旁路）。
 
 - [ ] **步骤 2：运行测试验证失败**
 
