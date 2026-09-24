@@ -182,6 +182,8 @@ export function obsidianEmbed(md, docsRoot) {
 
   md.block.ruler.before("paragraph", "na_embed", createEmbedRule(md, resolveNote));
 
+  md.inline.ruler.before("link", "na_wikilink", createWikilinkRule(resolveNote));
+
   md.renderer.rules.na_embed_open = (tokens, idx) => {
     const { href, label } = tokens[idx].meta;
     return (
@@ -191,4 +193,32 @@ export function obsidianEmbed(md, docsRoot) {
     );
   };
   md.renderer.rules.na_embed_close = () => `</div>\n</div>\n`;
+}
+
+function createWikilinkRule(resolveNote) {
+  return function naWikilink(state, silent) {
+    const { src, pos } = state;
+    if (src.charCodeAt(pos) !== 0x5b || src.charCodeAt(pos + 1) !== 0x5b) return false; // 需要 `[[`
+    if (pos > 0 && src.charCodeAt(pos - 1) === 0x21) return false; // `![[`：行中嵌入保持原文
+    const end = src.indexOf("]]", pos + 2);
+    if (end < 0) return false;
+    const target = src.slice(pos + 2, end).trim();
+    if (!target || target.includes("\n")) return false;
+    if (silent) return true;
+
+    const found = resolveNote(target);
+    if (found) {
+      const note = readNote(found.absPath);
+      const linkOpen = state.push("link_open", "a", 1);
+      linkOpen.attrs = [["href", noteHref(found.relPath, note.permalink)]];
+      const text = state.push("text", "", 0);
+      text.content = target;
+      state.push("link_close", "a", -1);
+    } else {
+      const text = state.push("text", "", 0);
+      text.content = `[[${target}]]`;
+    }
+    state.pos = end + 2;
+    return true;
+  };
 }
