@@ -97,18 +97,19 @@ title: 2026-09-23-obsidian-embed-design
 
 | 文件 | 动作 |
 |---|---|
-| `docs/.vitepress/plugins/obsidianEmbed.ts` | 新增：resolver + 块规则 + 内联规则 + open/close token 渲染，约 100 行 |
-| `docs/.vitepress/config.ts` | `markdown` 块中追加 `config(md)` 注册插件（约 3 行） |
+| `docs/.vitepress/plugins/obsidianEmbed.ts` | 新增：resolver + 块规则 + 内联规则 + open/close token 渲染，实测 235 行（含注释） |
+| `docs/.vitepress/config.ts` | `markdown` 块中追加 `config(md)` 注册插件（净增 10 行） |
 | `docs/.vitepress/theme/styles/embed.scss` | 新增：`.na-embed` / `.na-embed-source` / `.na-embed-body` 亮暗样式 |
 | `docs/.vitepress/theme/index.ts` | 追加 `import "./styles/embed.scss";`（与 L26-28 现有三个样式 import 并列） |
 
 ## 10. 验证标准（完成定义）
 
-1. **36 篇组会页**逐一 headless 断言：无 `![[` 字面残留；`.na-embed` 卡片数 == 该页嵌入数；卡片内含目标笔记特征文本；无 JS 报错
+1. **36 篇组会页**逐一 headless 断言：无 `![[` 字面残留；`.na-embed` 卡片数 == 该页嵌入数；卡片内含目标笔记特征文本；无 JS 报错。终审核验：65/65 处嵌入按目标笔记 H1 前 25 字全命中于所在页 HTML（核验要点：逐页取嵌入卡片文本与目标 md 的 H1 首 25 字比对；原一次性脚本存于 /tmp/opencode/check-feature-text.mjs，可按此要点重建复跑）
 2. 嵌入了含 `$$` 公式的笔记（全库 8 篇）时公式正常输出 MathJax
 3. 学习笔记的 `[[第三章：Docker安装与基础配置]]` 渲染为 `<a href>`
 4. `npm run docs:build` 通过 + dist 全量 grep 无 `![[` 字面残留
 5. 回归：文章侧边栏依旧不含 `pdfs` / `组会pptx` 分组
+6. 样式验收：任务 6 sweep 对每页首卡断言 getComputedStyle(...).borderRadius 非空（脚本不入库，复跑命令：cd /tmp/opencode && node verify-all-embeds.mjs，期望 total:36 pass:36 failures:[]）
 
 ## 11. 关键事实（探索阶段结论，供实现参照）
 
