@@ -344,15 +344,16 @@ git commit -m "test(obsidian-embed): 测试骨架与文件解析器"
 ```js
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { createMarkdownRenderer } from "vitepress";
+import { createMarkdownRenderer, disposeMdItInstance } from "vitepress";
 import { obsidianEmbed } from "../docs/.vitepress/plugins/obsidianEmbed.ts";
 
 export const HERE = dirname(fileURLToPath(import.meta.url));
 export const VAULT = join(HERE, "fixtures", "vault");
 export const DOCS = join(HERE, "..", "docs");
 
-/** 构建与站点同管线的 md 实例（注册被测插件） */
+/** 构建与站点同管线的 md 实例（注册被测插件）。vitepress md 为进程级单例，先释放再按新 root 重建 */
 export async function makeMd(root) {
+  disposeMdItInstance();
   return createMarkdownRenderer(root, {
     math: true,
     config(md) {
@@ -381,6 +382,8 @@ test("! [[]] 全文嵌入：卡片、去 frontmatter、标题降级、公式", a
   assert.ok(!html.includes("$$"), "$$ 定界符不应残留");
   assert.ok(html.includes("mjx-container"), "公式应被 MathJax 预渲染（mjx-container）");
   assert.ok(html.includes("嵌入正文段落"), "笔记正文应出现");
+  assert.equal(html.split("嵌入正文段落").length - 1, 1, "嵌入正文只应渲染一次");
+  assert.equal(html.split('class="header-anchor"').length - 1, 2, "锚点不应翻倍（H1、H2 各一）");
 });
 
 test("来源条：frontmatter title + 源路径回链", async () => {
@@ -464,7 +467,8 @@ function createEmbedRule(md, resolveNote) {
       href: noteHref(found.relPath, note.permalink),
       label: `📎 论文笔记 · ${note.title}`,
     };
-    const embedded = md.parse(note.content, { ...state.env, naEmbedStack: [found.absPath] });
+    const embedded = [];
+    md.block.parse(note.content, md, { ...state.env, naEmbedStack: [found.absPath] }, embedded);
     for (const t of embedded) state.tokens.push(t);
     state.push("na_embed_close", "", 0);
     state.line = startLine + 1;
@@ -489,6 +493,8 @@ export function obsidianEmbed(md, docsRoot) {
   md.renderer.rules.na_embed_close = () => `</div>\n</div>\n`;
 }
 ```
+
+注（实测缺陷修复）：内层必须用 `md.block.parse`（vitepress 内置 markdown-it 的 4 参形态 `(str, md, env, outTokens)`，canonical 调用见其 core block 规则）而非 `md.parse`——`md.parse` 全解析后，外层 core 链的 `inline` 规则会对已有 children 的 inline token 再次解析并追加，导致嵌入正文/header-anchor 渲染翻倍；块级解析后 inline/anchor/math 交由外层 core 链恰好处理一次（块级递归仍接收内层 env，`naEmbedStack` 循环/深度检测不受影响）。`helpers.mjs` 的 `disposeMdItInstance()` 同为实测所需：vitepress 的 md 实例是进程级单例，不释放则第二次 `makeMd` 忽略新 root 直接返回旧实例。
 
 - [ ] **步骤 4：运行测试验证通过**
 
