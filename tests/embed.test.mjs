@@ -58,6 +58,8 @@ test("嵌入：围栏内 # 注释不被降级，外部标题照常降级", async
   assert.ok(html.includes("# 围栏内注释不降级"), "围栏内注释应原样出现");
   assert.ok(!html.includes("## 围栏内注释不降级"), "围栏内注释不应被降级");
   assert.match(html, /<h3[^>]*>外部小节/, "外部 H2 应降级为 H3");
+  assert.ok(html.includes("# 波浪线后注释不降级"), "混标记栏内注释应原样");
+  assert.ok(!html.includes("## 波浪线后注释不降级"), "混标记栏内注释不应被降级");
 });
 
 test("嵌入：畸形 frontmatter 不炸 build，原文可见降级", async () => {
@@ -65,6 +67,7 @@ test("嵌入：畸形 frontmatter 不炸 build，原文可见降级", async () =
   const html = md.render("![[坏头]]");
   assert.match(html, /class="na-embed"/);
   assert.ok(html.includes("坏头降级正文"), "正文应可见");
+  assert.ok(html.includes("title: [未闭合"), "坏 frontmatter 应原文可见");
 });
 
 test("嵌入：读失败降级为空笔记而非抛错", async () => {

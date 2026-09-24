@@ -72,6 +72,7 @@ export function readNote(absPath) {
     raw = readFileSync(absPath, "utf-8").replace(/\r\n?/g, "\n");
   } catch {
     // 读失败（TOCTOU 删除/权限）：空笔记降级，不炸 build
+    console.warn(`[obsidianEmbed] 读取嵌入笔记失败，已降级为空笔记：${absPath}`);
     return { title: basename(absPath, ".md"), permalink: "", content: "" };
   }
   let data = {};
@@ -92,17 +93,29 @@ export function readNote(absPath) {
   };
 }
 
-/** ATX 标题降级：仅围栏（``` / ~~~，行首 0-3 空格）之外的行首 #，围栏内注释原样保留 */
+/** ATX 标题降级：仅代码围栏（``` / ~~~，行首 0-3 空格）之外的行首 #；围栏按同字符、长度 ≥ 开栏、行尾无 info string 配对闭合 */
 function demoteHeadings(src) {
-  let inFence = false;
+  let fence = null; // { char, len } | null
   return src
     .split("\n")
     .map((line) => {
-      if (/^ {0,3}(```|~~~)/.test(line)) {
-        inFence = !inFence;
-        return line;
+      const m = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+      if (m) {
+        const char = m[1][0];
+        const len = m[1].length;
+        if (!fence) {
+          // 开栏：``` 的 info string 不得含反引号（CommonMark）
+          if (char === "~" || !m[2].includes("`")) fence = { char, len };
+          return line;
+        }
+        // 闭栏：同字符、长度 ≥ 开栏、行尾无 info string
+        if (char === fence.char && len >= fence.len && m[2].trim() === "") {
+          fence = null;
+          return line;
+        }
+        return line; // 栏内内容（含混标记行）原样
       }
-      return inFence ? line : line.replace(/^(#{1,5})([ \t]+)/, "#$1$2");
+      return fence ? line : line.replace(/^(#{1,5})([ \t]+)/, "#$1$2");
     })
     .join("\n");
 }
