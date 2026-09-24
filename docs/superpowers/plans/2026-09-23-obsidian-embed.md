@@ -514,8 +514,148 @@ git commit -m "feat(obsidian-embed): ! [[]] 块级全文嵌入（卡片+标题�
 ### 任务 3：错误处理（缺失 / 循环 / 深度）
 
 **文件：**
-- 修改：`docs/.vitepress/plugins/obsidianEmbed.ts`（替换 `createEmbedRule`、新增 `MAX_EMBED_DEPTH`）
+- 修改：`docs/.vitepress/plugins/obsidianEmbed.ts`（步骤 0 替换 `readNote`/`noteHref`；步骤 3 替换 `createEmbedRule`、新增 `MAX_EMBED_DEPTH`）
+- 修改：`tests/embed.test.mjs`（步骤 0 加 2 导入 + 3 用例）
+- 创建：`tests/fixtures/vault/01.组会材料/02.论文笔记/{Fence,坏头,锁定}.md`（步骤 0）
 - 创建：`tests/embed-errors.test.mjs`
+
+- [ ] **步骤 0：任务 2 质量结转（readNote 健壮性 + 围栏感知降级）**
+
+来自任务 2 质量审查的 2 个 Important（`readNote` 无错误处理、畸形 YAML/读失败会炸全站 build；降级正则无围栏意识、会静默改写嵌入笔记代码块里的 `# 注释`）与顺手项（CRLF 归一、permalink 硬化），随本轮同批落地。
+
+（a）追加 3 个夹具。
+
+`tests/fixtures/vault/01.组会材料/02.论文笔记/Fence.md`：
+
+````markdown
+# Fence 标题
+
+```bash
+# 围栏内注释不降级
+echo hi
+```
+
+## 外部小节
+````
+
+`tests/fixtures/vault/01.组会材料/02.论文笔记/坏头.md`：
+
+```markdown
+---
+title: [未闭合
+---
+坏头降级正文
+```
+
+`tests/fixtures/vault/01.组会材料/02.论文笔记/锁定.md`：
+
+```markdown
+# 锁定笔记
+
+锁定正文。
+```
+
+（b）`tests/embed.test.mjs` 顶部 import 区追加：
+
+```js
+import { chmodSync } from "node:fs";
+import { join } from "node:path";
+```
+
+文件末尾追加 3 个用例：
+
+```js
+test("嵌入：围栏内 # 注释不被降级，外部标题照常降级", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("![[Fence]]");
+  assert.ok(html.includes("# 围栏内注释不降级"), "围栏内注释应原样出现");
+  assert.ok(!html.includes("## 围栏内注释不降级"), "围栏内注释不应被降级");
+  assert.match(html, /<h3[^>]*>外部小节/, "外部 H2 应降级为 H3");
+});
+
+test("嵌入：畸形 frontmatter 不炸 build，原文可见降级", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("![[坏头]]");
+  assert.match(html, /class="na-embed"/);
+  assert.ok(html.includes("坏头降级正文"), "正文应可见");
+});
+
+test("嵌入：读失败降级为空笔记而非抛错", async () => {
+  const p = join(VAULT, "01.组会材料", "02.论文笔记", "锁定.md");
+  chmodSync(p, 0o000);
+  try {
+    const md = await makeMd(VAULT);
+    const html = md.render("![[锁定]]");
+    assert.match(html, /class="na-embed"/);
+    assert.ok(!html.includes("锁定正文"), "读失败时不应有正文");
+  } finally {
+    chmodSync(p, 0o644);
+  }
+});
+```
+
+（c）`obsidianEmbed.ts` 中用以下完整新版**替换** `readNote` 与 `noteHref`（`demoteHeadings` 随之新增）：
+
+```js
+/** 读笔记：CRLF 归一、剥 frontmatter（畸形不炸）、围栏感知标题降级（行首 ATX +1 级，H6 不变）、取 title/permalink */
+export function readNote(absPath) {
+  let raw;
+  try {
+    raw = readFileSync(absPath, "utf-8").replace(/\r\n?/g, "\n");
+  } catch {
+    // 读失败（TOCTOU 删除/权限）：空笔记降级，不炸 build
+    return { title: basename(absPath, ".md"), permalink: "", content: "" };
+  }
+  let data = {};
+  let content = raw;
+  try {
+    ({ data, content } = matter(raw));
+  } catch {
+    // 畸形 frontmatter：保留原文渲染，可见降级优于 build 崩溃
+    content = raw;
+  }
+  return {
+    title:
+      typeof data.title === "string" && data.title.trim()
+        ? data.title.trim()
+        : basename(absPath, ".md"),
+    permalink: typeof data.permalink === "string" ? data.permalink.trim() : "",
+    content: demoteHeadings(content),
+  };
+}
+
+/** ATX 标题降级：仅围栏（``` / ~~~，行首 0-3 空格）之外的行首 #，围栏内注释原样保留 */
+function demoteHeadings(src) {
+  let inFence = false;
+  return src
+    .split("\n")
+    .map((line) => {
+      if (/^ {0,3}(```|~~~)/.test(line)) {
+        inFence = !inFence;
+        return line;
+      }
+      return inFence ? line : line.replace(/^(#{1,5})([ \t]+)/, "#$1$2");
+    })
+    .join("\n");
+}
+
+/** 回链地址：permalink 优先（仅接受 / 开头的站内绝对路径），否则源路径（cleanUrls，无 .html） */
+export function noteHref(relPath, permalink) {
+  if (permalink && permalink.startsWith("/")) return encodeURI(permalink);
+  return encodeURI("/" + relPath.replace(/\.md$/i, "").split(sep).join("/"));
+}
+```
+
+（d）运行：`npm run test`
+
+预期：PASS，14 个用例（6 resolver + 8 embed）全绿。
+
+（e）Commit：
+
+```bash
+git add docs/.vitepress/plugins/obsidianEmbed.ts tests/embed.test.mjs tests/fixtures/vault/01.组会材料/02.论文笔记/Fence.md tests/fixtures/vault/01.组会材料/02.论文笔记/坏头.md tests/fixtures/vault/01.组会材料/02.论文笔记/锁定.md
+git commit -m "fix(obsidian-embed): readNote 双层降级与围栏感知降级（任务2质量结转）"
+```
 
 - [ ] **步骤 1：写失败的测试**
 
@@ -556,7 +696,7 @@ test("嵌入深度 >3 → 层级告警，第 4 层不渲染", async () => {
 
 运行：`npm run test`
 
-预期：FAIL——用例 1 无告警类（当前渲染为字面 `![[压根没有]]`）；用例 2 因无限递归报 `RangeError: Maximum call stack size exceeded`；用例 3 检测到 `L4 终点`。其余 11 个用例仍绿。
+预期：FAIL——用例 1 无告警类（当前渲染为字面 `![[压根没有]]`）；用例 2 因无限递归报 `RangeError: Maximum call stack size exceeded`；用例 3 检测到 `L4 终点`。其余 14 个用例仍绿。
 
 - [ ] **步骤 3：编写实现代码**
 
@@ -603,10 +743,13 @@ function createEmbedRule(md, resolveNote) {
       href: noteHref(found.relPath, note.permalink),
       label: `📎 论文笔记 · ${note.title}`,
     };
-    const embedded = md.parse(note.content, {
-      ...state.env,
-      naEmbedStack: [...stack, found.absPath],
-    });
+    const embedded = [];
+    md.block.parse(
+      note.content,
+      md,
+      { ...state.env, naEmbedStack: [...stack, found.absPath] },
+      embedded
+    );
     for (const t of embedded) state.tokens.push(t);
     state.push("na_embed_close", "", 0);
     state.line = startLine + 1;
@@ -615,13 +758,15 @@ function createEmbedRule(md, resolveNote) {
 }
 ```
 
+注：内层同样必须用 `md.block.parse` 4 参形态（任务 2 实测缺陷，见任务 2 步骤 3 后注记）——写回 `md.parse` 会被护栏断言（正文恰 1 次、锚点恰 2）立即拦截。
+
 深度语义核对：宿主嵌入 L1 时 `stack=[]`（第 1 层）→ L1 内嵌 L2 时 `stack=[L1]`（第 2 层）→ L2 内嵌 L3 时 `stack=[L1,L2]`（第 3 层，允许）→ L3 内嵌 L4 时 `stack=[L1,L2,L3]`，`length 3 >= MAX_EMBED_DEPTH` → 告警，L4 不渲染。与规格「深度 ≤3」一致。
 
 - [ ] **步骤 4：运行测试验证通过**
 
 运行：`npm run test`
 
-预期：PASS，共 14 个用例全绿（循环用例不再爆栈）。
+预期：PASS，共 17 个用例全绿（循环用例不再爆栈）。
 
 - [ ] **步骤 5：Commit**
 
@@ -675,7 +820,7 @@ test("行中 ! [[]] 保持原文（块规则只处理独立成行）", async () 
 
 运行：`npm run test`
 
-预期：FAIL——用例 1 输出无 `href="/02.学习笔记/..."`（`[[...]]` 被 markdown-it 渲染为字面文本）。用例 2、3 此时可能已通过（天然行为），保留作回归护栏。其余 14 个用例仍绿。
+预期：FAIL——用例 1 输出无 `href="/02.学习笔记/..."`（`[[...]]` 被 markdown-it 渲染为字面文本）。用例 2、3 此时可能已通过（天然行为），保留作回归护栏。其余 17 个用例仍绿。
 
 - [ ] **步骤 3：编写实现代码**
 
@@ -721,7 +866,7 @@ function createWikilinkRule(resolveNote) {
 
 运行：`npm run test`
 
-预期：PASS，共 17 个用例全绿（6 + 5 + 3 + 3）。
+预期：PASS，共 20 个用例全绿（6 + 5 + 3 + 3 + 3）。
 
 - [ ] **步骤 5：Commit**
 
@@ -900,16 +1045,7 @@ process.exit(ok && out.warnings === 0 && out.cards === 1 && out.outlineHasNoteTi
 
 预期退出码 0，输出要点：`reachable:true`、`cards:1`、`warnings:0`、`sourceHref` 为 `encodeURI` 后的源路径（中文呈百分号编码，以 `/Multi-Loco` 结尾；该篇无 permalink 时）、`sourceText:"📎 论文笔记 · Multi-Loco"`、`h2InContent ≥ 1`、`outlineHasNoteTitle:true`、`literalLeft:0`、`errors:[]`。
 
-**若 `outlineHasNoteTitle:false`（大纲缺嵌入标题）**：把 `obsidianEmbed.ts` 中 `md.parse(note.content, { ...state.env, ... })` 的展开 env 改为共享 env：
-
-```js
-const prevStack = state.env.naEmbedStack;
-state.env.naEmbedStack = [...(prevStack || []), found.absPath];
-const embedded = md.parse(note.content, state.env);
-state.env.naEmbedStack = prevStack;
-```
-
-改后重跑本冒烟；若大纲出现**重复**条目则改回对象展开写法并记录结论（两者必居其一，冒烟二选一通过即可）。
+**若 `outlineHasNoteTitle:false`（大纲缺嵌入标题）**：`md.block.parse` 形态下嵌入标题由外层 core 链随宿主页在同一 token 流中统一收集，`block.parse` 传入的 env 不参与大纲管线——该症状不应由本插件的 env 写法引起。**禁止**改回 `md.parse` 或改写 parse 形态（会复现双重渲染，护栏断言"正文恰 1 次、锚点恰 2"必红）；此时停下以 BLOCKED 上报控制器，附冒烟输出与该页 `document.querySelectorAll('h2, h3')` 实测清单，由控制器裁决 vitepress 大纲管线层面的修法。
 
 （dev server 未起时先跑：`cd /home/weno/works/Notes-Atlas && (npm run docs:dev -- --port 5173 > /tmp/opencode/dev.log 2>&1 &) `，等 5s 再执行冒烟。）
 
@@ -917,7 +1053,7 @@ state.env.naEmbedStack = prevStack;
 
 运行：`npm run test`
 
-预期：PASS，17 个用例仍全绿。
+预期：PASS，20 个用例仍全绿。
 
 - [ ] **步骤 6：Commit**
 
@@ -938,7 +1074,7 @@ git commit -m "feat(obsidian-embed): 接线 config 与卡片样式"
 
 运行：`npm run test`
 
-预期：PASS，17 个用例。
+预期：PASS，20 个用例。
 
 - [ ] **步骤 2：36 篇组会页逐一 headless 断言**
 
