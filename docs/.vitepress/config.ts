@@ -2,6 +2,10 @@ import { defineConfig } from 'vitepress'
 
 import { teekConfig } from './teekConfig'
 import { withMermaid } from 'vitepress-plugin-mermaid'
+import { fileURLToPath } from 'node:url'
+import { obsidianEmbed } from './plugins/obsidianEmbed'
+
+const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
 export default withMermaid(defineConfig({
   extends: teekConfig,
@@ -231,7 +235,12 @@ export default withMermaid(defineConfig({
     ],
   },
   markdown: {
-    math: true
+    math: true,
+    config(md) {
+      // Obsidian 式 ! [[]] 嵌入与 [[]] 站内链接
+      // 规格：docs/superpowers/specs/2026-09-23-obsidian-embed-design.md
+      obsidianEmbed(md, DOCS_ROOT)
+    },
   },
 }))
 

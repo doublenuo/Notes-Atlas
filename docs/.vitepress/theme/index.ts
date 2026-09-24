@@ -26,6 +26,7 @@ import { useData, useRoute } from "vitepress";
 import "./styles/code-bg.scss";
 import "./styles/homepage.scss";
 import "./styles/iframe.scss";
+import "./styles/embed.scss";
 
 export default {
   extends: Teek,
