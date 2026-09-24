@@ -1493,11 +1493,11 @@ echo -n "组会文章页嵌入卡片痕迹（期望≥1）: "; grep -cF 'na-embe
 
 ```bash
 cd /home/weno/works/Notes-Atlas
-grep -roF '组会pptx' docs/.vitepress/dist --include='*.html' | wc -l
-grep -roF '>pdfs<' docs/.vitepress/dist --include='*.html' | wc -l
+grep -roF '组会pptx' docs/.vitepress/dist/01.组会材料/01.组会内容 --include='*.html' | wc -l
+grep -roF '>pdfs<' docs/.vitepress/dist/01.组会材料/01.组会内容 --include='*.html' | wc -l
 ```
 
-预期：均为 `0`。
+预期：均为 `0`。**口径说明（任务 6 首跑 BLOCKED 裁决）**：与步骤 4 同限 `01.组会内容` 目录——验收要求即「组会内容页侧边栏不含 `pdfs`/`组会pptx` 分组」，该 36 页各自渲染本节侧边栏，全 dist 扫描会误命中 `docs/superpowers/` 规格/计划页对**验收语句自身**的字面引用（首跑实测 2/1，控制器复核：限定后 0/0、dist-wide 命中仅上述两页，属文档字面展示非侧边栏回归）。
 
 - [ ] **步骤 6：收尾提交（如有修复）**
 
