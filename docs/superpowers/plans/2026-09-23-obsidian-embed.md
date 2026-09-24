@@ -1359,8 +1359,32 @@ git commit -m "feat(obsidian-embed): 接线 config 与卡片样式"
 ### 任务 6：全量验收（规格 §10 的完成定义）
 
 **文件：**
+- 修改：`docs/.vitepress/plugins/obsidianEmbed.ts`（步骤 0：索引失败模式注释）
 - 验证脚本：`/tmp/opencode/verify-all-embeds.mjs`（不入库）
-- 无新代码；若发现问题则修复并用显式路径提交
+- 无其他新代码；若发现问题则修复并用显式路径提交
+
+- [ ] **步骤 0：任务 5 质量结转（索引失败模式注释）**
+
+任务 5 质量审查 Minor-1：`walk` 在 `readdirSync` 失败时吞错返回，`??=` 索引会把首次建索引瞬间的瞬时 FS 错误/不完整清单 memoize 到进程结束（索引化前每次 miss 重走可自愈）。生产暴露≈0（65 处嵌入全走论文目录 `existsSync` 不经索引，索引仅服务裸目标未命中），裁决**只补注释、不重构 walk**。无用例数变化。
+
+（a）`obsidianEmbed.ts` 中 `createResolver` 的索引注释块，用以下四行版本**整体替换**原三行（仅新增末行）：
+
+```js
+  // 文件清单索引：进程内建一次，与正结果缓存同生命周期（任务3质量结转#5，裁决接受语义代价）——
+  // 索引建立后 dev 新建的非论文目录笔记需重启才可被裸目标命中；
+  // 论文目录（level-2 existsSync）与带 / 的路径目标始终实时，不受索引影响；
+  // 若首次建索引遭遇瞬时 FS 错误/权限问题，walk 吞错返回的不完整清单会被缓存到进程结束，重启自愈
+  let fileIndex = null;
+```
+
+（b）运行 `npm run test` → 预期 **PASS，20/20**（纯注释改动）。非 20/20 → BLOCKED 汇报，勿提交。
+
+（c）Commit：
+
+```bash
+git add docs/.vitepress/plugins/obsidianEmbed.ts
+git commit -m "fix(obsidian-embed): 索引失败模式注释（任务5质量结转）"
+```
 
 - [ ] **步骤 1：单测全量**
 
@@ -1406,20 +1430,29 @@ for (const p of pages) {
   page.on("pageerror", (e) => errors.push(e.message));
   try {
     await page.goto(BASE + p.url, { waitUntil: "domcontentloaded", timeout: 60000 });
-    await page.waitForSelector("#VPDoc", { timeout: 20000 });
+    // teek 主题无 #VPDoc 容器（任务5实测，见冒烟 h2InContent 注）——以每页必有的
+    // .na-embed 作就绪信号：卡片缺失/插件失效 → 等待超时进 failures，恰为本 sweep 想抓的失败形态
+    await page.waitForSelector(".na-embed", { timeout: 20000 });
     await new Promise((r) => setTimeout(r, 300));
     const res = await page.evaluate(() => ({
       cards: document.querySelectorAll(".na-embed:not(.na-embed-warning)").length,
       warnings: document.querySelectorAll(".na-embed-warning").length,
       sourceLinks: document.querySelectorAll(".na-embed-source").length,
       literal: (document.body.innerText.match(/!\[\[/g) || []).length,
+      // 样式生效断言（任务5质量审查Minor-2）：选择器漂移/样式未加载 → computed 为空 → 失败
+      radius: (() => {
+        const el = document.querySelector(".na-embed:not(.na-embed-warning)");
+        return el ? getComputedStyle(el).borderRadius : null;
+      })(),
     }));
     const ok =
       errors.length === 0 &&
       res.warnings === 0 &&
       res.cards === p.embeds &&
       res.sourceLinks === p.embeds &&
-      res.literal === 0;
+      res.literal === 0 &&
+      res.radius !== null &&
+      res.radius !== "";
     if (ok) pass++;
     else failures.push({ ...p, ...res, errors });
   } catch (e) {
@@ -1439,9 +1472,9 @@ process.exit(failures.length === 0 && pages.length === 36 ? 0 : 1);
 
 - [ ] **步骤 3：构建**
 
-运行：`npm run docs:build`
+运行：`npm run docs:build 2>&1 | tee /tmp/opencode/build.log`
 
-预期：`build complete`，无 error。
+预期：`build complete`，无 error。**插件告警归因要求**——`grep -F '[obsidianEmbed]' /tmp/opencode/build.log` 期望 **0 行**（`⚠️ 未找到嵌入笔记：`、`⚠️ 嵌入循环：`、`⚠️ 嵌入层级超过 3 层：`、`读取嵌入笔记失败` 四类全 0；与步骤 2 sweep 的 `warnings:0` 同源互证）。若 >0：逐条列出原文，**BLOCKED** 由控制器逐一归因，勿自行处置。vitepress docsearch 401 属预期噪声（外部 crawler 自保护，非本插件），不算失败。
 
 - [ ] **步骤 4：产物断言**
 
