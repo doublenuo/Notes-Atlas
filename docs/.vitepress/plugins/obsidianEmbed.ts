@@ -35,7 +35,8 @@ export function createResolver(docsRoot) {
 
   // 文件清单索引：进程内建一次，与正结果缓存同生命周期（任务3质量结转#5，裁决接受语义代价）——
   // 索引建立后 dev 新建的非论文目录笔记需重启才可被裸目标命中；
-  // 论文目录（level-2 existsSync）与带 / 的路径目标始终实时，不受索引影响
+  // 论文目录（level-2 existsSync）与带 / 的路径目标始终实时，不受索引影响；
+  // 若首次建索引遭遇瞬时 FS 错误/权限问题，walk 吞错返回的不完整清单会被缓存到进程结束，重启自愈
   let fileIndex = null;
   const getIndex = () => (fileIndex ??= walk(docsRoot));
 
