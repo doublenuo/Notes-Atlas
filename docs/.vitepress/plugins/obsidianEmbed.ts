@@ -65,22 +65,51 @@ export function createResolver(docsRoot) {
   };
 }
 
-/** 读笔记：剥 frontmatter、标题降级（行首 ATX +1 级，H6 不变）、取 title/permalink */
+/** 读笔记：CRLF 归一、剥 frontmatter（畸形不炸）、围栏感知标题降级（行首 ATX +1 级，H6 不变）、取 title/permalink */
 export function readNote(absPath) {
-  const { data, content } = matter(readFileSync(absPath, "utf-8"));
+  let raw;
+  try {
+    raw = readFileSync(absPath, "utf-8").replace(/\r\n?/g, "\n");
+  } catch {
+    // 读失败（TOCTOU 删除/权限）：空笔记降级，不炸 build
+    return { title: basename(absPath, ".md"), permalink: "", content: "" };
+  }
+  let data = {};
+  let content = raw;
+  try {
+    ({ data, content } = matter(raw));
+  } catch {
+    // 畸形 frontmatter：保留原文渲染，可见降级优于 build 崩溃
+    content = raw;
+  }
   return {
     title:
       typeof data.title === "string" && data.title.trim()
         ? data.title.trim()
         : basename(absPath, ".md"),
     permalink: typeof data.permalink === "string" ? data.permalink.trim() : "",
-    content: content.replace(/^(#{1,5})([ \t]+)/gm, "#$1$2"),
+    content: demoteHeadings(content),
   };
 }
 
-/** 回链地址：permalink 优先，否则源路径（cleanUrls，无 .html） */
+/** ATX 标题降级：仅围栏（``` / ~~~，行首 0-3 空格）之外的行首 #，围栏内注释原样保留 */
+function demoteHeadings(src) {
+  let inFence = false;
+  return src
+    .split("\n")
+    .map((line) => {
+      if (/^ {0,3}(```|~~~)/.test(line)) {
+        inFence = !inFence;
+        return line;
+      }
+      return inFence ? line : line.replace(/^(#{1,5})([ \t]+)/, "#$1$2");
+    })
+    .join("\n");
+}
+
+/** 回链地址：permalink 优先（仅接受 / 开头的站内绝对路径），否则源路径（cleanUrls，无 .html） */
 export function noteHref(relPath, permalink) {
-  if (permalink) return encodeURI(permalink);
+  if (permalink && permalink.startsWith("/")) return encodeURI(permalink);
   return encodeURI("/" + relPath.replace(/\.md$/i, "").split(sep).join("/"));
 }
 

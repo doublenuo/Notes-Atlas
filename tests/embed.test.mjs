@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { makeMd, VAULT, DOCS } from "./helpers.mjs";
+import { chmodSync } from "node:fs";
+import { join } from "node:path";
 
 test("! [[]] 全文嵌入：卡片、去 frontmatter、标题降级、公式", async () => {
   const md = await makeMd(VAULT);
@@ -48,4 +50,32 @@ test("真实库集成：Multi-Loco 嵌入（组会页实际用法）", async () 
     "回链应指向笔记源页或其 permalink"
   );
   assert.match(html, /<h2/, "笔记 H1 应降级为 H2");
+});
+
+test("嵌入：围栏内 # 注释不被降级，外部标题照常降级", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("![[Fence]]");
+  assert.ok(html.includes("# 围栏内注释不降级"), "围栏内注释应原样出现");
+  assert.ok(!html.includes("## 围栏内注释不降级"), "围栏内注释不应被降级");
+  assert.match(html, /<h3[^>]*>外部小节/, "外部 H2 应降级为 H3");
+});
+
+test("嵌入：畸形 frontmatter 不炸 build，原文可见降级", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("![[坏头]]");
+  assert.match(html, /class="na-embed"/);
+  assert.ok(html.includes("坏头降级正文"), "正文应可见");
+});
+
+test("嵌入：读失败降级为空笔记而非抛错", async () => {
+  const p = join(VAULT, "01.组会材料", "02.论文笔记", "锁定.md");
+  chmodSync(p, 0o000);
+  try {
+    const md = await makeMd(VAULT);
+    const html = md.render("![[锁定]]");
+    assert.match(html, /class="na-embed"/);
+    assert.ok(!html.includes("锁定正文"), "读失败时不应有正文");
+  } finally {
+    chmodSync(p, 0o644);
+  }
 });
