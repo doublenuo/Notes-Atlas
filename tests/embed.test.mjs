@@ -44,12 +44,8 @@ test("真实库集成：Multi-Loco 嵌入（组会页实际用法）", async () 
   const html = md.render("![[Multi-Loco]]");
   assert.match(html, /class="na-embed"/);
   assert.ok(!html.includes("![[Multi-Loco]]"), "不应残留字面语法");
-  assert.ok(
-    html.includes(`href="${encodeURI("/01.组会材料/02.论文笔记/Multi-Loco")}"`) ||
-      /href="\/meet\//.test(html),
-    "回链应指向笔记源页或其 permalink"
-  );
-  assert.match(html, /<h2/, "笔记 H1 应降级为 H2");
+  assert.ok(html.includes(`class="na-embed-source" href="${encodeURI("/01.组会材料/02.论文笔记/Multi-Loco")}"`), "来源条应精确回链 Multi-Loco 源页（该笔记无 permalink）");
+  assert.match(html, /<h2[^>]*>Multi-Loco: Unifying/, "H1 应降级为 H2 且文本锚定正确");
 });
 
 test("嵌入：围栏内 # 注释不被降级，外部标题照常降级", async () => {

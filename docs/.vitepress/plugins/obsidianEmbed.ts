@@ -38,6 +38,7 @@ export function createResolver(docsRoot) {
   // 论文目录（level-2 existsSync）与带 / 的路径目标始终实时，不受索引影响；
   // 若首次建索引遭遇瞬时 FS 错误/权限问题，walk 吞错返回的不完整清单会被缓存到进程结束，重启自愈
   let fileIndex = null;
+  // 性能备忘：裸目标 miss 时对全库清单线性 filter basename；文件数显著增长或 miss 频发时升级 Map<basename, absPath[]>
   const getIndex = () => (fileIndex ??= walk(docsRoot));
 
   return function resolveNote(target) {
@@ -129,7 +130,7 @@ function demoteHeadings(src) {
 
 /** 回链地址：permalink 优先（仅接受 / 开头的站内绝对路径），否则源路径（cleanUrls，无 .html） */
 export function noteHref(relPath, permalink) {
-  if (permalink && permalink.startsWith("/")) return encodeURI(permalink);
+  if (permalink && permalink.startsWith("/") && !permalink.startsWith("//")) return encodeURI(permalink);
   return encodeURI("/" + relPath.replace(/\.md$/i, "").split(sep).join("/"));
 }
 
@@ -137,8 +138,7 @@ const MAX_EMBED_DEPTH = 3;
 
 function createEmbedRule(md, resolveNote) {
   return function naEmbed(state, startLine, endLine, silent) {
-    if (state.sCount[startLine] - state.blkIndent >= 4) return false; // 代码块内不处理
-    if (state.sCount[startLine] - state.blkIndent > 3) return false; // >3 空格缩进不处理
+    if (state.sCount[startLine] - state.blkIndent >= 4) return false; // ≥4 相对缩进 = 代码块语义（含 >3 空格缩进行），不处理
     const line = state.src
       .slice(state.bMarks[startLine] + state.tShift[startLine], state.eMarks[startLine])
       .trim();
@@ -173,6 +173,7 @@ function createEmbedRule(md, resolveNote) {
     md.block.parse(
       note.content,
       md,
+      // 每层新建 env 与栈数组：递归绝不回写外层，兄弟嵌入各自独立栈
       { ...state.env, naEmbedStack: [...stack, found.absPath] },
       embedded
     );

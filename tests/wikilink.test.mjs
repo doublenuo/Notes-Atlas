@@ -26,9 +26,9 @@ test("[[ ]] 保持原文：未命中目标、|别名/#标题非目标、跨行�
   assert.ok(nonGoal.includes("[[Alpha#小节]]"), "#标题 非目标应保持原文");
   const multiline = md.render("[[Alpha\n下一行]]");
   assert.ok(multiline.includes("[[Alpha") && multiline.includes("下一行]]"), "跨行应保持原文");
-  const inCode = md.render("`[[Alpha]]`");
-  assert.ok(inCode.includes("<code>[[Alpha]]</code>"), "反引号代码内应原样");
-  assert.ok(!inCode.includes("na-embed"), "反引号代码内不应触发嵌入");
+  const inCode = md.render("`![[Alpha]]`");
+  assert.ok(inCode.includes("<code>![[Alpha]]</code>"), "行内代码内 wiki 字面应原样渲染");
+  assert.ok(!inCode.includes("na-embed"), "行内代码内不应触发嵌入");
 });
 
 test("行中 ! [[]] 保持原文（块规则只处理独立成行）", async () => {
