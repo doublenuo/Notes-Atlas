@@ -23,6 +23,7 @@ export default withMermaid(defineConfig({
     ['link', { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: 'anonymous' }],
   ],
   cleanUrls: true,
+  srcExclude: ["superpowers/**"],
   // 打包构建优化
   vite: {
     build: {

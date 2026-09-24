@@ -369,7 +369,10 @@ export const teekConfig = defineTeekConfig({
       "**/sidebar.md",
       "**/navbar.md",
       "**/01.组会材料/组会pptx/**",
-      "**/01.组会材料/03.pdfs/**"
+      // 与 config.ts 的 srcExclude 配套：FileContentLoader 是独立 glob 扫描、不认 srcExclude，
+      // 不加此条则 superpowers 页仍进归档/最近更新清单，而页面已不生成 → 死链
+      "**/01.组会材料/03.pdfs/**",
+      "**/superpowers/**"
     ],
     sidebar: true,
     sidebarOption: {
