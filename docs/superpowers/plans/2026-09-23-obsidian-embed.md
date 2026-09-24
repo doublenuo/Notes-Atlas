@@ -27,7 +27,7 @@
 | 创建 `tests/embed-errors.test.mjs` | 缺失/循环/深度告警单测（任务 3） |
 | 创建 `tests/wikilink.test.mjs` | `[[]]` 链接单测（任务 4） |
 | 创建 `tests/fixtures/vault/**` | 隔离测试库（10 个 md，见任务 1） |
-| 修改 `package.json` | 增加 `"test": "node --test tests/"` |
+| 修改 `package.json` | 增加 `"test": "node --test \"tests/**/*.test.mjs\""` |
 | 修改 `docs/.vitepress/config.ts` | `markdown.config` 注册插件（任务 5） |
 | 创建 `docs/.vitepress/theme/styles/embed.scss` | 卡片/告警样式，亮暗色（任务 5） |
 | 修改 `docs/.vitepress/theme/index.ts` | 引入 `embed.scss`（任务 5） |
@@ -63,9 +63,11 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "test": "node --test tests/"
+    "test": "node --test \"tests/**/*.test.mjs\""
   }
 ```
+
+注：glob 形态为必需——Node 21+ 的 `--test` 不再把裸目录当递归测试入口（会报 `Cannot find module '<dir>'`），本机 Node v24.14.0 两种形态实测后取 glob（作用域仍限 `tests/`）。
 
 - [ ] **步骤 2：创建测试夹具库（15 个文件）**
 
