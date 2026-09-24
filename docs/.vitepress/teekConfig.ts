@@ -38,8 +38,10 @@ export const teekConfig = defineTeekConfig({
       defaultPageMaxWidth: 94,
     },
     themeColor: {
+      disabled: false,
       defaultColorName: "vp-default",
       defaultSpread: true,
+      disabledInMobile: false,
       append: [
         {
           label: "博客扩展主题",
@@ -66,6 +68,7 @@ export const teekConfig = defineTeekConfig({
       ]
     },
     spotlight: {
+      disabled: false,
       defaultStyle: "aside",
       defaultValue: true,
     },
@@ -242,6 +245,21 @@ export const teekConfig = defineTeekConfig({
       name: "GitHub",
       link: "https://github.com/doublenuo/Notes-Atlas",
     },
+    {
+      icon: "simple-icons:zhihu",
+      name: "知乎",
+      link: "https://www.zhihu.com/people/pai-da-xiao-xing-xing-7",
+    },
+    {
+      icon: "tdesign:logo-cnb",
+      name: "CNB.cool",
+      link: "https://cnb.cool/u/cnb.bEVjkzoyQGA",
+    },
+    {
+      icon: "mdi:email",
+      name: "邮箱",
+      link: "mailto:zwn200401@gmail.com",
+    },
   ],
   footerGroup: [
     {
@@ -281,7 +299,9 @@ export const teekConfig = defineTeekConfig({
     },
   ],
   footerInfo: {
-    topMessage: ["专注内容沉淀，而不是重复找资料"],
+    topMessage: [
+      `<span><img alt="VitePress" src="https://liuyuyang.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fanimals.65eaf6e3.webp&amp;w=750&amp;q=75" style="width: 750px; height: 80px"><span></span></span>`,
+    ],
     theme: {
       show: true,
       name: `Theme By Teek@${version}`,
@@ -296,7 +316,8 @@ export const teekConfig = defineTeekConfig({
       name: "赣ICP备2026011923号",
       link: "http://beian.miit.gov.cn/",
     },
-    bottomMessage: "Powered by <a href='https://vitepress.dev/' target='_blank'>VitePress</a>",
+    // 与备案信息同一行、紧跟备案信息的 Powered by VitePress（含小图标）
+    customHtml: `<a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align:-0.15em;" aria-hidden="true"><path d="M17.029.001a2 2 0 0 0-.187.018L4.085 1.833A1.86 1.86 0 0 0 2.518 3.94l2.56 18.457a1.846 1.846 0 0 0 2.08 1.586l12.757-1.816a1.86 1.86 0 0 0 1.567-2.106l-2.56-18.455A1.85 1.85 0 0 0 17.029 0m.127.932a.926.926 0 0 1 .853.8l2.56 18.458a.93.93 0 0 1-.782 1.053L7.03 23.058a.92.92 0 0 1-1.04-.793L3.43 3.81a.93.93 0 0 1 .783-1.053L16.97.941a1 1 0 0 1 .186-.008m-3.644 5.354L9.967 7.521a.136.136 0 0 0-.09.141l.318 3.87c.008.09.1.149.184.116l.982-.378a.136.136 0 0 1 .184.136l-.09 1.54c-.006.103.1.176.193.132l.6-.281c.093-.044.198.03.192.135l-.147 2.418c-.01.15.195.203.258.066l.04-.092L14.716 8.9c.035-.107-.066-.21-.172-.173l-1.018.351c-.095.033-.191-.049-.177-.15l.343-2.49a.137.137 0 0 0-.142-.157c-.016 0-.042.009-.037.006zm2.822.799a.3.3 0 0 0-.08.014L14 7.85l-.076.56l.455-.156a.636.636 0 0 1 .81.803l-2.13 6.449l-.053.117a.64.64 0 0 1-.738.352a.64.64 0 0 1-.473-.657l.11-1.808a.638.638 0 0 1-.948-.594l.057-.976l-.454.175a.64.64 0 0 1-.863-.543L9.453 8.6l-3.062-.123c-.23-.01-.364.255-.223.44l6.29 8.23a.27.27 0 0 0 .468-.069l3.668-9.619a.275.275 0 0 0-.26-.373"/></svg>Powered by VitePress</a>`,
   },
   codeBlock: {
     copiedDone: (TkMessage) => TkMessage.success("复制成功！"),
@@ -347,12 +368,15 @@ export const teekConfig = defineTeekConfig({
       "**/index.md",
       "**/sidebar.md",
       "**/navbar.md",
-      "01.组会材料/论文pptx/"
+      "**/01.组会材料/组会pptx/**",
+      "**/01.组会材料/03.pdfs/**"
     ],
     sidebar: true,
     sidebarOption: {
       initItems: false,
-      ignoreList: ["01.组会材料/论文pptx/"],
+      // 注意：插件按「目录/文件原始名」精确匹配（或正则），不是路径，
+      // 所以要写磁盘上的真实目录名（含序号前缀）
+      ignoreList: ["03.pdfs", "组会pptx"],
     },
     permalink: true,
   },
