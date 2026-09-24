@@ -113,6 +113,8 @@ export function noteHref(relPath, permalink) {
   return encodeURI("/" + relPath.replace(/\.md$/i, "").split(sep).join("/"));
 }
 
+const MAX_EMBED_DEPTH = 3;
+
 function createEmbedRule(md, resolveNote) {
   return function naEmbed(state, startLine, endLine, silent) {
     if (state.sCount[startLine] - state.blkIndent >= 4) return false; // 代码块内不处理
@@ -124,8 +126,22 @@ function createEmbedRule(md, resolveNote) {
     if (!m) return false;
     if (silent) return true;
 
-    const found = resolveNote(m[1].trim());
-    if (!found) return false; // 任务 3 替换为告警块
+    const target = m[1].trim();
+    const esc = md.utils.escapeHtml;
+    const warn = (text) => {
+      const token = state.push("html_block", "", 0);
+      token.content = `<div class="na-embed na-embed-warning">${esc(text)}</div>`;
+      console.warn(`[obsidianEmbed] ${text}（页面：${state.env.relativePath ?? "unknown"}）`);
+      state.line = startLine + 1;
+      return true;
+    };
+
+    const found = resolveNote(target);
+    if (!found) return warn(`⚠️ 未找到嵌入笔记：${target}`);
+
+    const stack = state.env.naEmbedStack || [];
+    if (stack.includes(found.absPath)) return warn(`⚠️ 嵌入循环：${target}`);
+    if (stack.length >= MAX_EMBED_DEPTH) return warn(`⚠️ 嵌入层级超过 ${MAX_EMBED_DEPTH} 层：${target}`);
 
     const note = readNote(found.absPath);
     const open = state.push("na_embed_open", "", 0);
@@ -134,7 +150,12 @@ function createEmbedRule(md, resolveNote) {
       label: `📎 论文笔记 · ${note.title}`,
     };
     const embedded = [];
-    md.block.parse(note.content, md, { ...state.env, naEmbedStack: [found.absPath] }, embedded);
+    md.block.parse(
+      note.content,
+      md,
+      { ...state.env, naEmbedStack: [...stack, found.absPath] },
+      embedded
+    );
     for (const t of embedded) state.tokens.push(t);
     state.push("na_embed_close", "", 0);
     state.line = startLine + 1;
