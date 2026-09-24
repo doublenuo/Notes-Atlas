@@ -4,6 +4,7 @@ import { teekConfig } from './teekConfig'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import { fileURLToPath } from 'node:url'
 import { obsidianEmbed } from './plugins/obsidianEmbed'
+import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
 
 const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
@@ -26,6 +27,8 @@ export default withMermaid(defineConfig({
   srcExclude: ["superpowers/**"],
   // 打包构建优化
   vite: {
+    // 文档分析(字数/阅读时长)按嵌入展开后重算,覆盖 doc-analysis 的原始源码口径
+    plugins: [docAnalysisEmbed()],
     build: {
       target: 'es2020',                    // 现代浏览器目标，减小 polyfill 体积
       cssMinify: 'esbuild',                // 使用 esbuild 压缩 CSS（比 lightningcss 稳定）

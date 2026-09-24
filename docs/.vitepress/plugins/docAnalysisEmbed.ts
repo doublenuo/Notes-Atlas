@@ -1,0 +1,134 @@
+/**
+ * 文档分析(字数/阅读时长)感知嵌入的补丁层。
+ *
+ * 背景:vitepress-plugin-doc-analysis 在 config() 钩子里按原始 .md 源码统计,
+ * 组会页源码几乎只有 ![[论文]] 壳行,嵌入未展开 → 全部兜底成 1m/个位数字数。
+ * 本插件在其后用同一公式(字数口径、时长格式逐字一致)重算:统计前把
+ * 独立成行的 ![[目标]] 按渲染语义(围栏/缩进感知、循环与 3 层深度守卫、
+ * readNote 去 frontmatter 与标题降级)展开后再计数。
+ * 规格:docs/superpowers/specs/2026-09-23-obsidian-embed-design.md(嵌入语义)
+ */
+import { readFileSync } from "node:fs";
+import matter from "gray-matter";
+import { createResolver, readNote } from "./obsidianEmbed.ts";
+
+/** 字数口径:与 vitepress-plugin-doc-analysis getCounter 逐字一致([中文字数, 英文词数]) */
+export function countWords(content) {
+  const cn = (content.match(/[\u4E00-\u9FA5]/g) || []).length;
+  const en = (
+    content.replace(/[\u4E00-\u9FA5]/g, "").match(
+      /[a-zA-Z0-9_\u0392-\u03c9\u0400-\u04FF]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af\u0400-\u04FF]+|[\u00E4\u00C4\u00E5\u00C5\u00F6\u00D6]+|\w+/g
+    ) || []
+  ).length;
+  return [cn, en];
+}
+
+/** 时长格式:与 getReadTime 分支逐字一致(formatReadingTime(cn, en),cn=300/分、en=160/词,不足 1 分钟兜底 1m) */
+export function formatReadingTime(cn, en) {
+  const readingTime = cn / 300 + en / 160;
+  if (readingTime > 60 && readingTime < 60 * 24) {
+    const hour = Math.trunc(readingTime / 60);
+    const minute = Math.trunc(readingTime - hour * 60);
+    if (minute === 0) return hour + "h";
+    return hour + "h" + minute + "m";
+  } else if (readingTime > 60 * 24) {
+    const day = Math.trunc(readingTime / (60 * 24));
+    const hour = Math.trunc((readingTime - day * 24 * 60) / 60);
+    if (hour === 0) return day + "d";
+    return day + "d" + hour + "h";
+  }
+  return (readingTime < 1 ? "1" : Math.trunc(readingTime * 10) / 10) + "m";
+}
+
+const MAX_EMBED_DEPTH = 3; // 与渲染管线一致:第 4 层不展开
+
+/**
+ * 字符串级展开独立成行的 ![[目标]](仅用于计数,不产 HTML):
+ * 围栏/≥4 缩进/非独立成行保持原样;未命中、循环、超深层保持原样(渲染处为告警块,字数近似)。
+ */
+export function expandEmbeds(src, resolveNote) {
+  return expandCore(src, [], resolveNote);
+}
+
+function expandCore(src, stack, resolveNote) {
+  const lines = src.split("\n");
+  let fence = null;
+  const out = [];
+  for (const line of lines) {
+    const fm = line.match(/^ {0,3}(`{3,}|~{3})(.*)$/);
+    if (fm) {
+      const char = fm[1][0];
+      const len = fm[1].length;
+      if (!fence) {
+        if (char === "~" || !fm[2].includes("`")) fence = { char, len };
+        out.push(line);
+        continue;
+      }
+      if (char === fence.char && len >= fence.len && fm[2].trim() === "") fence = null;
+      out.push(line);
+      continue;
+    }
+    if (fence) {
+      out.push(line);
+      continue;
+    }
+    const m = line.match(/^([ \t]*)!\[\[([^\]\n]+)\]\][ \t]*$/);
+    if (!m || m[1].replace(/\t/g, "    ").length >= 4) {
+      out.push(line);
+      continue;
+    }
+    const found = resolveNote(m[2].trim());
+    if (!found || stack.includes(found.absPath) || stack.length >= MAX_EMBED_DEPTH) {
+      out.push(line);
+      continue;
+    }
+    const note = readNote(found.absPath, "docAnalysis");
+    out.push(expandCore(note.content, [...stack, found.absPath], resolveNote));
+  }
+  return out.join("\n");
+}
+
+/**
+ * 用嵌入展开后的口径覆盖 doc-analysis 注入的 eachFileWords 与 totalFileWords。
+ * info 或 eachFileWords 缺失时安全返回;单文件读失败保持该条原值不炸 build。
+ */
+export function patchDocAnalysisInfo(info, docsRoot) {
+  if (!info || !Array.isArray(info.eachFileWords)) return;
+  const resolveNote = createResolver(docsRoot);
+  let total = 0;
+  for (const entry of info.eachFileWords) {
+    try {
+      const raw = readFileSync(entry.fileInfo?.filePath ?? "", "utf-8").replace(/\r\n?/g, "\n");
+      const body = matter(raw).content;
+      const len = countWords(expandCore(body, [], resolveNote));
+      entry.wordCount = len[0] + len[1];
+      entry.readingTime = formatReadingTime(len[0], len[1]);
+    } catch {
+      // 读失败:保留 doc-analysis 的原始统计值
+    }
+    total += entry.wordCount || 0;
+  }
+  info.totalFileWords = total;
+}
+
+/**
+ * Vite 插件:config() 捕获 themeConfig 引用,configResolved()(所有 config 钩子
+ * 之后,doc-analysis 已注入完成)执行覆盖。dev 与 build 同路径。
+ */
+export function docAnalysisEmbed() {
+  let themeConfig = null;
+  let srcDir = "";
+  return {
+    name: "na-doc-analysis-embed",
+    config(config) {
+      const vp = config?.vitepress;
+      if (vp?.site?.themeConfig) {
+        themeConfig = vp.site.themeConfig;
+        srcDir = vp.srcDir ?? process.cwd();
+      }
+    },
+    configResolved() {
+      if (themeConfig?.docAnalysisInfo) patchDocAnalysisInfo(themeConfig.docAnalysisInfo, srcDir);
+    },
+  };
+}
