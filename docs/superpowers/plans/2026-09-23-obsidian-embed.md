@@ -1053,10 +1053,127 @@ git commit -m "fix(obsidian-embed): 段落续行中断与字面回退保真（�
 ### 任务 5：接线 config + 卡片样式 + dev 冒烟
 
 **文件：**
+- 修改：`docs/.vitepress/plugins/obsidianEmbed.ts`（步骤 0：walk 索引 + 读失败告警上下文）
 - 修改：`docs/.vitepress/config.ts`（L1-8 import 区、L233-235 markdown 块）
 - 修改：`docs/.vitepress/theme/index.ts`（L28 后）
 - 创建：`docs/.vitepress/theme/styles/embed.scss`
 - 验证脚本：`/tmp/opencode/verify-embed-smoke.mjs`（不入库）
+
+- [ ] **步骤 0：质量结转（superpowers 构建面审计 + walk 索引 + 读失败告警上下文）**
+
+背景：本任务注册插件的那一刻，`docs/superpowers/` 的计划/规格页首次进入「被真解析」状态（它们在构建面内，任务 6 的产物 grep 也特意限定 `01.组会内容` 目录以排除它们的字面展示）；任务 3 质量结转 #5（walk 索引）与任务 4 质量结转 Minor-4（读失败告警页面上下文）在此批落地。无新增用例，计数链不变（仍 20）。
+
+（a）**superpowers 构建面审计（只读，先行）**——创建 `/tmp/opencode/audit-superpowers.mjs`（不入库）：
+
+```js
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+
+const ROOT = "/home/weno/works/Notes-Atlas/docs/superpowers";
+const files = ["plans", "specs"]
+  .flatMap((d) => readdirSync(join(ROOT, d)).map((f) => join(ROOT, d, f)))
+  .filter((f) => f.endsWith(".md"));
+const hits = [];
+for (const f of files) {
+  // 与 demoteHeadings 同款围栏配对：同字符、长度 ≥ 开栏、行尾无 info string 才闭合
+  let fence = null;
+  readFileSync(f, "utf8").split("\n").forEach((line, i) => {
+    const m = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (m) {
+      const char = m[1][0], len = m[1].length;
+      if (!fence) {
+        if (char === "~" || !m[2].includes("`")) fence = { char, len };
+        return;
+      }
+      if (char === fence.char && len >= fence.len && m[2].trim() === "") fence = null;
+      return;
+    }
+    if (fence) return;
+    if (/^ {0,3}!\[\[/.test(line)) hits.push(`${f}:${i + 1} 围栏外行首裸嵌入语法 → ${line}`);
+    if (line.replace(/`[^`]*`/g, "").includes("[[")) hits.push(`${f}:${i + 1} 围栏外裸链接语法 → ${line}`);
+  });
+}
+console.log(hits.length ? hits.join("\n") : "OK: 0 暴露");
+process.exit(hits.length ? 1 : 0);
+```
+
+运行：`node /tmp/opencode/audit-superpowers.mjs`。预期退出码 0（质量审查围栏感知实测基线：行首裸嵌入语法仅 5 处、全部位于代码围栏内；剥离行内代码后围栏外裸链接语法 0 处）。
+
+**命中处置（预定动作，不 BLOCKED）**：把该处 wiki 示例裹进行内代码（补反引号）或围栏，把对应 md 加入（e）的 `git add` 显式路径，汇报中列明；改后重跑审计须 0 暴露。**常设约束**：计划/规格正文中的 wiki 示例必须裹行内代码或围栏——本步骤的计划文本自身就在被审计面内。
+
+（b）**walk 索引（任务 3 质量结转 #5）**——`obsidianEmbed.ts` 的 `createResolver` 内三处：
+
+在 `return function resolveNote(target) {` 之前插入：
+
+```js
+  // 文件清单索引：进程内建一次，与正结果缓存同生命周期（任务3质量结转#5，裁决接受语义代价）——
+  // 索引建立后 dev 新建的非论文目录笔记需重启才可被裸目标命中；
+  // 论文目录（level-2 existsSync）与带 / 的路径目标始终实时，不受索引影响
+  let fileIndex = null;
+  const getIndex = () => (fileIndex ??= walk(docsRoot));
+```
+
+将
+
+```js
+        const matches = walk(docsRoot)
+          .filter((f) => basename(f) === key + ".md")
+          .sort();
+```
+
+改为
+
+```js
+        const matches = getIndex()
+          .filter((f) => basename(f) === key + ".md")
+          .sort();
+```
+
+将行尾注释
+
+```js
+    if (result) cache.set(key, result); // 负结果不缓存：dev 下新建笔记可被即时解析
+```
+
+改为
+
+```js
+    if (result) cache.set(key, result); // 正结果缓存；负结果不逐键缓存（论文目录/带路径目标实时；全库裸目标经文件清单索引，语义代价见上）
+```
+
+**注意**：`if (result) cache.set(...)` 的结构不能变——负结果仍**不**逐键缓存，不要顺手改成「负结果也进 cache」。
+
+（c）**读失败告警页面上下文（任务 4 质量结转 Minor-4）**——同文件三处：
+
+`readNote` 的 JSDoc 与签名改为：
+
+```js
+/** 读笔记：CRLF 归一、剥 frontmatter（畸形不炸）、围栏感知标题降级（行首 ATX +1 级，H6 不变）、取 title/permalink；context 为宿主页 relativePath，仅用于读失败告警归因 */
+export function readNote(absPath, context) {
+```
+
+读失败告警行改为（与块规则告警的页面归因同款，缺省 `unknown`）：
+
+```js
+    console.warn(`[obsidianEmbed] 读取嵌入笔记失败，已降级为空笔记：${absPath}（页面：${context ?? "unknown"}）`);
+```
+
+两个调用点（`createEmbedRule` 内与 `createWikilinkRule` 内，行文本相同）都补第 2 参：
+
+```js
+      const note = readNote(found.absPath, state.env.relativePath);
+```
+
+（d）运行：`npm run test` → 预期 **PASS，20/20**。非 20/20 → BLOCKED 汇报，勿提交。
+
+（e）Commit（门禁）：
+
+```bash
+git add docs/.vitepress/plugins/obsidianEmbed.ts
+git commit -m "fix(obsidian-embed): 文件清单索引与读失败告警上下文（任务3/4质量结转）"
+```
+
+（若（a）处置命中了围栏外裸示例，把对应 `docs/superpowers/**/*.md` 也列入 `git add` 显式路径，同批提交。）
 
 - [ ] **步骤 1：config.ts 注册插件**
 
