@@ -180,7 +180,9 @@ function createEmbedRule(md, resolveNote) {
 export function obsidianEmbed(md, docsRoot) {
   const resolveNote = createResolver(docsRoot);
 
-  md.block.ruler.before("paragraph", "na_embed", createEmbedRule(md, resolveNote));
+  md.block.ruler.before("paragraph", "na_embed", createEmbedRule(md, resolveNote), {
+    alt: ["paragraph"],
+  });
 
   md.inline.ruler.before("link", "na_wikilink", createWikilinkRule(resolveNote));
 
@@ -195,6 +197,7 @@ export function obsidianEmbed(md, docsRoot) {
   md.renderer.rules.na_embed_close = () => `</div>\n</div>\n`;
 }
 
+/** 行内 [[目标]] → 站内链接：命中 → link_open（noteHref 回链，文本取 target）；未命中/|别名/#标题/跨行/前导 ! → 保持原文（回退文本取原始切片，保留空格） */
 function createWikilinkRule(resolveNote) {
   return function naWikilink(state, silent) {
     const { src, pos } = state;
@@ -216,7 +219,7 @@ function createWikilinkRule(resolveNote) {
       state.push("link_close", "a", -1);
     } else {
       const text = state.push("text", "", 0);
-      text.content = `[[${target}]]`;
+      text.content = src.slice(pos, end + 2);
     }
     state.pos = end + 2;
     return true;
