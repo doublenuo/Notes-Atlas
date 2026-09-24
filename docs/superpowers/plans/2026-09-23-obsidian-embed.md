@@ -1,3 +1,7 @@
+---
+date: 2026-09-24 00:01:59
+title: 2026-09-23-obsidian-embed
+---
 # Obsidian 式笔记嵌入（`! [[]]` / `[[]]`）实现计划
 
 > **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
@@ -780,8 +784,84 @@ git commit -m "feat(obsidian-embed): 嵌入缺失/循环/深度告警"
 ### 任务 4：`[[ ]]` 行内站内链接
 
 **文件：**
-- 修改：`docs/.vitepress/plugins/obsidianEmbed.ts`（`obsidianEmbed()` 内注册 + 追加规则函数）
+- 修改：`docs/.vitepress/plugins/obsidianEmbed.ts`（步骤 0 替换 `demoteHeadings`、`readNote` 加告警行；步骤 3 在 `obsidianEmbed()` 内注册 + 追加规则函数）
+- 修改：`tests/embed.test.mjs`（步骤 0 加 3 断言）
+- 修改：`tests/fixtures/vault/01.组会材料/02.论文笔记/Fence.md`（步骤 0 栏内加混标记行）
 - 创建：`tests/wikilink.test.mjs`
+
+- [ ] **步骤 0：任务 3 质量结转（围栏配对 + 读失败可见性）**
+
+来自任务 3 质量审查的 Minor-1/2/3（围栏状态机不校验标记字符与长度、读失败静默降级不可见、坏头用例少一条钉死断言），随本轮同批落地。无新增用例，计数链不变。
+
+（a）`obsidianEmbed.ts` 中用以下完整新版**替换** `demoteHeadings`：
+
+```js
+/** ATX 标题降级：仅代码围栏（``` / ~~~，行首 0-3 空格）之外的行首 #；围栏按同字符、长度 ≥ 开栏、行尾无 info string 配对闭合 */
+function demoteHeadings(src) {
+  let fence = null; // { char, len } | null
+  return src
+    .split("\n")
+    .map((line) => {
+      const m = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+      if (m) {
+        const char = m[1][0];
+        const len = m[1].length;
+        if (!fence) {
+          // 开栏：``` 的 info string 不得含反引号（CommonMark）
+          if (char === "~" || !m[2].includes("`")) fence = { char, len };
+          return line;
+        }
+        // 闭栏：同字符、长度 ≥ 开栏、行尾无 info string
+        if (char === fence.char && len >= fence.len && m[2].trim() === "") {
+          fence = null;
+          return line;
+        }
+        return line; // 栏内内容（含混标记行）原样
+      }
+      return fence ? line : line.replace(/^(#{1,5})([ \t]+)/, "#$1$2");
+    })
+    .join("\n");
+}
+```
+
+（b）`readNote` 读失败的 catch 内、`return` 之前插入一行：
+
+```js
+    console.warn(`[obsidianEmbed] 读取嵌入笔记失败，已降级为空笔记：${absPath}`);
+```
+
+（c）`tests/fixtures/vault/01.组会材料/02.论文笔记/Fence.md` 的 ` ```bash ` 围栏内（`echo hi` 之后、闭栏之前）插入两行：
+
+```
+~~~
+# 波浪线后注释不降级
+```
+
+（d）`tests/embed.test.mjs` 两处断言追加——
+
+用例「围栏内 # 注释不被降级，外部标题照常降级」的 `assert.match(html, /<h3[^>]*>外部小节/, ...)` 之后追加：
+
+```js
+  assert.ok(html.includes("# 波浪线后注释不降级"), "混标记栏内注释应原样");
+  assert.ok(!html.includes("## 波浪线后注释不降级"), "混标记栏内注释不应被降级");
+```
+
+用例「畸形 frontmatter 不炸 build，原文可见降级」的 `assert.ok(html.includes("坏头降级正文"), "正文应可见");` 之后追加：
+
+```js
+  assert.ok(html.includes("title: [未闭合"), "坏 frontmatter 应原文可见");
+```
+
+（e）运行：`npm run test`
+
+预期：PASS，**17 个用例**仍全绿。注意落子顺序影响中间态：(c)(d) 先落而 (a) 未落时围栏新断言必红（旧逻辑会翻转混标记行与后续栏态），(a)-(d) 全部落地后必须 17/17——若全落地后仍非 17/17 → BLOCKED 汇报，勿提交。
+
+（f）Commit（门禁）：
+
+```bash
+git add docs/.vitepress/plugins/obsidianEmbed.ts tests/embed.test.mjs tests/fixtures/vault/01.组会材料/02.论文笔记/Fence.md
+git commit -m "fix(obsidian-embed): 围栏标记配对与读失败可见性（任务3质量结转）"
+```
 
 - [ ] **步骤 1：写失败的测试**
 
