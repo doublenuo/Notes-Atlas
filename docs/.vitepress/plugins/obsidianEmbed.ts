@@ -33,6 +33,12 @@ export function createResolver(docsRoot) {
     return out;
   }
 
+  // 文件清单索引：进程内建一次，与正结果缓存同生命周期（任务3质量结转#5，裁决接受语义代价）——
+  // 索引建立后 dev 新建的非论文目录笔记需重启才可被裸目标命中；
+  // 论文目录（level-2 existsSync）与带 / 的路径目标始终实时，不受索引影响
+  let fileIndex = null;
+  const getIndex = () => (fileIndex ??= walk(docsRoot));
+
   return function resolveNote(target) {
     const key = target.replace(/\.md$/i, "");
     if (cache.has(key)) return cache.get(key);
@@ -51,7 +57,7 @@ export function createResolver(docsRoot) {
       if (existsSync(inPapers)) {
         result = toRel(inPapers);
       } else {
-        const matches = walk(docsRoot)
+        const matches = getIndex()
           .filter((f) => basename(f) === key + ".md")
           .sort();
         if (matches.length > 1) {
@@ -60,19 +66,19 @@ export function createResolver(docsRoot) {
         if (matches.length) result = toRel(matches[0]);
       }
     }
-    if (result) cache.set(key, result); // 负结果不缓存：dev 下新建笔记可被即时解析
+    if (result) cache.set(key, result); // 正结果缓存；负结果不逐键缓存（论文目录/带路径目标实时；全库裸目标经文件清单索引，语义代价见上）
     return result;
   };
 }
 
-/** 读笔记：CRLF 归一、剥 frontmatter（畸形不炸）、围栏感知标题降级（行首 ATX +1 级，H6 不变）、取 title/permalink */
-export function readNote(absPath) {
+/** 读笔记：CRLF 归一、剥 frontmatter（畸形不炸）、围栏感知标题降级（行首 ATX +1 级，H6 不变）、取 title/permalink；context 为宿主页 relativePath，仅用于读失败告警归因 */
+export function readNote(absPath, context) {
   let raw;
   try {
     raw = readFileSync(absPath, "utf-8").replace(/\r\n?/g, "\n");
   } catch {
     // 读失败（TOCTOU 删除/权限）：空笔记降级，不炸 build
-    console.warn(`[obsidianEmbed] 读取嵌入笔记失败，已降级为空笔记：${absPath}`);
+    console.warn(`[obsidianEmbed] 读取嵌入笔记失败，已降级为空笔记：${absPath}（页面：${context ?? "unknown"}）`);
     return { title: basename(absPath, ".md"), permalink: "", content: "" };
   }
   let data = {};
@@ -156,7 +162,7 @@ function createEmbedRule(md, resolveNote) {
     if (stack.includes(found.absPath)) return warn(`⚠️ 嵌入循环：${target}`);
     if (stack.length >= MAX_EMBED_DEPTH) return warn(`⚠️ 嵌入层级超过 ${MAX_EMBED_DEPTH} 层：${target}`);
 
-    const note = readNote(found.absPath);
+    const note = readNote(found.absPath, state.env.relativePath);
     const open = state.push("na_embed_open", "", 0);
     open.meta = {
       href: noteHref(found.relPath, note.permalink),
@@ -211,7 +217,7 @@ function createWikilinkRule(resolveNote) {
 
     const found = resolveNote(target);
     if (found) {
-      const note = readNote(found.absPath);
+      const note = readNote(found.absPath, state.env.relativePath);
       const linkOpen = state.push("link_open", "a", 1);
       linkOpen.attrs = [["href", noteHref(found.relPath, note.permalink)]];
       const text = state.push("text", "", 0);
