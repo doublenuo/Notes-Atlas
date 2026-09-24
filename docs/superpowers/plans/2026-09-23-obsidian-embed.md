@@ -1335,6 +1335,8 @@ process.exit(ok && out.warnings === 0 && out.cards === 1 && out.outlineHasNoteTi
 
 预期退出码 0，输出要点：`reachable:true`、`cards:1`、`warnings:0`、`sourceHref` 为 `encodeURI` 后的源路径（中文呈百分号编码，以 `/Multi-Loco` 结尾；该篇无 permalink 时）、`sourceText:"📎 论文笔记 · Multi-Loco"`、`h2InContent ≥ 1`、`outlineHasNoteTitle:true`、`literalLeft:0`、`errors:[]`。
 
+实测注（任务 5 执行披露，控制器已裁决）：`#VPDoc` 选择器在 vitepress-theme-teek 下不存在（`vpDocExists:false`），`h2InContent` 恒为 0 属**统计口径假象**——嵌入 H1 降级已用 `document.querySelectorAll('h2, h3')` 实测证实（卡片内恰 1 次 `Multi-Loco: Unifying…`、正文 H2 共 3），且 `outlineHasNoteTitle:true`。以该清单与大纲断言为准，勿据 `h2InContent:0` 判失败；脚本不入库，无需回改。
+
 **若 `outlineHasNoteTitle:false`（大纲缺嵌入标题）**：`md.block.parse` 形态下嵌入标题由外层 core 链随宿主页在同一 token 流中统一收集，`block.parse` 传入的 env 不参与大纲管线——该症状不应由本插件的 env 写法引起。**禁止**改回 `md.parse` 或改写 parse 形态（会复现双重渲染，护栏断言"正文恰 1 次、锚点恰 2"必红）；此时停下以 BLOCKED 上报控制器，附冒烟输出与该页 `document.querySelectorAll('h2, h3')` 实测清单，由控制器裁决 vitepress 大纲管线层面的修法。
 
 （dev server 未起时先跑：`cd /home/weno/works/Notes-Atlas && (npm run docs:dev -- --port 5173 > /tmp/opencode/dev.log 2>&1 &) `，等 5s 再执行冒烟。）
