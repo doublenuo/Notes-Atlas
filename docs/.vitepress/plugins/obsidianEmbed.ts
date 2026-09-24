@@ -11,7 +11,7 @@ import matter from "gray-matter";
 export const PAPER_NOTES_DIR = "01.组会材料/02.论文笔记";
 const EXCLUDED_DIRS = new Set([".vitepress", "node_modules", "dist", "public", "@fragment"]);
 
-/** 创建带缓存的文件解析器：(target) => { absPath, relPath } | null */
+/** 创建带缓存的文件解析器：(target) => { absPath, relPath } | null。target 为纯路径——`#标题`/`|别名` 写法属规格非目标，按字面目标解析、未命中回退原文渲染 */
 export function createResolver(docsRoot) {
   const cache = new Map();
 
@@ -60,7 +60,7 @@ export function createResolver(docsRoot) {
         if (matches.length) result = toRel(matches[0]);
       }
     }
-    cache.set(key, result);
+    if (result) cache.set(key, result); // 负结果不缓存：dev 下新建笔记可被即时解析
     return result;
   };
 }
