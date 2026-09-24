@@ -959,6 +959,95 @@ git add docs/.vitepress/plugins/obsidianEmbed.ts tests/wikilink.test.mjs
 git commit -m "feat(obsidian-embed): [[]] 行内站内链接"
 ```
 
+- [ ] **步骤 6：任务 4 质量修复（段落续行中断 + 回退保真 + 边界回归锁）**
+
+质量审查裁决：Important-1 采纳**方案 ①**——规格 §3「独立成行」按字面执行，嵌入行可中断段落（控制器已同步补记规格 §3/§5）；Minor-2/3/5/6 就地修复（断言全部**折入既有用例**，`test(` 计数保持 20，计数链不变）；Minor-4（读失败告警补页面上下文）**结转任务 5 步骤 0**；性能结论记录在案——全库行内命中仅 1 处、嵌入 65 处每 build 各读一次，**暂不加** `readNote` 缓存（阈值：行内命中 >~200 次/build 或嵌入笔记开始携带 `[[ ]]` 时，在 `obsidianEmbed()` 内加 `Map<absPath, note>`，与 resolver cache 同生命周期）。
+
+（a）**先改测试（红相）**——`tests/wikilink.test.mjs` 三处：
+
+用例 1 在既有两条断言之后追加（Minor-6 顺序锁，天然绿）：
+
+```js
+  assert.ok(html.indexOf("请先阅读") < html.indexOf("<a "), "正文应在链接之前");
+```
+
+用例 2 **整块替换**（标题改写 + Minor-2 空格保真 + Minor-5 非目标/跨行/反引号回归锁）：
+
+```js
+test("[[ ]] 保持原文：未命中目标、|别名/#标题非目标、跨行、反引号代码", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("引用[[不存在的章节]]结束");
+  assert.ok(html.includes("[[不存在的章节]]"));
+  const spaced = md.render("引用[[ 不存在章节 ]]结束");
+  assert.ok(spaced.includes("[[ 不存在章节 ]]"), "字面回退应保留原文空格（trim 仅用于查找）");
+  const nonGoal = md.render("见[[Alpha|别名]]与[[Alpha#小节]]");
+  assert.ok(nonGoal.includes("[[Alpha|别名]]"), "|别名 非目标应保持原文");
+  assert.ok(nonGoal.includes("[[Alpha#小节]]"), "#标题 非目标应保持原文");
+  const multiline = md.render("[[Alpha\n下一行]]");
+  assert.ok(multiline.includes("[[Alpha") && multiline.includes("下一行]]"), "跨行应保持原文");
+  const inCode = md.render("`[[Alpha]]`");
+  assert.ok(inCode.includes("<code>[[Alpha]]</code>"), "反引号代码内应原样");
+  assert.ok(!inCode.includes("na-embed"), "反引号代码内不应触发嵌入");
+});
+```
+
+用例 3 在既有两条断言之后追加（Important-1 判别断言，当前必红）：
+
+```js
+  const lazy = md.render("前文行\n![[Alpha]]");
+  assert.ok(lazy.includes('class="na-embed"'), "段落续行中的独立嵌入行应中断段落并嵌入");
+  assert.ok(lazy.includes("<p>前文行</p>"), "前文行应独立成段");
+```
+
+运行：`npm run test` → 预期 **18 pass / 2 fail**（用例 2 红于空格保真、用例 3 红于段落吞行，其余 18 绿）。非此形态 → BLOCKED 汇报实际输出，勿提交。
+
+（b）**再改实现（绿相）**——`docs/.vitepress/plugins/obsidianEmbed.ts` 三处：
+
+将注册行
+
+```js
+  md.block.ruler.before("paragraph", "na_embed", createEmbedRule(md, resolveNote));
+```
+
+改为（第 4 参 options，允许嵌入行中断段落；silent 探测路径 L140 已就绪、零 I/O）：
+
+```js
+  md.block.ruler.before("paragraph", "na_embed", createEmbedRule(md, resolveNote), {
+    alt: ["paragraph"],
+  });
+```
+
+在 `function createWikilinkRule(resolveNote) {` 上方加 JSDoc（Minor-3，与文件其余单元注释风格一致）：
+
+```js
+/** 行内 [[目标]] → 站内链接：命中 → link_open（noteHref 回链，文本取 target）；未命中/|别名/#标题/跨行/前导 ! → 保持原文（回退文本取原始切片，保留空格） */
+```
+
+else 分支（Minor-2）将
+
+```js
+      text.content = `[[${target}]]`;
+```
+
+改为
+
+```js
+      text.content = src.slice(pos, end + 2);
+```
+
+（`src` 已在函数头解构；found 分支的链接文本仍用 trim 后的 target，不变。）
+
+（c）运行：`npm run test` → 预期 **PASS，20/20**。非 20/20 → BLOCKED 汇报，勿提交。
+
+（d）Commit：
+
+```bash
+git add docs/.vitepress/plugins/obsidianEmbed.ts tests/wikilink.test.mjs
+git commit -m "fix(obsidian-embed): 段落续行中断与字面回退保真（任务4质量修复）"
+```
+
+（e）规格 §3/§5 已由控制器补记（与本计划修订同批提交），实现者**不改**规格与计划文件。
+
 ---
 
 ### 任务 5：接线 config + 卡片样式 + dev 冒烟
