@@ -1,0 +1,46 @@
+/**
+ * 手机端(≤768px)：首页大图壁纸(fullImg) → 主题网格壁纸观感
+ * 设计规格：docs/superpowers/specs/2026-09-27-mobile-grid-banner-design.md
+ * 依赖：本文件在主题 CSS 之后加载（theme/index.ts 的 import 顺序）
+ */
+@media (max-width: 768px) {
+  /* 1) 背景与内容堆叠同一格，格高取两者较大者（等价 partImg「内容在图内」，内容再长也不溢出） */
+  .tk-banner.is-full-img {
+    display: grid;
+    grid-template-areas: "stack";
+  }
+
+  .tk-banner.is-full-img > * {
+    grid-area: stack;
+  }
+
+  /* 2) 背景图 → 主题默认网格点阵（唯一必须 !important：压过元素内联 style 的图片变量） */
+  .tk-banner-bg-image.full {
+    position: relative;
+    top: auto;
+    height: auto;
+    min-height: 450px;
+    --tk-banner-img-bg: var(--tk-bg-img-default) !important;
+  }
+
+  /* 3) 大图专属装饰：遮罩、波浪纹隐藏 */
+  .tk-banner-bg-image.full .mask,
+  .tk-banner-waves {
+    display: none;
+  }
+
+  /* 4) 内容区回落 part 排版（height:100vh→auto；底部留白 15vh→10vh）。
+   *    .no-feature 选择器与主题特异性持平（4 类），靠本文件后加载取胜 */
+  .tk-banner.is-full-img .tk-banner__content,
+  .tk-banner.is-full-img .tk-banner__content.no-feature {
+    height: auto;
+    padding-bottom: 10vh;
+  }
+
+  /* 5) 导航：主题 JS 只看配置，手机端仍会加 full-img-nav-bar（透明底+白字），
+   *    且移除时机按 100vh 计算，banner 缩到 450px 后白字会浮在浅色内容上。
+   *    改实底 #28282d（与网格底色同色）→ 其全部白字规则在任意滚动位置可读。 */
+  .tk-layout .VPNavBar.home.full-img-nav-bar:not(.screen-open) {
+    background-color: #28282d !important;
+  }
+}

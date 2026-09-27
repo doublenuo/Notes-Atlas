@@ -27,6 +27,7 @@ import "./styles/code-bg.scss";
 import "./styles/homepage.scss";
 import "./styles/iframe.scss";
 import "./styles/embed.scss";
+import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变换（须在主题 CSS 之后）
 
 export default {
   extends: Teek,
