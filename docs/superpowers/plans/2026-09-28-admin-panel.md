@@ -167,6 +167,7 @@ admin/server/.state/
 
 - 旧:`  \`handle_path /admin/api/* { reverse_proxy 127.0.0.1:8477 }\`;改前备份(沿用 \`.bak-日期\` 惯例)、`
 - 新:`  \`handle_path /admin/api/* { reverse_proxy notes-admin:8477 }\`(后端容器加入既有外部网络 \`caddy-network\`,按容器名直连;宿主不发布端口,公网不可直连);改前备份(沿用 \`.bak-日期\` 惯例)、`
+  (注:规格该行其后在任务 2 审查轮又演进——反代块内增加了 \`header_up X-Real-IP {remote_host}\` 子指令,见步骤 6.3 审查落点与步骤 9.8 snippet;本行保留任务 0 当时的替换原文。)
 
 替换 3(§8.2 依赖安装):
 
@@ -2820,7 +2821,7 @@ if "notes-admin" in s:
 m = re.search(r"blogs\.lovetulin\.cn[^{\n]*\{\n", s)
 if not m:
     raise SystemExit("未找到 blogs.lovetulin.cn 站点块,停下")
-snippet = "\thandle_path /admin/api/* {\n\t\theader_up X-Real-IP {remote_host}\n\t\treverse_proxy notes-admin:8477\n\t}\n"
+snippet = "\thandle_path /admin/api/* {\n\t\treverse_proxy notes-admin:8477 {\n\t\t\theader_up X-Real-IP {remote_host}\n\t\t}\n\t}\n"
 s = s[: m.end()] + snippet + s[m.end():]
 open(p, "w").write(s)
 print("inserted at offset", m.end())

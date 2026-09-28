@@ -37,7 +37,7 @@
   (发布必须经 docker.sock 拷入容器——实现用 Docker 归档 API `PUT /containers/<id>/archive`,语义等价 `docker cp -a dist/.`,镜像内不装 docker CLI;实测 Caddy 容器静态目录无 bind mount;docker.sock 等同 root,
   风险接受条件:单管理员自用、API 仅经 HTTPS+登录可达)。
 - **Caddy**:共享 Caddyfile(`/data/stacks/caddy/Caddyfile`)仅新增一段
-  `handle_path /admin/api/*` 块两条指令:`header_up X-Real-IP {remote_host}`(覆写注入真实客户端 IP 供限流键用)+ `reverse_proxy notes-admin:8477`(后端容器加入既有外部网络 `caddy-network`,按容器名直连;宿主不发布端口,公网不可直连);改前备份(沿用 `.bak-日期` 惯例)、
+  `handle_path /admin/api/*` 内 `reverse_proxy notes-admin:8477 { header_up X-Real-IP {remote_host} }`(`header_up` 是 reverse_proxy 子指令,覆写注入真实客户端 IP 供限流键用;后端容器加入既有外部网络 `caddy-network`,按容器名直连;宿主不发布端口,公网不可直连);改前备份(沿用 `.bak-日期` 惯例)、
   `caddy validate` 通过后 `caddy reload`(graceful 零停机),不改动既有 handle。
 - **管理 UI**:独立 Vite+Vue3 工程 `admin/ui/`,产物输出 `docs/public/admin/`(gitignore),
   随 `docs:build` 一并发布到 `/admin/`。**无任何 CDN**(服务器为国内网络环境)。
