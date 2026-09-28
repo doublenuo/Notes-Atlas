@@ -726,6 +726,7 @@ git commit -m "feat(admin): frontmatter 表单化纯函数(hero 嵌套键保真)
 **审查落点(任务 3 质量审查 + 规格 §7"扩展白名单",本任务一并落,下方测试/实现全文已含,照抄即可):**
 - `create`/`write` 入口加 `.md` 扩展白名单(非 `rel.endsWith(".md")` 即 400 `BAD_EXT`):封堵非 md 注入向量——`.vitepress/config.ts` 直写、`public/*.html` 注入(存储型 XSS)。
 - 断言并入既有"write:路径穿越"用例(改名 +2 行),**用例数恒 15**;`removeFile`/`rename` 暂不加白名单(删除/改名仅 git 可恢复的破坏面),残留记任务 10 清单①。
+- **既有缺陷修正(任务 3 复审干跑发现,源自计划原始提交 `bdfafea`)**:`create` 模板断言原写 `title: dir1/b`,而实现 `buildTemplate(path.basename(rel))` 按规格 §6"title=文件名"产 `title: b`——断言已改为 `title: b`,否则步骤 4.4 必红、且会诱导实现方为过测试改错 `buildTemplate` 语义。
 
 - [ ] **步骤 4.1:编写失败的测试(15 个用例)**
 
@@ -776,7 +777,7 @@ test("create:模板内容 + git add/commit 两连", async () => {
   const { files, docsDir, gitCalls } = mkSite();
   await files.create("dir1/b.md");
   const content = fs.readFileSync(path.join(docsDir, "dir1", "b.md"), "utf8");
-  assert.ok(content.includes("title: dir1/b"), "模板 title=文件名");
+  assert.ok(content.includes("title: b"), "模板 title=文件名(basename 去目录与 .md,规格 §6)");
   assert.ok(content.includes("date:"), "模板带 date");
   assert.deepEqual(gitCalls[0], ["add", "-A", "docs"]);
   assert.deepEqual(gitCalls[1], ["commit", "-m", "admin(create): dir1/b.md"]);
@@ -2309,7 +2310,7 @@ async function del(node) {
 
 - [ ] **步骤 7.5:写 EditorView.vue 与 BuildStatus.vue**
 
-**审查落点(任务 3 质量审查):** `setField` 全文已改为"先 `applyForm` 算出新 content、成功才依次赋值 + try/catch"(原实现先改 `frontmatter.value` 再回写源码,回写抛错时表单与缓冲区分叉);照抄下方全文。
+**审查落点(任务 3 质量审查):** `setField` 全文已改为"先 `applyForm` 算出新 content、成功才依次赋值 + try/catch"(原实现先改 `frontmatter.value` 再回写源码,回写抛错时表单与缓冲区分叉);照抄下方全文。备注:失败分支 `frontmatter.value` 未变 → `:value` 绑定不回写 DOM,输入框可能残留刚被拒的文本(数据层正确、仅外观);若在意,catch 后强制回填或给输入加 `:key`。
 
 写入 `admin/ui/src/components/EditorView.vue`(全文):
 
@@ -3086,7 +3087,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
-7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单;均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、键序、缩进、日期格式,补无尾换行、去 BOM),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定。
+7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单;均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定。
 
 ---
 
