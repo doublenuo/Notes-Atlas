@@ -599,22 +599,25 @@ test("表单回写 title 后,hero 等嵌套键原样保真", () => {
     actions: [{ theme: "brand", text: "去读书", link: "/001" }],
   });
   assert.equal(body, parseDoc(HERO_SRC).body, "正文不得被改动");
+  assert.equal(parseDoc(HERO_SRC).frontmatter.title, undefined, "applyForm 不得经全局缓存污染原数据");
+  assert.equal(applyForm(out, { title: "新标题" }), out, "同输入回写幂等");
 });
 
 test("只改 FORM_FIELDS 已知字段,表单里的未知键被忽略", () => {
   assert.deepEqual(FORM_FIELDS, ["title", "date", "tags", "categories", "sticky"]);
-  const out = applyForm(HERO_SRC, { title: "t2", evil: "x", layout: "docs" });
+  const out = applyForm(HERO_SRC, { title: "t2", evil: "x", layout: "docs", sticky: false });
   const { frontmatter } = parseDoc(out);
   assert.equal(frontmatter.title, "t2");
   assert.equal(frontmatter.layout, "home", "未知键不进表单通道;layout 保持原值");
   assert.equal("evil" in frontmatter, false);
+  assert.equal(frontmatter.sticky, false, "falsy 布尔值必须真实落盘而非丢键");
 });
 
 test("无 frontmatter 的文件补出头部且正文保留", () => {
-  const out = applyForm("# 只有正文\n\n段落。\n", { title: "T", tags: ["a"] });
+  const out = applyForm("# 只有正文\n\n段落。\n", { title: "T", tags: ["a:b", "#hash", "标签,逗号"] });
   const { frontmatter, body } = parseDoc(out);
   assert.equal(frontmatter.title, "T");
-  assert.deepEqual(frontmatter.tags, ["a"]);
+  assert.deepEqual(frontmatter.tags, ["a:b", "#hash", "标签,逗号"], "YAML 特殊字符值往返保真");
   assert.ok(body.includes("段落。"));
 });
 
@@ -632,7 +635,11 @@ test("parseDoc 往返:原文件不被改动", () => {
   const { frontmatter, body } = parseDoc(HERO_SRC);
   assert.equal(frontmatter.layout, "home");
   assert.ok(body.trimStart().startsWith("# 正文开始"), "正文容忍分隔符后空行、以标题开始");
-  assert.equal(HERO_SRC.includes("# 正文开始"), true);
+  // 回归:正文以 --- 开头的文档,applyForm 不得把正文误当 frontmatter 毁掉
+  const tricky = "---\ntitle: a\n---\n---\n\n# x\n正文\n";
+  const t = parseDoc(applyForm(tricky, { title: "b" }));
+  assert.equal(t.frontmatter.title, "b");
+  assert.ok(t.body.includes("# x") && t.body.includes("正文"), "正文以 --- 开头时须完整保留");
 });
 ```
 
@@ -653,19 +660,27 @@ import matter from "gray-matter";
 
 export const FORM_FIELDS = ["title", "date", "tags", "categories", "sticky"];
 
-/** 解析为 {frontmatter(对象), body(正文)}。 */
+/**
+ * 解析为 {frontmatter(对象), body(正文)}。
+ * 每次返回全新数据(不共享 gray-matter 全局缓存),调用方可安全持有。
+ */
 export function parseDoc(content) {
-  const { data, content: body } = matter(content);
+  const { data, content: body } = matter(content, {});
   return { frontmatter: data, body };
 }
 
-/** 只把表单里出现的已知字段合并进现有 frontmatter,其余键原样透传;正文不动。 */
+/**
+ * 只把表单里出现的已知字段合并进现有 frontmatter,其余键原样透传;正文不动。
+ * 契约:①form 缺席或值为 undefined 的键 = 保留原值(部分更新);②值类型 string / string[] / boolean|number;
+ * ③返回全新字符串,入参不变;④回写会归一化 frontmatter(注释、引号、数组风格、缩进、日期格式可能被规整)。
+ * 传 `{}` 关闭 gray-matter 全局缓存;stringify 传 file 对象,避免把正文再当 frontmatter 解析。
+ */
 export function applyForm(content, form) {
-  const { data, content: body } = matter(content);
+  const file = matter(content, {});
   for (const k of FORM_FIELDS) {
-    if (Object.prototype.hasOwnProperty.call(form, k)) data[k] = form[k];
+    if (Object.prototype.hasOwnProperty.call(form, k) && form[k] !== undefined) file.data[k] = form[k];
   }
-  return matter.stringify(body, data);
+  return matter.stringify(file, file.data);
 }
 
 /** 新建文档模板:title=文件名、date=当前时间、tags/categories 空数组。 */
@@ -694,6 +709,12 @@ git commit -m "feat(admin): frontmatter 表单化纯函数(hero 嵌套键保真)
 - 原计划测试 5 `assert.ok(body.startsWith("# 正文开始"))` 与 `HERO_SRC` 的"分隔符后空行"矛盾:gray-matter@4.0.3 把 `---` 之后的空行保留在 `body` 首部(`body = "\n# 正文开始"` 起),`startsWith` 必假——**测试 5 断言 × 逐字实现 × 夹具空行三者不可兼得**,实测确认且排除抄写偏差(实现者 `cat -A` 核对)。修正 = 断言原位改为 `body.trimStart().startsWith(...)`(上方测试全文已同步),实现与夹具零改动;测试 1 的 body 往返相等本就证明 applyForm/gray-matter 保真,这才是被测契约。测试 4 的 `startsWith`(buildTemplate 产出无空行)不动。
 - 红阶段 `pass 51 / fail 1`(`ERR_MODULE_NOT_FOUND`)先于实现,先红后绿未颠倒;绿阶段单跑 5/5、全量 **56/56**。
 
+**审查修复轮(质量审查 2 必须 + 建议全采纳,提交 `abdd5c2`):**
+- **必须①**:`applyForm` 曾就地改写 gray-matter 的**全局缓存对象**(无 options 时命中模块级 `matter.cache`,仅浅拷贝、`data` 共享)→ 跨文件串数据(仓库恰有字节相同的双胞胎 md:改 A 的字段会串进 B 的表单,再保存即写坏 B;测试 5"原文件不被改动"当场为假)+ 缓存键无上限(300 次调用 5→605,服务端 `GET /file` 各读各缓存)。修 = `parseDoc`/`applyForm` 两处改 `matter(content, {})`(传 truthy options 关缓存)。
+- **必须②**:`matter.stringify(body, data)` 会把 **body 再当 frontmatter 解析**,正文以 `---` 开头(分割线/hr)时一次保存即毁正文;修 = `const file = matter(content, {}); … return matter.stringify(file, file.data)` 传 file 对象;审查者离线对全站 190 篇实测回写**零差异**、5/5 绿。
+- **建议同批落地**:测试 5 的同义反复断言换 `---` 正文回归;测试 1 补"缓存不污染 + 幂等"、测试 2 补 `sticky: false` falsy 落盘、测试 3 的 tags 换 YAML 特殊字符值;`form[k] !== undefined` 守卫;JSDoc 四条契约(缺席/undefined=保留原值、值类型、入参不变、回写归一化)。**`test()` 恒 5、全量 56。**
+- **建议外移落点**:`.md` 扩展白名单 → 任务 4(审查落点已插入其节首);`setField` 防御 → 任务 7.5(同);首存归一化代价与 RMW 无锁 → 任务 10 清单⑦/⑧(①同步改写)。
+
 ---
 
 ## 任务 4:目录树与文档 CRUD(TDD)
@@ -701,6 +722,10 @@ git commit -m "feat(admin): frontmatter 表单化纯函数(hero 嵌套键保真)
 **文件:**
 - 创建:`tests/admin/files.test.mjs`
 - 创建:`admin/server/src/files.js`
+
+**审查落点(任务 3 质量审查 + 规格 §7"扩展白名单",本任务一并落,下方测试/实现全文已含,照抄即可):**
+- `create`/`write` 入口加 `.md` 扩展白名单(非 `rel.endsWith(".md")` 即 400 `BAD_EXT`):封堵非 md 注入向量——`.vitepress/config.ts` 直写、`public/*.html` 注入(存储型 XSS)。
+- 断言并入既有"write:路径穿越"用例(改名 +2 行),**用例数恒 15**;`removeFile`/`rename` 暂不加白名单(删除/改名仅 git 可恢复的破坏面),残留记任务 10 清单①。
 
 - [ ] **步骤 4.1:编写失败的测试(15 个用例)**
 
@@ -786,9 +811,11 @@ test("write:落盘 + admin(write) commit", async () => {
   assert.deepEqual(gitCalls.at(-1), ["commit", "-m", "admin(write): index.md"]);
 });
 
-test("write:路径穿越 → 400", async () => {
+test("write:路径穿越/非 .md → 400(create 同检)", async () => {
   const { files } = mkSite();
   await assert.rejects(() => files.write("../evil.md", "x"), (e) => e.status === 400);
+  await assert.rejects(() => files.write("raw.txt", "# 非 md"), (e) => e.status === 400, "write 仅接受 .md");
+  await assert.rejects(() => files.create("evil.txt"), (e) => e.status === 400, "create 仅接受 .md");
 });
 
 test("removeFile:成功 + admin(delete) commit", async () => {
@@ -920,6 +947,7 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     },
 
     async create(rel) {
+      if (!rel.endsWith(".md")) throw httpError(400, "BAD_EXT", "仅支持 .md 文件");
       const abs = safeResolve(docsDir, rel);
       if (await exists(abs)) throw httpError(409, "EXISTS", "已存在");
       if (!(await isDir(path.dirname(abs)))) throw httpError(404, "PARENT_MISSING", "父目录不存在");
@@ -929,6 +957,7 @@ export function createFiles({ docsDir, siteDir, execGit }) {
 
     async write(rel, content) {
       if (typeof content !== "string") throw httpError(400, "BAD_BODY", "content 必须是字符串");
+      if (!rel.endsWith(".md")) throw httpError(400, "BAD_EXT", "仅支持 .md 文件");
       const abs = safeResolve(docsDir, rel);
       if (!(await isDir(path.dirname(abs)))) throw httpError(404, "PARENT_MISSING", "父目录不存在");
       await fs.writeFile(abs, content, "utf8");
@@ -2280,6 +2309,8 @@ async function del(node) {
 
 - [ ] **步骤 7.5:写 EditorView.vue 与 BuildStatus.vue**
 
+**审查落点(任务 3 质量审查):** `setField` 全文已改为"先 `applyForm` 算出新 content、成功才依次赋值 + try/catch"(原实现先改 `frontmatter.value` 再回写源码,回写抛错时表单与缓冲区分叉);照抄下方全文。
+
 写入 `admin/ui/src/components/EditorView.vue`(全文):
 
 ```vue
@@ -2336,10 +2367,14 @@ watch(
   { immediate: true },
 );
 
-/** 表单改动立即写回源码缓冲区(双向同步) */
+/** 表单改动立即写回源码缓冲区(双向同步);先算后赋,失败不落任何一半 */
 function setField(k, v) {
-  frontmatter.value = { ...frontmatter.value, [k]: v };
-  content.value = applyForm(content.value, { [k]: v });
+  try {
+    content.value = applyForm(content.value, { [k]: v });
+    frontmatter.value = { ...frontmatter.value, [k]: v };
+  } catch (e) {
+    msg.value = "YAML 解析失败,请先修正源码:" + e.message;
+  }
 }
 /** 源码改动(失焦)后回读 frontmatter 到表单 */
 function syncFromSource() {
@@ -3051,7 +3086,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
-7. 技术债与风险接受存档(任务 0/1 执行注记的落点):①写路径未校验树排除表(`.vitepress/config.ts` 可经 API 直写,靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定)。
+7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单;均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、键序、缩进、日期格式,补无尾换行、去 BOM),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定。
 
 ---
 
