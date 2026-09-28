@@ -44,6 +44,8 @@ test("篡改签名或载荷 → null", () => {
   const [body, sig] = tok.split(".");
   const forged = Buffer.from(JSON.stringify({ user: "admin", iat: 1, exp: 9999999999999 })).toString("base64url");
   assert.equal(auth.verify(`${forged}.${sig}`), null);
+  assert.equal(auth.verify(undefined), null); // 无 cookie 时任务6 onRequest 传 undefined
+  assert.equal(auth.verify("nodot"), null); // 无分隔符的畸形 token
 });
 
 test("过期 token → null", () => {
@@ -64,15 +66,22 @@ test("登出后旧 token 失效,登出后新登录的 token 有效", () => {
 });
 
 test("限流:同 IP 一分钟内第 10 次放行、第 11 次拒绝", () => {
-  const { auth } = mkAuth();
+  const { auth, tick } = mkAuth();
   for (let i = 0; i < 10; i++) assert.equal(auth.rateAllow("1.2.3.4"), true, `第 ${i + 1} 次`);
   assert.equal(auth.rateAllow("1.2.3.4"), false);
   assert.equal(auth.rateAllow("5.6.7.8"), true, "不同 IP 不受影响");
+  tick(60001); // 窗口滑出后该 IP 恢复放行
+  assert.equal(auth.rateAllow("1.2.3.4"), true, "61s 后窗口重置");
 });
 
 test("登出把全局失效点持久化到 stateDir/revoke", () => {
-  const { auth, stateDir } = mkAuth();
+  const { auth, tick, stateDir } = mkAuth();
+  const tok = auth.login("admin", PASS);
+  tick(1);
   auth.logout();
   const saved = Number(fs.readFileSync(path.join(stateDir, "revoke"), "utf8"));
   assert.ok(Number.isFinite(saved) && saved > 0);
+  // 跨实例(等价容器重启)读同一失效点:旧 token 必须失效
+  const auth2 = createAuth({ secret: "unit-test-secret", user: "admin", passHash: HASH, stateDir, now: () => saved });
+  assert.equal(auth2.verify(tok), null, "新实例读同一 revoke 后旧 token 失效");
 });

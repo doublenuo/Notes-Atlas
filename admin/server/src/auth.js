@@ -19,6 +19,9 @@ export function createAuth({
   windowMs = 60000,
   limit = 10,
 }) {
+  if (typeof secret !== "string" || secret.length === 0) {
+    throw new Error("createAuth: secret 必填且非空(安全模块对自己的构造参数负责)");
+  }
   fs.mkdirSync(stateDir, { recursive: true });
   const revokeFile = path.join(stateDir, "revoke");
   const hits = new Map(); // ip -> [时间戳]
@@ -39,7 +42,8 @@ export function createAuth({
   return {
     /** 成功返回 token,失败 null。 */
     login(u, p) {
-      if (u !== user || !bcrypt.compareSync(String(p ?? ""), passHash)) return null;
+      const ok = bcrypt.compareSync(String(p ?? ""), passHash); // 无条件恒时比较,防用户名枚举时序(CWE-203)
+      if (u !== user || !ok) return null;
       const t = now();
       return sign({ user, iat: t, exp: t + 30 * DAY });
     },
@@ -63,9 +67,11 @@ export function createAuth({
       if (p.user !== user || p.exp <= now() || p.iat < revokeAt()) return null;
       return p;
     },
-    /** 写全局失效点:iat 早于此刻的 token 一律拒绝(持久化,容器重启不复活)。 */
+    /** 写全局失效点:iat 早于此刻的 token 一律拒绝(原子写,容器重启不复活)。 */
     logout() {
-      fs.writeFileSync(revokeFile, String(now()));
+      const tmp = `${revokeFile}.${process.pid}.tmp`;
+      fs.writeFileSync(tmp, String(now()));
+      fs.renameSync(tmp, revokeFile); // rename 原子替换,防半截文件把失效点静默清零
     },
     /** 每次登录尝试计数,超限 false。 */
     rateAllow(ip) {
