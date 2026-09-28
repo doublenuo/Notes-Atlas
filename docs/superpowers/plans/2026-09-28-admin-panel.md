@@ -195,6 +195,11 @@ git commit -m "chore(admin): 后端包脚手架与依赖(pnpm devDeps、规格�
 
 预期:`git status --short` 中上述路径无残留。
 
+**执行注记(两阶段审查后的补充修复,随后续 `fix(admin)` 提交):**
+- 代码质量审查发现规格四处修订漏了同文档其他旧事实 → 追加修复 4 行:§2 架构图(`notes-admin:8477`、`归档API入容器`)、§2 后端容器 bullet(容器内 `0.0.0.0:8477`、宿主不发布端口)、§7(改为 `caddy-network` 内按容器名可达);全文 `127.0.0.1` 清零(遗留的 `docker cp` 字样均为"语义等价/历史现状"说明,有意保留)。
+- 根 `.gitignore` 追加块补第 4 行 `!admin/server/.env.example`:既有 `.env.*`(第 89 行)会把该模板文件当密件忽略,`git add` 需 `-f`;加否定规则后常规 add 即可。计划原文"追加三行"实为 4 行。
+- `admin/server/package-lock.json` 的 71 条 `resolved` 均为 `registry.npmmirror.com`(本机 `~/.npmrc` 所致);integrity sha512 兜底,服务器在国内、npm ci 走该镜像反而更快——记入收尾报告,不是静默决定。
+
 ---
 
 ## 任务 1:路径安全与排除表(TDD)

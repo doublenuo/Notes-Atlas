@@ -22,17 +22,17 @@
 ```
 本地编辑器 ──git push srv──▶ 服务器仓库 /opt/notes-atlas(唯一真源)
                                  │
-  浏览器 /admin/ ──/admin/api/*──▶ 后端容器(node:20,127.0.0.1:8477)
+  浏览器 /admin/ ──/admin/api/*──▶ 后端容器(node:20,notes-admin:8477)
    (同域静态 SPA)                │  保存=commit;chokidar 监听→构建队列
                                  ▼
-              docs:build → 仓库 dist → docker cp → caddy:/opt/blogs
+              docs:build → 仓库 dist → 归档API入容器 → caddy:/opt/blogs
                                  ▼
         https://blogs.lovetulin.cn(静态站)   /admin/(同域路径)
 ```
 
 - **仓库**:`/opt/notes-atlas`,非 bare,`receive.denyCurrentBranch=updateInstead`
   (本地 `git remote add srv web:/opt/notes-atlas` 后 `git push srv main` 直接更新服务器工作树)。
-- **后端容器**:源码在仓库 `admin/server/`(自带 Dockerfile + compose.yaml),发布 `127.0.0.1:8477`
+- **后端容器**:源码在仓库 `admin/server/`(自带 Dockerfile + compose.yaml),容器内监听 `0.0.0.0:8477`、宿主不发布端口
   (仅共享 Caddy 可反代,公网不可直连);挂载 `/opt/notes-atlas:/srv/site` 与 `/var/run/docker.sock`
   (发布必须经 docker.sock 拷入容器——实现用 Docker 归档 API `PUT /containers/<id>/archive`,语义等价 `docker cp -a dist/.`,镜像内不装 docker CLI;实测 Caddy 容器静态目录无 bind mount;docker.sock 等同 root,
   风险接受条件:单管理员自用、API 仅经 HTTPS+登录可达)。
@@ -112,7 +112,7 @@
 
 - 全部异常返回 `{code, message}`,HTTP 语义码(400/401/404/409/429/500);日志含请求路径但**绝不含密码/token**。
 - 路径穿越、扩展白名单、目录排除(§4);登录限流(§3);cookie httpOnly(SameSite=Strict)。
-- API 仅监听 `127.0.0.1`,经 Caddy HTTPS 暴露;Caddy reload 前 `caddy validate`,失败即中止不重载。
+- API 宿主不发布端口(仅 `caddy-network` 内按容器名可达),经 Caddy HTTPS 暴露;Caddy reload 前 `caddy validate`,失败即中止不重载。
 - 磁盘:构建输出与 git 对象增量已核(服务器 `/` 余 5.5G,构建产物 154M 同分区);
   备份:`Caddyfile.bak-*`、迁移期仓库基线 commit。
 
