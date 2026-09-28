@@ -23,19 +23,52 @@ export function buildApp({ auth, files, queue, config = {} }) {
 
   app.addHook("onRequest", async (req, reply) => {
     if (!req.url.startsWith("/admin/api/")) return;
-    if (req.url.startsWith("/admin/api/login")) return;
+    if (req.url.split("?")[0] === "/admin/api/login") return; // 精确匹配:login?x=1 豁免、/admin/api/loginX 不豁免
     const tok = parseCookie(req.headers.cookie)[COOKIE_NAME];
     if (!auth.verify(tok)) {
       return reply.code(401).send({ code: "UNAUTHENTICATED", message: "未登录或会话过期" });
     }
   });
 
+  // 语义码白名单:与 app.js/files.js 源码字面量逐一对应;框架内部码与 errno 一律不外泄
+  const SEMANTIC = new Set([
+    "UNAUTHENTICATED",
+    "BAD_CREDENTIALS",
+    "RATE_LIMITED",
+    "METHOD_NOT_ALLOWED",
+    "INVALID_PATH",
+    "BAD_EXT",
+    "BAD_BODY",
+    "NOT_FOUND",
+    "NOT_A_FILE",
+    "EXISTS",
+    "PARENT_MISSING",
+    "NOT_EMPTY",
+    "INTERNAL",
+  ]);
+
   app.setErrorHandler((err, req, reply) => {
-    const status = err.status || err.statusCode || 500;
+    let status, code, message;
+    if (typeof err.code === "string" && err.code.startsWith("FST_ERR_CTP_")) {
+      status = 400; // 消除 413/415 越界,封死框架内部码
+      code = "BAD_BODY";
+      message = err.message;
+    } else if (typeof err.code === "string" && SEMANTIC.has(err.code)) {
+      status = err.status || err.statusCode || 500;
+      code = err.code;
+      message = err.message;
+    } else {
+      status = 500; // errno/未知一律语义码,不回显(防绝对路径泄漏)
+      code = "INTERNAL";
+      message = "服务器错误";
+    }
     if (status >= 500) console.error("[admin]", req.method, req.url, err); // 只记方法/路径/错误,不记 body 与 cookie
-    // execFile 的 err.code 是数字(退出码 1/128),契约要求 code 恒为字符串 → 非字符串一律 INTERNAL
-    reply.code(status).send({ code: typeof err.code === "string" ? err.code : "INTERNAL", message: err.message || "服务器错误" });
+    reply.code(status).send({ code, message });
   });
+
+  // ② 未注册路径统一 {code,message}(规格 §7)。注入实测:路径已注册但方法不匹配(DELETE /admin/api/tree)时
+  //    req.routeOptions?.url 恒为 null 且同样落进本处理器 → 不设 405 分支,一律 404(405 仅 /login 显式路由,见 §8.3)
+  app.setNotFoundHandler(async (req, reply) => reply.code(404).send({ code: "NOT_FOUND", message: "接口不存在" }));
 
   // 健康检查语义:登录只接受 POST(规格 §8.3)
   app.get("/admin/api/login", async (req, reply) =>
@@ -60,7 +93,8 @@ export function buildApp({ auth, files, queue, config = {} }) {
     // 本处理器入口必然 ≥ 已签发 token 的 iat,推进后 revokeAt 严格更大 → 注销确定性生效
     await new Promise((r) => setTimeout(r, 2));
     auth.logout();
-    reply.header("Set-Cookie", [`${COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0`]);
+    // 与登录同源属性(仅 Max-Age=0):HttpOnly/SameSite=Strict/Path=/Secure 一致
+    reply.header("Set-Cookie", [`${COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secure ? "; Secure" : ""}`]);
     return reply.code(204).send();
   });
 

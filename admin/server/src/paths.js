@@ -12,13 +12,18 @@ export function httpError(status, code, message) {
   return e;
 }
 
-/** 把相对路径解析为 docsDir 下的绝对路径;任何逃逸(../、绝对路径、\0、符号链接)抛 400。 */
+/** 把相对路径解析为 docsDir 下的绝对路径;任何逃逸(../、绝对路径、\0、符号链接、超长路径)抛 400。 */
 export function safeResolve(docsDir, rel) {
   if (typeof rel !== "string" || rel === "" || rel.includes("\0")) {
     throw httpError(400, "INVALID_PATH", "非法路径");
   }
   docsDir = path.resolve(docsDir); // 入口归一化:吞掉尾斜杠与 `.` 段,避免合法请求被字面比较误判 400
   const abs = path.resolve(docsDir, rel);
+  // 超长路径先在闸门拦下:PATH_MAX=4096 含终止符(故全路径 >4095 即超限)、NAME_MAX=255(单分量上限);
+  // 越限后内核 fs.stat/writeFile 回 ENAMETOOLONG,不拦就会从错误处理器漏成 500
+  if (abs.length > 4095 || abs.split("/").some((seg) => seg.length > 255)) {
+    throw httpError(400, "INVALID_PATH", "路径过长");
+  }
   if (abs !== docsDir && !abs.startsWith(docsDir + path.sep)) {
     throw httpError(400, "INVALID_PATH", "路径越界");
   }

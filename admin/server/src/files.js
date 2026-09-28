@@ -74,8 +74,8 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     },
 
     async create(rel) {
+      const abs = safeResolve(docsDir, rel); // 单点校验前置:rel 非法/undefined 一律 400 INVALID_PATH(而非 TypeError 500)
       if (!rel.endsWith(".md")) throw httpError(400, "BAD_EXT", "仅支持 .md 文件");
-      const abs = safeResolve(docsDir, rel);
       if (await exists(abs)) throw httpError(409, "EXISTS", "已存在");
       if (!(await isDir(path.dirname(abs)))) throw httpError(404, "PARENT_MISSING", "父目录不存在");
       await fs.writeFile(abs, buildTemplate(path.basename(rel), nowStr()), "utf8");
@@ -83,9 +83,9 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     },
 
     async write(rel, content) {
+      const abs = safeResolve(docsDir, rel); // 单点校验前置,同 create:先判路径合法再判 content/扩展
       if (typeof content !== "string") throw httpError(400, "BAD_BODY", "content 必须是字符串");
       if (!rel.endsWith(".md")) throw httpError(400, "BAD_EXT", "仅支持 .md 文件");
-      const abs = safeResolve(docsDir, rel);
       if (!(await isDir(path.dirname(abs)))) throw httpError(404, "PARENT_MISSING", "父目录不存在");
       await fs.writeFile(abs, content, "utf8");
       await commit("write", rel);

@@ -15,13 +15,19 @@ function loadEnv(file) {
   try {
     for (const line of fs.readFileSync(file, "utf8").split("\n")) {
       const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
-      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2];
+      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].trimEnd();
     }
   } catch {
     /* 容器由 compose env_file 注入;本地可放 admin/server/.env */
   }
 }
 loadEnv(path.join(import.meta.dirname, "..", ".env"));
+
+// 非法数值回退默认值,防 NaN(空串/abc → 默认;TimeoutNaNWarning 会让超时变成 +5ms 的秒级超时)
+const envNum = (v, def) => {
+  const n = Number(v);
+  return v && Number.isFinite(n) ? n : def;
+};
 
 const SITE = process.env.SITE_DIR || "/srv/site";
 for (const key of ["ADMIN_USER", "ADMIN_PASS_HASH", "TOKEN_SECRET"]) {
@@ -62,7 +68,7 @@ const queue = createBuildQueue({
     command: buildCmd,
     args: buildArgs,
     cwd: SITE,
-    timeoutMs: Number(process.env.BUILD_TIMEOUT_MS || 600000),
+    timeoutMs: envNum(process.env.BUILD_TIMEOUT_MS, 600000),
   }),
   publish: createArchivePublisher({
     socketPath: process.env.DOCKER_SOCKET || "/var/run/docker.sock",
@@ -70,7 +76,7 @@ const queue = createBuildQueue({
     destPath: process.env.PUBLISH_PATH || "/opt/blogs",
     distDir: path.join(SITE, "docs/.vitepress/dist"),
   }),
-  debounceMs: Number(process.env.BUILD_DEBOUNCE_MS || 5000),
+  debounceMs: envNum(process.env.BUILD_DEBOUNCE_MS, 5000),
 });
 
 const auth = createAuth({
@@ -85,13 +91,19 @@ const files = createFiles({ docsDir: path.join(SITE, "docs"), siteDir: SITE, exe
 const app = buildApp({ auth, files, queue, config: { cookieSecure: process.env.COOKIE_SECURE !== "0" } });
 
 const closeWatcher = startWatcher({ siteDir: SITE, onChange: () => queue.trigger() });
-process.on("SIGTERM", async () => {
-  await closeWatcher();
-  await app.close();
-  process.exit(0);
-});
+// 关闭双兜底:watcher 关闭失败也要 close server;SIGINT 同路径(本地 Ctrl-C 冒烟)
+const shutdown = async () => {
+  try {
+    await closeWatcher();
+  } finally {
+    await app.close();
+    process.exit(0);
+  }
+};
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
 
 const host = process.env.HOST || "127.0.0.1";
-const port = Number(process.env.PORT || 8477);
+const port = envNum(process.env.PORT, 8477);
 await app.listen({ host, port });
 console.log(`[admin] notes-admin listening on ${host}:${port} (site=${SITE})`);
