@@ -64,7 +64,7 @@ title: 2026-09-28-admin-panel
 - 修改:`docs/superpowers/specs/2026-09-28-admin-panel-design.md`
 - 创建:`admin/server/package.json`、`admin/server/package-lock.json`、`admin/server/.env.example`、`admin/server/.gitignore`
 
-- [ ] **步骤 0.1:确认依赖文件干净(脏则停下报告用户)**
+- [x] **步骤 0.1:确认依赖文件干净(脏则停下报告用户)**
 
 ```bash
 cd /home/weno/works/Notes-Atlas && git status --short -- package.json pnpm-lock.yaml .gitignore
@@ -72,7 +72,7 @@ cd /home/weno/works/Notes-Atlas && git status --short -- package.json pnpm-lock.
 
 预期:无输出。若有输出 → 停下,报告用户(不得覆盖用户改动)。
 
-- [ ] **步骤 0.2:根目录添加 4 个 devDeps**
+- [x] **步骤 0.2:根目录添加 4 个 devDeps**
 
 ```bash
 pnpm add -D vite@5.4.21 @vitejs/plugin-vue@5.2.4 vue@3.5.33 markdown-it@14.1.0
@@ -80,7 +80,7 @@ pnpm add -D vite@5.4.21 @vitejs/plugin-vue@5.2.4 vue@3.5.33 markdown-it@14.1.0
 
 预期:exit 0;`node -e "const p=require('./package.json');console.log(Object.keys(p.devDependencies).length)"` 输出 `13`(原 9 + 新 4);`ls node_modules/.bin/vite node_modules/.bin/vitepress` 两个都存在。
 
-- [ ] **步骤 0.3:验证锁文件一致性(deploy.yml 的 frozen-lockfile 不能被破坏)**
+- [x] **步骤 0.3:验证锁文件一致性(deploy.yml 的 frozen-lockfile 不能被破坏)**
 
 ```bash
 pnpm install --frozen-lockfile
@@ -88,7 +88,7 @@ pnpm install --frozen-lockfile
 
 预期:exit 0,输出含 `Already up to date` 或无错误;`git status --short -- package.json pnpm-lock.yaml` 应显示两者均已修改(改动将随本任务提交)。
 
-- [ ] **步骤 0.4:创建后端独立包并安装**
+- [x] **步骤 0.4:创建后端独立包并安装**
 
 写入 `admin/server/package.json`(全文):
 
@@ -139,7 +139,7 @@ ls admin/server/node_modules/fastify admin/server/node_modules/bcryptjs admin/se
 
 预期:exit 0,五个目录齐全;`admin/server/package-lock.json` 已生成(提交它,Docker `npm ci` 依赖)。
 
-- [ ] **步骤 0.5:根 .gitignore 追加三行**
+- [x] **步骤 0.5:根 .gitignore 追加三行**
 
 在 `.gitignore` 末尾追加:
 
@@ -154,7 +154,7 @@ admin/server/.state/
 
 验证:`git check-ignore docs/public/admin/index.html admin/server/.env admin/server/.state/revoke` 三个路径全部被列出(即均被忽略)。
 
-- [ ] **步骤 0.6:规格四处事实修订(edit 工具,精确替换)**
+- [x] **步骤 0.6:规格四处事实修订(edit 工具,精确替换)**
 
 对 `docs/superpowers/specs/2026-09-28-admin-panel-design.md` 执行四次替换:
 
@@ -178,7 +178,7 @@ admin/server/.state/
 - 旧:`2. **构建成功** → \`docker cp /srv/site/docs/.vitepress/dist/. <CADDY_CONTAINER>:/opt/blogs/\` →`
 - 新:`2. **构建成功** → 把 dist 拷入容器(实现:经 docker.sock 调 Docker 归档 API \`PUT /containers/<id>/archive\`,等价 \`docker cp /srv/site/docs/.vitepress/dist/. <CADDY_CONTAINER>:/opt/blogs/\`)→`
 
-- [ ] **步骤 0.7:基线回归确认**
+- [x] **步骤 0.7:基线回归确认**
 
 ```bash
 pnpm test
@@ -186,7 +186,7 @@ pnpm test
 
 预期:输出 `# tests 37`、`# pass 37`、`# fail 0`(新增 tests/admin 目录尚不存在,本步只确认没弄坏现状)。
 
-- [ ] **步骤 0.8:Commit**
+- [x] **步骤 0.8:Commit**
 
 ```bash
 git add package.json pnpm-lock.yaml .gitignore admin/server/package.json admin/server/package-lock.json admin/server/.gitignore admin/server/.env.example docs/superpowers/specs/2026-09-28-admin-panel-design.md
