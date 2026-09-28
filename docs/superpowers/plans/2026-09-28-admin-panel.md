@@ -728,8 +728,9 @@ git commit -m "feat(admin): frontmatter 表单化纯函数(hero 嵌套键保真)
 - 断言并入既有"write:路径穿越"用例(改名 +2 行),**用例数恒 15**;`removeFile`/`rename` 暂不加白名单(删除/改名仅 git 可恢复的破坏面),残留记任务 10 清单①。
 - **既有缺陷修正(任务 3 复审干跑发现,源自计划原始提交 `bdfafea`)**:`create` 模板断言原写 `title: dir1/b`,而实现 `buildTemplate(path.basename(rel))` 按规格 §6"title=文件名"产 `title: b`——断言已改为 `title: b`,否则步骤 4.4 必红、且会诱导实现方为过测试改错 `buildTemplate` 语义。
 - **审查修复轮(质量审查 2 必须 + 建议全采纳,提交 `b3c5b94`(信息 `fix(admin): 任务4审查修复——nothing-to-commit吞stdout、removeDir根守卫归一化、nowStr取本地时间、ENOTDIR归404`),两个 js 块已同步为修复后全文):** ①`commit()` 吞错改 `[e.stdout, e.stderr, e.message]` 三处合判——git 把 `nothing to commit` 打在 **stdout**(`promisify(execFile)` 的 message 不含 stdout),原 `stderr` 单判是死分支,重复保存必 500;②`removeDir` 根守卫改 `path.resolve(abs) === path.resolve(docsDir)` 归一化比对——原按原始字符串比,`"./"`、`"dir1/.."` 可绕过守卫一键 `rm -rf` 整个 docs 并提交;③`nowStr` 改本地分量拼串(原 `toISOString()` 恒 UTC,新建文档 date 差 8 小时),compose 容器同步补 `TZ: Asia/Shanghai`(见步骤 9.2);④`read()` catch 补 `ENOTDIR` 归 404。断言全部**并入既有用例**(create 用例+date 本地断言、read 用例+目录/ENOTDIR、write 落盘+吞错/重抛双桩、穿越+父目录 404、createDir+lastCommit 两路、removeDir 非空+`./`/`dir1/..`、rename+目录改名)——**`test()` 恒 15、全量 71。**注:date 断言初版未剥 js-yaml 对"时间戳样字符串"加的单引号(`date: '…'`),`Date.parse` 得 NaN 必红;实现者按纪律停手上报,授权把匹配式改为 `/^date: '?([^'\n]+)'?$/m`——剥引号后仍验本地时间 ±120s,UTC 反例实测差 8h 照样被揪出,强度不减(选项②被否:`buildTemplate` 传 Date 对象会回落 UTC `Z`,违背 nowStr 修复本意)。
+- **审查闭环:** 规格审查(两块逐字 EXACT、红态 56/1 隔离复现、8 对抗探针、红线零违例)→ 质量审查(2 必须 + 建议)→ 修复 `b3c5b94` → **复审 ✅ 关闭**(真链路验证吞错已活:`promisify(execFile)` 下同内容二写不抛、必败 cwd 照抛;根守卫矩阵 9 例全 `400/INVALID_PATH` 且失败路径零 git 调用;UTC 回退反例实测 Δ8h 被 120s 窗口揪红;7 折叠断言原位、`test()` 恒 15、71/0)。复审两条非阻塞建议已同笔落本计划:Dockerfile `safe.directory`(步骤 9.2,含属主耦合实证)、清单⑨引语改真实 git 文案。
 
-- [ ] **步骤 4.1:编写失败的测试(15 个用例)**
+- [x] **步骤 4.1:编写失败的测试(15 个用例)**
 
 写入 `tests/admin/files.test.mjs`(全文):
 
@@ -888,7 +889,7 @@ test("rename:目标已存在 → 409", async () => {
 });
 ```
 
-- [ ] **步骤 4.2:运行确认失败**
+- [x] **步骤 4.2:运行确认失败**
 
 ```bash
 pnpm test 2>&1 | tail -6
@@ -896,7 +897,7 @@ pnpm test 2>&1 | tail -6
 
 预期:FAIL——`Cannot find module .../files.js`,`pass` 仍为 56。
 
-- [ ] **步骤 4.3:编写最少实现**
+- [x] **步骤 4.3:编写最少实现**
 
 写入 `admin/server/src/files.js`(全文):
 
@@ -1048,7 +1049,7 @@ export function createFiles({ docsDir, siteDir, execGit }) {
 }
 ```
 
-- [ ] **步骤 4.4:运行确认通过**
+- [x] **步骤 4.4:运行确认通过**
 
 ```bash
 node --test tests/admin/files.test.mjs
@@ -1056,7 +1057,7 @@ node --test tests/admin/files.test.mjs
 
 预期:`# pass 15`、`# fail 0`。随后 `pnpm test` → `# pass 71`、`# fail 0`。
 
-- [ ] **步骤 4.5:Commit**
+- [x] **步骤 4.5:Commit**
 
 ```bash
 git add tests/admin/files.test.mjs admin/server/src/files.js
@@ -2786,6 +2787,7 @@ du -sh /home/weno/works/Notes-Atlas/.git
 ```dockerfile
 FROM node:20-slim
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN git config --global --add safe.directory /srv/site
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
@@ -2817,6 +2819,7 @@ networks:
 ```
 
 要点:`..` = 仓库根 → 容器内 `/srv/site` = `.env` 的 `SITE_DIR`(rw 挂载:watcher 监听、files.js 落盘、容器内 git 提交都走它);站点构建走容器内 `npm run docs:build`(node:20-slim 自带 npm,git 已装,根 node_modules 由 9.4 在宿主装好、随挂载可见,9.2 建仓时写入的 repo 身份配置在 `.git/config` 亦随挂载生效);`TZ: Asia/Shanghai` 配合任务 4 的 `nowStr` 本地分量(容器默认 UTC,不设则新文档 date 差 8 小时);宿主不发布端口(规格 §2),仅经 `caddy-network` 按容器名反代。
+git `safe.directory`:Dockerfile 已 `RUN git config --global --add safe.directory /srv/site`(幂等)——镜像内 git ≥2.38 对**属主不一致**的仓库跑 `add/commit/log` 报 `fatal: detected dubious ownership`,症状 = 保存 500 + `lastCommit` 恒 null;本部署当前仅因 SSH `Host web → User root` 使 `/opt/notes-atlas` 属 uid0、与容器内 root 同属主才不触发,属主一旦变化即炸,故显式登记(复审在 node:20-slim 实镜像 git 2.39.5 实证)。
 
 本地提交(在 9.3 首推之前):
 
@@ -3166,7 +3169,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
-7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单(`rename` 对目录亦放行,规格 §4 本就允许、断言已并入任务 4);`removeDir(rel, force)` 不校验排除表——`removeDir(".vitepress", true)`/`removeDir("public", true)` 可整目录抹掉并提交(删配置即构建失败,有兜底但一击致盲);`walk` 跳过符号链接而 `read` 按路径可读(树里看不见、路径读得到,UI 不感知);均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定;⑨同库并发写另两处无兜底:并发保存抢 git `index.lock`(后者 `cannot lock index` 不在 nothing-to-commit 吞错范围 → 500,文件已落盘)与 `create` 的 exists→writeFile TOCTOU(单进程单管理员下不可达,未加 `wx` 原子旗标)——均按单管理员单窗口用法规避。
+7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单(`rename` 对目录亦放行,规格 §4 本就允许、断言已并入任务 4);`removeDir(rel, force)` 不校验排除表——`removeDir(".vitepress", true)`/`removeDir("public", true)` 可整目录抹掉并提交(删配置即构建失败,有兜底但一击致盲);`walk` 跳过符号链接而 `read` 按路径可读(树里看不见、路径读得到,UI 不感知);均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定;⑨同库并发写另两处无兜底:并发保存抢 git `index.lock`(后者报 `fatal: Unable to create '…/.git/index.lock': File exists.` 不在 nothing-to-commit 吞错范围 → 500,文件已落盘)与 `create` 的 exists→writeFile TOCTOU(单进程单管理员下不可达,未加 `wx` 原子旗标)——均按单管理员单窗口用法规避。
 
 ---
 
