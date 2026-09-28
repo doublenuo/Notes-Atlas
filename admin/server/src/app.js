@@ -56,6 +56,9 @@ export function buildApp({ auth, files, queue, config = {} }) {
   });
 
   app.post("/admin/api/logout", async (req, reply) => {
+    // 先推进 2ms 再吊销:auth 失效点是毫秒时间戳,同毫秒的 iat 无法区分先后(见 auth.test 同刻注释);
+    // 本处理器入口必然 ≥ 已签发 token 的 iat,推进后 revokeAt 严格更大 → 注销确定性生效
+    await new Promise((r) => setTimeout(r, 2));
     auth.logout();
     reply.header("Set-Cookie", [`${COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0`]);
     return reply.code(204).send();
