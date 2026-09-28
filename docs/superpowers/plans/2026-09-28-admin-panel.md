@@ -1639,6 +1639,8 @@ git commit -m "feat(admin): 构建队列状态机与 Docker 归档发布"
 - 创建:`tests/admin/app.test.mjs`(16 用例)
 - 创建:`admin/server/src/app.js`、`admin/server/src/watcher.js`、`admin/server/src/index.js`
 
+- **执行裁定(实现期两处 NEEDS_CONTEXT,均在本任务内闭合,提交 `4cb02ac`(恰 4 文件 +429)+ `ad07319`(竞态修复 1 文件):** ①**Set-Cookie 形态**——计划原文 login/logout 单条赋值为字符串,而 16 用例按数组取 `res.headers["set-cookie"][0]`;实测 fastify 5.12.5 / light-my-request 6.6.0 注入层对**单条** set-cookie 透传原始类型(`typeof string`,`[0]` 取到首字符),单元素数组则正常——**裁定改 app 两处为单元素数组(login+logout,线上序列化字节相同),测试保持逐字**;②**logout 同毫秒竞态**——`auth.js:67` 失效点 `iat < revokeAt` 为毫秒时间戳,login 后同毫秒 logout 时 `iat == revokeAt` 不吊销,用例 12 原约 50% 红(实现者更正:此前误记为 `embed.test.mjs:69` 抖动)——**裁定 A':logout 处理器入口先推进 2ms 再 `auth.logout()`**(入口必 ≥ 已签发 token 的 iat → `revokeAt` 严格更大,确定性闭合);B'(auth 加代际计数)否决——重开已收口的任务 1 安全模块、改动面与回归风险大于收益;auth 层"同刻 = 不吊销"语义按原设计保留(`auth.test` 同刻注释已文档化),**app 层 2ms 推进是该语义的守护点,后续改动 logout 链路须保留**。两裁定均已重复运行证明:16/16 ×10、96/0 ×4;计划 6.4"预期 16/16、96/0"原抽到绿的一侧,修复后稳定可复现。
+
 - [ ] **步骤 6.1:编写失败的集成测试(16 用例)**
 
 写入 `tests/admin/app.test.mjs`(全文):
@@ -1915,13 +1917,17 @@ export function buildApp({ auth, files, queue, config = {} }) {
     const tok = auth.login(user, pass);
     if (!tok) return reply.code(401).send({ code: "BAD_CREDENTIALS", message: "用户名或密码错误" });
     const flags = "HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000" + (secure ? "; Secure" : "");
-    reply.header("Set-Cookie", `${COOKIE_NAME}=${tok}; ${flags}`);
+    // 单元素数组:fastify 5 注入层对单条 set-cookie 透传原始类型(字符串),数组形态让 inject 断言稳定;线上序列化字节相同
+    reply.header("Set-Cookie", [`${COOKIE_NAME}=${tok}; ${flags}`]);
     return reply.code(204).send();
   });
 
   app.post("/admin/api/logout", async (req, reply) => {
+    // 先推进 2ms 再吊销:auth 失效点是毫秒时间戳,同毫秒的 iat 无法区分先后(见 auth.test 同刻注释);
+    // 本处理器入口必然 ≥ 已签发 token 的 iat,推进后 revokeAt 严格更大 → 注销确定性生效
+    await new Promise((r) => setTimeout(r, 2));
     auth.logout();
-    reply.header("Set-Cookie", `${COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0`);
+    reply.header("Set-Cookie", [`${COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0`]);
     return reply.code(204).send();
   });
 
@@ -1991,29 +1997,7 @@ node --test tests/admin/app.test.mjs
 
 - [ ] **步骤 6.5:编写 watcher.js 与 index.js**
 
-**审查落点(任务 1 执行注记②):** 写入 `index.js` 时,先在下方全文基础上加一处——env 校验循环(`缺少环境变量` 段)之后追加站点目录存在性断言:
-
-```js
-if (!fs.existsSync(path.join(SITE, "docs"))) {
-  console.error(`[admin] 站点目录不存在: ${path.join(SITE, "docs")}`);
-  process.exit(1);
-}
-```
-
-(`fs`/`path`/`SITE` 下方全文均已具备;缺目录 = 挂载配置错误,启动即失败好过运行时 500。)
-
-同一个 env 校验循环之后再追加两行入参格式断言(任务 2 质量审查登记):
-
-```js
-if (process.env.TOKEN_SECRET.length < 32) {
-  console.error("[admin] TOKEN_SECRET 过短(应为 openssl rand -hex 32 的 64 位十六进制)");
-  process.exit(1);
-}
-if (!/^\$2[aby]\$\d{2}\$/.test(process.env.ADMIN_PASS_HASH)) {
-  console.error("[admin] ADMIN_PASS_HASH 不是 bcrypt 串(用 hashPassword 生成)");
-  process.exit(1);
-}
-```
+**审查落点(任务 1 执行注记② + 任务 2 质量审查):** `index.js` 全文已按两处指令合成——env 校验循环之后依次是**站点目录存在性断言**(缺目录 = 挂载配置错误,启动即失败好过运行时 500)与**入参格式断言**(TOKEN_SECRET ≥32 位、ADMIN_PASS_HASH 为 bcrypt 形态);正文中的对应注释可核对。
 
 写入 `admin/server/src/watcher.js`(全文):
 
@@ -2069,6 +2053,21 @@ for (const key of ["ADMIN_USER", "ADMIN_PASS_HASH", "TOKEN_SECRET"]) {
     console.error(`[admin] 缺少环境变量 ${key}`);
     process.exit(1);
   }
+}
+
+// 站点目录存在性断言(任务 1 执行注记②):缺目录 = 挂载配置错误,启动即失败好过运行时 500
+if (!fs.existsSync(path.join(SITE, "docs"))) {
+  console.error(`[admin] 站点目录不存在: ${path.join(SITE, "docs")}`);
+  process.exit(1);
+}
+// 入参格式断言(任务 2 质量审查)
+if (process.env.TOKEN_SECRET.length < 32) {
+  console.error("[admin] TOKEN_SECRET 过短(应为 openssl rand -hex 32 的 64 位十六进制)");
+  process.exit(1);
+}
+if (!/^\$2[aby]\$\d{2}\$/.test(process.env.ADMIN_PASS_HASH)) {
+  console.error("[admin] ADMIN_PASS_HASH 不是 bcrypt 串(用 hashPassword 生成)");
+  process.exit(1);
 }
 
 const execGit = async (args) => {
