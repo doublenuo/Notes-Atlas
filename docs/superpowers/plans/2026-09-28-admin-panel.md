@@ -276,7 +276,9 @@ pnpm test 2>&1 | tail -12
 import fs from "node:fs";
 import path from "node:path";
 
-export const EXCLUDE_DIRS = new Set([".vitepress", "public", "admin", "node_modules"]);
+// 树排除 = 站点不发布的目录(隐藏目录由调用方 `startsWith(".")` 统一过滤):
+// @fragment 不参与解析(resolver 亦排除)、superpowers 被 config srcExclude;@pages 为真实发布页,有意不排除
+export const EXCLUDE_DIRS = new Set([".vitepress", "public", "admin", "node_modules", "@fragment", "superpowers"]);
 
 export function httpError(status, code, message) {
   const e = new Error(message);
@@ -285,12 +287,18 @@ export function httpError(status, code, message) {
   return e;
 }
 
-/** 把相对路径解析为 docsDir 下的绝对路径;任何逃逸(../、绝对路径、\0、符号链接)抛 400。 */
+/** 把相对路径解析为 docsDir 下的绝对路径;任何逃逸(../、绝对路径、\0、符号链接、超长路径)抛 400。 */
 export function safeResolve(docsDir, rel) {
   if (typeof rel !== "string" || rel === "" || rel.includes("\0")) {
     throw httpError(400, "INVALID_PATH", "非法路径");
   }
+  docsDir = path.resolve(docsDir); // 入口归一化:吞掉尾斜杠与 `.` 段,避免合法请求被字面比较误判 400
   const abs = path.resolve(docsDir, rel);
+  // 超长路径先在闸门拦下:PATH_MAX=4096 含终止符(故全路径 >4095 即超限)、NAME_MAX=255(单分量上限);
+  // 越限后内核 fs.stat/writeFile 回 ENAMETOOLONG,不拦就会从错误处理器漏成 500
+  if (abs.length > 4095 || abs.split("/").some((seg) => seg.length > 255)) {
+    throw httpError(400, "INVALID_PATH", "路径过长");
+  }
   if (abs !== docsDir && !abs.startsWith(docsDir + path.sep)) {
     throw httpError(400, "INVALID_PATH", "路径越界");
   }
@@ -978,8 +986,8 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     },
 
     async create(rel) {
+      const abs = safeResolve(docsDir, rel); // 单点校验前置:rel 非法/undefined 一律 400 INVALID_PATH(而非 TypeError 500)
       if (!rel.endsWith(".md")) throw httpError(400, "BAD_EXT", "仅支持 .md 文件");
-      const abs = safeResolve(docsDir, rel);
       if (await exists(abs)) throw httpError(409, "EXISTS", "已存在");
       if (!(await isDir(path.dirname(abs)))) throw httpError(404, "PARENT_MISSING", "父目录不存在");
       await fs.writeFile(abs, buildTemplate(path.basename(rel), nowStr()), "utf8");
@@ -987,9 +995,9 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     },
 
     async write(rel, content) {
+      const abs = safeResolve(docsDir, rel); // 单点校验前置,同 create:先判路径合法再判 content/扩展
       if (typeof content !== "string") throw httpError(400, "BAD_BODY", "content 必须是字符串");
       if (!rel.endsWith(".md")) throw httpError(400, "BAD_EXT", "仅支持 .md 文件");
-      const abs = safeResolve(docsDir, rel);
       if (!(await isDir(path.dirname(abs)))) throw httpError(404, "PARENT_MISSING", "父目录不存在");
       await fs.writeFile(abs, content, "utf8");
       await commit("write", rel);
@@ -1641,6 +1649,8 @@ git commit -m "feat(admin): 构建队列状态机与 Docker 归档发布"
 
 - **执行裁定(实现期两处 NEEDS_CONTEXT,均在本任务内闭合,提交 `4cb02ac`(恰 4 文件 +429)+ `ad07319`(竞态修复 1 文件):** ①**Set-Cookie 形态**——计划原文 login/logout 单条赋值为字符串,而 16 用例按数组取 `res.headers["set-cookie"][0]`;实测 fastify 5.12.5 / light-my-request 6.6.0 注入层对**单条** set-cookie 透传原始类型(`typeof string`,`[0]` 取到首字符),单元素数组则正常——**裁定改 app 两处为单元素数组(login+logout,线上序列化字节相同),测试保持逐字**;②**logout 同毫秒竞态**——`auth.js:67` 失效点 `iat < revokeAt` 为毫秒时间戳,login 后同毫秒 logout 时 `iat == revokeAt` 不吊销,用例 12 原约 50% 红(实现者更正:此前误记为 `embed.test.mjs:69` 抖动)——**裁定 A':logout 处理器入口先推进 2ms 再 `auth.logout()`**(入口必 ≥ 已签发 token 的 iat → `revokeAt` 严格更大,确定性闭合);B'(auth 加代际计数)否决——重开已收口的任务 1 安全模块、改动面与回归风险大于收益;auth 层"同刻 = 不吊销"语义按原设计保留(`auth.test` 同刻注释已文档化),**app 层 2ms 推进是该语义的守护点,后续改动 logout 链路须保留**。两裁定均已重复运行证明:16/16 ×10、96/0 ×4;计划 6.4"预期 16/16、96/0"原抽到绿的一侧,修复后稳定可复现。
 
+- **审查修复(两轮审查:规格 ✅ 必须修复 0;质量 NEEDS_CHANGES 5 项 → 合并裁定,提交 `5fc27c1`(恰 6 文件 +165/-20)):** ①**K1 根治**——`files.js` `create/write` 把 `safeResolve` 提到首行,缺/非 string path 统一 400 `INVALID_PATH`(原 `rel.endsWith` 先行 → TypeError 500;单点校验,不加 app 层重复守卫);②**长度闸门(授权第 6 文件 `paths.js`,任务 1 段块已同步回填)**——`safeResolve` 新增全路径 >4095(PATH_MAX 含终止符)/任一 `/` 分量 >255(NAME_MAX)→ 400,拦 ENAMETOOLONG 经错误处理器漏成 500(4000 字符实测;此为任务 1 收口后的**唯一授权回改**);③**错误契约收口**——`setErrorHandler` 语义码白名单 13 码(与 sources 字面量逐一核对)+ `FST_ERR_CTP_*` → 400 `BAD_BODY`(消除 413/415 越界)+ `setNotFoundHandler` → 404 `NOT_FOUND`/`{code,message}`(实测 `routeOptions` 在"路径已注册但方法不匹配"时**恒 null**,故不区分 405;405 仅 `/login` 显式路由)+ 非白名单码一律 `INTERNAL` 且不回显 message(封死 errno 透传与绝对路径泄漏);④**断言并入 16 用例(计数链 80→96 不变,红态 11/16 即 5 例)**——鉴权先于 404、`nodes[].path`、`RATE_LIMITED` 字面量与 `x-real-ip` 桶隔离(任务 2 落点由零覆盖转承重)、缺 path/超长/坏 JSON/裸 Buffer → 400、gitFail → `INTERNAL`、`NOT_FOUND`/`NOT_EMPTY` 码、logout cookie 属性、`POST /file` 204(规格审查缺口 a/b/c 全闭);⑤**次要 M1-M6**——`loadEnv` `.trimEnd()` 尾空白、env 数值 `envNum` NaN 守卫(BUILD_TIMEOUT_MS=abc 原 → 5ms 秒超时)、logout cookie 属性对齐、鉴权豁免改精确匹配(`/admin/api/loginX` → 401)、SIGTERM try/finally + 挂 SIGINT、watcher 事件过滤 `endsWith(".md")` 对齐规格 §5(推论:**`addDir`/`unlinkDir` 恒被过滤,空目录增删不触发构建**;真实 chokidar 单测为盲区);⑥**未修记档**——M7(`na-app-*` 每轮 +16 残留,归清单②通则点名)、M8(4xx 不落日志,沿用"仅 ≥500");⑦**判别力等价替代**——原"删白名单 `INTERNAL` → 用例 9 红"按字面不成立(`ENOENT` 本不在白名单,`INTERNAL` 由 else 分支产生),改"删 `INVALID_PATH` → 用例 7 红"等价验证 ✅;验证:16/16 ×3、96/0 ×4、6 文件 SYNTAX-OK;logout 2ms 守卫未触碰(上轮 10 连跑结论继续有效)。
+
 - [ ] **步骤 6.1:编写失败的集成测试(16 用例)**
 
 写入 `tests/admin/app.test.mjs`(全文):
@@ -1659,7 +1669,7 @@ import { createBuildQueue } from "../../admin/server/src/build.js";
 const PASS = "pw-app-123";
 const HASH = hashPassword(PASS); // 模块级只算一次
 
-function mkApp() {
+function mkApp({ gitFail = false } = {}) {
   const siteDir = fs.mkdtempSync(path.join(os.tmpdir(), "na-app-"));
   const docsDir = path.join(siteDir, "docs");
   fs.mkdirSync(path.join(docsDir, "dir1"), { recursive: true });
@@ -1671,7 +1681,13 @@ function mkApp() {
     passHash: HASH,
     stateDir: path.join(siteDir, ".state"),
   });
-  const execGit = async () => "abc1234 admin(x): y";
+  const execGit = gitFail
+    ? async () => {
+        const e = new Error("spawn git ENOENT");
+        e.code = "ENOENT";
+        throw e;
+      }
+    : async () => "abc1234 admin(x): y";
   const files = createFiles({ docsDir, siteDir, execGit });
   const queue = createBuildQueue({ runBuild: async () => "ok", publish: async () => {}, debounceMs: 1 });
   const app = buildApp({ auth, files, queue, config: { cookieSecure: true } });
@@ -1689,6 +1705,10 @@ test("1 未登录访问 /tree → 401 {code,message}", async () => {
   const res = await app.inject({ method: "GET", url: "/admin/api/tree" });
   assert.equal(res.statusCode, 401);
   assert.equal(res.json().code, "UNAUTHENTICATED");
+  // 鉴权先于 404:未注册路径无 cookie 同样 401(不存在路由预言机)
+  const nope = await app.inject({ method: "GET", url: "/admin/api/nope" });
+  assert.equal(nope.statusCode, 401);
+  assert.equal(nope.json().code, "UNAUTHENTICATED");
 });
 
 test("2 GET /login → 405(仅接受 POST)", async () => {
@@ -1724,6 +1744,13 @@ test("5 登录后 /tree → 200 且结构正确", async () => {
   const { nodes } = res.json();
   assert.deepEqual(nodes.map((n) => n.name).sort(), ["dir1", "index.md"]);
   assert.equal(nodes.find((n) => n.name === "dir1").children[0].type, "file");
+  // 规格 §4:每个节点携带 path
+  for (const n of nodes) assert.equal(typeof n.path, "string", `节点缺 path:${n.name}`);
+  // 规格 §7:未注册接口统一 {code,message}
+  const nope = await app.inject({ method: "GET", url: "/admin/api/nope", headers: { cookie } });
+  assert.equal(nope.statusCode, 404);
+  assert.equal(nope.json().code, "NOT_FOUND");
+  assert.equal(typeof nope.json().message, "string");
 });
 
 test("6 限流:同 IP 第 11 次登录 → 429", async () => {
@@ -1734,6 +1761,15 @@ test("6 限流:同 IP 第 11 次登录 → 429", async () => {
   }
   const r11 = await app.inject({ method: "POST", url: "/admin/api/login", payload: { user: "admin", pass: PASS } });
   assert.equal(r11.statusCode, 429);
+  assert.equal(r11.json().code, "RATE_LIMITED");
+  // 限流键 = X-Real-IP(任务2审查落点):换头即换桶,改回裸 req.ip 此断言必红
+  const otherIp = await app.inject({
+    method: "POST",
+    url: "/admin/api/login",
+    headers: { "x-real-ip": "9.9.9.9" },
+    payload: { user: "admin", pass: "bad" },
+  });
+  assert.equal(otherIp.statusCode, 401, "换 X-Real-IP 后是新桶,应为 401 而非 429");
 });
 
 test("7 PUT /file 路径穿越 ../ → 400", async () => {
@@ -1747,6 +1783,23 @@ test("7 PUT /file 路径穿越 ../ → 400", async () => {
   });
   assert.equal(res.statusCode, 400);
   assert.equal(res.json().code, "INVALID_PATH");
+  // ① 缺 path(非字符串)→ 同一单点校验,而非 TypeError 500
+  const noPath = await app.inject({
+    method: "PUT",
+    url: "/admin/api/file",
+    headers: { cookie },
+    payload: { content: "x" },
+  });
+  assert.equal(noPath.statusCode, 400);
+  assert.equal(noPath.json().code, "INVALID_PATH");
+  // ② 超长路径(单分量 4000 字符)→ 400,而非 500 ENAMETOOLONG 透传
+  const tooLong = await app.inject({
+    method: "GET",
+    url: "/admin/api/file?path=" + "a".repeat(4000),
+    headers: { cookie },
+  });
+  assert.equal(tooLong.statusCode, 400);
+  assert.equal(tooLong.json().code, "INVALID_PATH");
 });
 
 test("8 编码型逃逸 %2e%2e%2f → 400(框架解码后仍被拦截)", async () => {
@@ -1755,6 +1808,28 @@ test("8 编码型逃逸 %2e%2e%2f → 400(框架解码后仍被拦截)", async (
   const res = await app.inject({ method: "GET", url: "/admin/api/file?path=%2e%2e%2fsecret.md", headers: { cookie } });
   assert.equal(res.statusCode, 400);
   assert.equal(res.json().code, "INVALID_PATH");
+  // ① POST 缺 path → 400(原 TypeError 500)
+  const empty = await app.inject({ method: "POST", url: "/admin/api/file", headers: { cookie }, payload: {} });
+  assert.equal(empty.statusCode, 400);
+  assert.equal(empty.json().code, "INVALID_PATH");
+  // ② 坏 JSON 请求体 → 统一 BAD_BODY,不回显框架内部码 FST_ERR_CTP_*
+  const badJson = await app.inject({
+    method: "POST",
+    url: "/admin/api/file",
+    headers: { cookie, "content-type": "application/json" },
+    payload: "{oops",
+  });
+  assert.equal(badJson.statusCode, 400);
+  assert.equal(badJson.json().code, "BAD_BODY");
+  // ③ 非 JSON content-type 载荷 → 同族归一(415 越界也收敛到 400)
+  const buf = await app.inject({
+    method: "POST",
+    url: "/admin/api/file",
+    headers: { cookie },
+    payload: Buffer.from("{oops"),
+  });
+  assert.equal(buf.statusCode, 400);
+  assert.equal(buf.json().code, "BAD_BODY");
 });
 
 test("9 PUT /file 正常 → 204 且落盘", async () => {
@@ -1768,6 +1843,17 @@ test("9 PUT /file 正常 → 204 且落盘", async () => {
   });
   assert.equal(res.statusCode, 204);
   assert.equal(fs.readFileSync(path.join(docsDir, "dir1", "a.md"), "utf8"), "# 改过\n");
+  // git 提交失败(err.code 为 errno 字符串)→ 恒 INTERNAL,不透传 ENOENT
+  const { app: failApp } = mkApp({ gitFail: true });
+  const failCookie = await loginPair(failApp);
+  const failRes = await failApp.inject({
+    method: "PUT",
+    url: "/admin/api/file",
+    headers: { cookie: failCookie },
+    payload: { path: "dir1/a.md", content: "# x\n" },
+  });
+  assert.equal(failRes.statusCode, 500);
+  assert.equal(failRes.json().code, "INTERNAL");
 });
 
 test("10 GET /file → 200 {content, frontmatter, mtime},hero 保真", async () => {
@@ -1789,6 +1875,7 @@ test("11 DELETE /file → 204;再次删除 → 404", async () => {
   assert.equal(r1.statusCode, 204);
   const r2 = await app.inject({ method: "DELETE", url: "/admin/api/file?path=dir1/a.md", headers: { cookie } });
   assert.equal(r2.statusCode, 404);
+  assert.equal(r2.json().code, "NOT_FOUND");
 });
 
 test("12 logout → 204,旧 cookie 随即全 401", async () => {
@@ -1796,6 +1883,11 @@ test("12 logout → 204,旧 cookie 随即全 401", async () => {
   const cookie = await loginPair(app);
   const out = await app.inject({ method: "POST", url: "/admin/api/logout", headers: { cookie } });
   assert.equal(out.statusCode, 204);
+  // 注销串与登录同源属性(仅 Max-Age=0)
+  const oc = out.headers["set-cookie"][0];
+  for (const flag of ["HttpOnly", "SameSite=Strict", "Path=/", "Max-Age=0", "Secure"]) {
+    assert.ok(oc.includes(flag), `注销 cookie 缺 ${flag}:${oc}`);
+  }
   const res = await app.inject({ method: "GET", url: "/admin/api/tree", headers: { cookie } });
   assert.equal(res.statusCode, 401);
 });
@@ -1831,8 +1923,17 @@ test("15 rename/dir 联动:204/204/409/204", async () => {
   assert.equal(r2.statusCode, 204);
   const r3 = await app.inject({ method: "DELETE", url: "/admin/api/dir?path=dir1", headers: h });
   assert.equal(r3.statusCode, 409, "dir1 非空需 force");
+  assert.equal(r3.json().code, "NOT_EMPTY");
   const r4 = await app.inject({ method: "DELETE", url: "/admin/api/dir?path=dir1&force=1", headers: h });
   assert.equal(r4.statusCode, 204);
+  // POST /file 建文件(此前无集成用例)
+  const r5 = await app.inject({
+    method: "POST",
+    url: "/admin/api/file",
+    headers: h,
+    payload: { path: "created.md", content: "# 新建\n" },
+  });
+  assert.equal(r5.statusCode, 204);
 });
 
 test("16 GET /file 坏 YAML → 200 + parseError(可经 UI 打开修复,不 500)", async () => {
@@ -1862,7 +1963,7 @@ pnpm test 2>&1 | tail -6
 
 写入 `admin/server/src/app.js`(全文):
 
-**审查落点(任务 4 质量审查):** `setErrorHandler` 的 `code` 字段已加字符串守卫(`typeof err.code === "string" ? err.code : "INTERNAL"`)——`execFile` 出错时 `err.code` 是数字退出码,契约要求 `code` 恒为字符串;照抄下方全文。
+**审查落点(任务 4 质量审查 + 修复批次 `5fc27c1`):** `setErrorHandler` 原为"仅字符串守卫"(`execFile` 的 `err.code` 是数字退出码,契约要求恒为字符串);`5fc27c1` 已升级为**语义码白名单 13 码** + `FST_ERR_CTP_*` 归一 400 + 非白名单一律 `INTERNAL` 不回显 message——下方全文为准,缘由见本任务"审查修复"bullet。
 
 ```js
 import Fastify from "fastify";
@@ -1890,19 +1991,52 @@ export function buildApp({ auth, files, queue, config = {} }) {
 
   app.addHook("onRequest", async (req, reply) => {
     if (!req.url.startsWith("/admin/api/")) return;
-    if (req.url.startsWith("/admin/api/login")) return;
+    if (req.url.split("?")[0] === "/admin/api/login") return; // 精确匹配:login?x=1 豁免、/admin/api/loginX 不豁免
     const tok = parseCookie(req.headers.cookie)[COOKIE_NAME];
     if (!auth.verify(tok)) {
       return reply.code(401).send({ code: "UNAUTHENTICATED", message: "未登录或会话过期" });
     }
   });
 
+  // 语义码白名单:与 app.js/files.js 源码字面量逐一对应;框架内部码与 errno 一律不外泄
+  const SEMANTIC = new Set([
+    "UNAUTHENTICATED",
+    "BAD_CREDENTIALS",
+    "RATE_LIMITED",
+    "METHOD_NOT_ALLOWED",
+    "INVALID_PATH",
+    "BAD_EXT",
+    "BAD_BODY",
+    "NOT_FOUND",
+    "NOT_A_FILE",
+    "EXISTS",
+    "PARENT_MISSING",
+    "NOT_EMPTY",
+    "INTERNAL",
+  ]);
+
   app.setErrorHandler((err, req, reply) => {
-    const status = err.status || err.statusCode || 500;
+    let status, code, message;
+    if (typeof err.code === "string" && err.code.startsWith("FST_ERR_CTP_")) {
+      status = 400; // 消除 413/415 越界,封死框架内部码
+      code = "BAD_BODY";
+      message = err.message;
+    } else if (typeof err.code === "string" && SEMANTIC.has(err.code)) {
+      status = err.status || err.statusCode || 500;
+      code = err.code;
+      message = err.message;
+    } else {
+      status = 500; // errno/未知一律语义码,不回显(防绝对路径泄漏)
+      code = "INTERNAL";
+      message = "服务器错误";
+    }
     if (status >= 500) console.error("[admin]", req.method, req.url, err); // 只记方法/路径/错误,不记 body 与 cookie
-    // execFile 的 err.code 是数字(退出码 1/128),契约要求 code 恒为字符串 → 非字符串一律 INTERNAL
-    reply.code(status).send({ code: typeof err.code === "string" ? err.code : "INTERNAL", message: err.message || "服务器错误" });
+    reply.code(status).send({ code, message });
   });
+
+  // ② 未注册路径统一 {code,message}(规格 §7)。注入实测:路径已注册但方法不匹配(DELETE /admin/api/tree)时
+  //    req.routeOptions?.url 恒为 null 且同样落进本处理器 → 不设 405 分支,一律 404(405 仅 /login 显式路由,见 §8.3)
+  app.setNotFoundHandler(async (req, reply) => reply.code(404).send({ code: "NOT_FOUND", message: "接口不存在" }));
 
   // 健康检查语义:登录只接受 POST(规格 §8.3)
   app.get("/admin/api/login", async (req, reply) =>
@@ -1927,7 +2061,8 @@ export function buildApp({ auth, files, queue, config = {} }) {
     // 本处理器入口必然 ≥ 已签发 token 的 iat,推进后 revokeAt 严格更大 → 注销确定性生效
     await new Promise((r) => setTimeout(r, 2));
     auth.logout();
-    reply.header("Set-Cookie", [`${COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0`]);
+    // 与登录同源属性(仅 Max-Age=0):HttpOnly/SameSite=Strict/Path=/Secure 一致
+    reply.header("Set-Cookie", [`${COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secure ? "; Secure" : ""}`]);
     return reply.code(204).send();
   });
 
@@ -2004,13 +2139,16 @@ node --test tests/admin/app.test.mjs
 ```js
 import { watch } from "chokidar";
 
-/** 监听 docs/(忽略构建产物目录防自触发循环;树排除另见 paths.js EXCLUDE_DIRS);任何增删改 → onChange(路径)。返回 close()。 */
+/** 监听 docs/(规格 §5:监听 docs/**.md);任何增删改 → onChange(路径)。返回 close()。 */
 export function startWatcher({ siteDir, onChange }) {
   const watcher = watch(`${siteDir}/docs`, {
     ignoreInitial: true,
     ignored: (p) => /\/(\.vitepress|public|node_modules)(\/|$)/.test(p),
   });
   watcher.on("all", (event, p) => {
+    // ① .md 过滤 = 规格监听语义(docs/**.md);② 天然忽略 public/(含任务 7 的 UI 产物 public/admin/)防自触发;
+    // ③ 非内容文件(.txt/.js 等)不触发构建;树排除另见 paths.js EXCLUDE_DIRS
+    if (!p.endsWith(".md")) return;
     if (event === "add" || event === "change" || event === "unlink" || event === "addDir" || event === "unlinkDir") {
       onChange(p);
     }
@@ -2039,13 +2177,19 @@ function loadEnv(file) {
   try {
     for (const line of fs.readFileSync(file, "utf8").split("\n")) {
       const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
-      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2];
+      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].trimEnd();
     }
   } catch {
     /* 容器由 compose env_file 注入;本地可放 admin/server/.env */
   }
 }
 loadEnv(path.join(import.meta.dirname, "..", ".env"));
+
+// 非法数值回退默认值,防 NaN(空串/abc → 默认;TimeoutNaNWarning 会让超时变成 +5ms 的秒级超时)
+const envNum = (v, def) => {
+  const n = Number(v);
+  return v && Number.isFinite(n) ? n : def;
+};
 
 const SITE = process.env.SITE_DIR || "/srv/site";
 for (const key of ["ADMIN_USER", "ADMIN_PASS_HASH", "TOKEN_SECRET"]) {
@@ -2086,7 +2230,7 @@ const queue = createBuildQueue({
     command: buildCmd,
     args: buildArgs,
     cwd: SITE,
-    timeoutMs: Number(process.env.BUILD_TIMEOUT_MS || 600000),
+    timeoutMs: envNum(process.env.BUILD_TIMEOUT_MS, 600000),
   }),
   publish: createArchivePublisher({
     socketPath: process.env.DOCKER_SOCKET || "/var/run/docker.sock",
@@ -2094,7 +2238,7 @@ const queue = createBuildQueue({
     destPath: process.env.PUBLISH_PATH || "/opt/blogs",
     distDir: path.join(SITE, "docs/.vitepress/dist"),
   }),
-  debounceMs: Number(process.env.BUILD_DEBOUNCE_MS || 5000),
+  debounceMs: envNum(process.env.BUILD_DEBOUNCE_MS, 5000),
 });
 
 const auth = createAuth({
@@ -2109,14 +2253,20 @@ const files = createFiles({ docsDir: path.join(SITE, "docs"), siteDir: SITE, exe
 const app = buildApp({ auth, files, queue, config: { cookieSecure: process.env.COOKIE_SECURE !== "0" } });
 
 const closeWatcher = startWatcher({ siteDir: SITE, onChange: () => queue.trigger() });
-process.on("SIGTERM", async () => {
-  await closeWatcher();
-  await app.close();
-  process.exit(0);
-});
+// 关闭双兜底:watcher 关闭失败也要 close server;SIGINT 同路径(本地 Ctrl-C 冒烟)
+const shutdown = async () => {
+  try {
+    await closeWatcher();
+  } finally {
+    await app.close();
+    process.exit(0);
+  }
+};
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
 
 const host = process.env.HOST || "127.0.0.1";
-const port = Number(process.env.PORT || 8477);
+const port = envNum(process.env.PORT, 8477);
 await app.listen({ host, port });
 console.log(`[admin] notes-admin listening on ${host}:${port} (site=${SITE})`);
 ```
