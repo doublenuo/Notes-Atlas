@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 // 树排除 = 站点不发布的目录(隐藏目录由调用方 `startsWith(".")` 统一过滤):
-// @fragment 是插件暂存(resolver 亦排除)、superpowers 被 config srcExclude;@pages 为真实发布页,有意不排除
+// @fragment 不参与解析(resolver 亦排除)、superpowers 被 config srcExclude;@pages 为真实发布页,有意不排除
 export const EXCLUDE_DIRS = new Set([".vitepress", "public", "admin", "node_modules", "@fragment", "superpowers"]);
 
 export function httpError(status, code, message) {

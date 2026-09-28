@@ -208,7 +208,7 @@ git commit -m "chore(admin): 后端包脚手架与依赖(pnpm devDeps、规格�
 - 创建:`tests/admin/paths.test.mjs`
 - 创建:`admin/server/src/paths.js`
 
-- [ ] **步骤 1.1:编写失败的测试(7 个用例)**
+- [x] **步骤 1.1:编写失败的测试(7 个用例)**
 
 写入 `tests/admin/paths.test.mjs`(全文):
 
@@ -259,7 +259,7 @@ test("EXCLUDE_DIRS 覆盖四类排除目录", () => {
 });
 ```
 
-- [ ] **步骤 1.2:运行确认失败**
+- [x] **步骤 1.2:运行确认失败**
 
 ```bash
 pnpm test 2>&1 | tail -12
@@ -267,7 +267,7 @@ pnpm test 2>&1 | tail -12
 
 预期:FAIL——`tests/admin/paths.test.mjs` 因 `Cannot find module .../admin/server/src/paths.js` 报错;`fail` 数 > 0(其余 37 仍 pass)。
 
-- [ ] **步骤 1.3:编写最少实现**
+- [x] **步骤 1.3:编写最少实现**
 
 写入 `admin/server/src/paths.js`(全文):
 
@@ -309,7 +309,7 @@ export function safeResolve(docsDir, rel) {
 }
 ```
 
-- [ ] **步骤 1.4:运行确认通过**
+- [x] **步骤 1.4:运行确认通过**
 
 ```bash
 node --test tests/admin/paths.test.mjs
@@ -317,7 +317,7 @@ node --test tests/admin/paths.test.mjs
 
 预期:`# pass 7`、`# fail 0`。随后 `pnpm test` → `# pass 44`、`# fail 0`。
 
-- [ ] **步骤 1.5:Commit**
+- [x] **步骤 1.5:Commit**
 
 ```bash
 git add tests/admin/paths.test.mjs admin/server/src/paths.js
@@ -325,7 +325,7 @@ git commit -m "feat(admin): 路径安全解析与树排除表"
 ```
 
 **执行注记(两阶段审查后的补充修复,与规格/计划同笔 `fix(admin)` 提交):**
-- 代码质量审查发现排除表与站点现实不符 → `EXCLUDE_DIRS` 补 `@fragment`(插件暂存,resolver 亦排除)与 `superpowers`(`config.ts` `srcExclude`、不发布);测试用例 7 同步断言六项;`@pages` 是真实发布页(`/about`、`/tags`、`/privacy` 等),**有意不排除**。规格 §4 树排除行同步修订。
+- 代码质量审查发现排除表与站点现实不符 → `EXCLUDE_DIRS` 补 `@fragment`(不参与解析,resolver 亦排除)与 `superpowers`(`config.ts` `srcExclude`、不发布);测试用例 7 同步断言六项;`@pages` 是真实发布页(`/about`、`/tags`、`/privacy` 等),**有意不排除**。规格 §4 树排除行同步修订。
 - `safeResolve` 入口补 `path.resolve(docsDir)` 归一化:尾斜杠/相对形 docsDir 原会被字面比较判成全量 400(fail-closed footgun)。
 - 审查建议但按现规格**不改、记档**:①测试临时目录不清理(/tmp 攒空目录,CI 无碍);②`docsDir` 缺失时 `realpathSync` 裸 ENOENT → 500,归到任务 6 启动断言;③写路径不校验排除表(`.vitepress/config.ts` 可经 API 直写)——规格仅要求树展示排除,且构建失败即不发布、git 留历史,风险接受,记入收尾报告。
 
@@ -1763,12 +1763,23 @@ node --test tests/admin/app.test.mjs
 
 - [ ] **步骤 6.5:编写 watcher.js 与 index.js**
 
+**审查落点(任务 1 执行注记②):** 写入 `index.js` 时,先在下方全文基础上加一处——env 校验循环(`缺少环境变量` 段)之后追加站点目录存在性断言:
+
+```js
+if (!fs.existsSync(path.join(SITE, "docs"))) {
+  console.error(`[admin] 站点目录不存在: ${path.join(SITE, "docs")}`);
+  process.exit(1);
+}
+```
+
+(`fs`/`path`/`SITE` 下方全文均已具备;缺目录 = 挂载配置错误,启动即失败好过运行时 500。)
+
 写入 `admin/server/src/watcher.js`(全文):
 
 ```js
 import { watch } from "chokidar";
 
-/** 监听 docs/(排除规则与树一致);任何增删改 → onChange(路径)。返回 close()。 */
+/** 监听 docs/(忽略构建产物目录防自触发循环;树排除另见 paths.js EXCLUDE_DIRS);任何增删改 → onChange(路径)。返回 close()。 */
 export function startWatcher({ siteDir, onChange }) {
   const watcher = watch(`${siteDir}/docs`, {
     ignoreInitial: true,
@@ -2984,6 +2995,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
+7. 技术债与风险接受存档(任务 0/1 执行注记的落点):①写路径未校验树排除表(`.vitepress/config.ts` 可经 API 直写,靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定。
 
 ---
 
