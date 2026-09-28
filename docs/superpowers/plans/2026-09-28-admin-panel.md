@@ -727,6 +727,7 @@ git commit -m "feat(admin): frontmatter 表单化纯函数(hero 嵌套键保真)
 - `create`/`write` 入口加 `.md` 扩展白名单(非 `rel.endsWith(".md")` 即 400 `BAD_EXT`):封堵非 md 注入向量——`.vitepress/config.ts` 直写、`public/*.html` 注入(存储型 XSS)。
 - 断言并入既有"write:路径穿越"用例(改名 +2 行),**用例数恒 15**;`removeFile`/`rename` 暂不加白名单(删除/改名仅 git 可恢复的破坏面),残留记任务 10 清单①。
 - **既有缺陷修正(任务 3 复审干跑发现,源自计划原始提交 `bdfafea`)**:`create` 模板断言原写 `title: dir1/b`,而实现 `buildTemplate(path.basename(rel))` 按规格 §6"title=文件名"产 `title: b`——断言已改为 `title: b`,否则步骤 4.4 必红、且会诱导实现方为过测试改错 `buildTemplate` 语义。
+- **审查修复轮(质量审查 2 必须 + 建议全采纳,提交 `b3c5b94`(信息 `fix(admin): 任务4审查修复——nothing-to-commit吞stdout、removeDir根守卫归一化、nowStr取本地时间、ENOTDIR归404`),两个 js 块已同步为修复后全文):** ①`commit()` 吞错改 `[e.stdout, e.stderr, e.message]` 三处合判——git 把 `nothing to commit` 打在 **stdout**(`promisify(execFile)` 的 message 不含 stdout),原 `stderr` 单判是死分支,重复保存必 500;②`removeDir` 根守卫改 `path.resolve(abs) === path.resolve(docsDir)` 归一化比对——原按原始字符串比,`"./"`、`"dir1/.."` 可绕过守卫一键 `rm -rf` 整个 docs 并提交;③`nowStr` 改本地分量拼串(原 `toISOString()` 恒 UTC,新建文档 date 差 8 小时),compose 容器同步补 `TZ: Asia/Shanghai`(见步骤 9.2);④`read()` catch 补 `ENOTDIR` 归 404。断言全部**并入既有用例**(create 用例+date 本地断言、read 用例+目录/ENOTDIR、write 落盘+吞错/重抛双桩、穿越+父目录 404、createDir+lastCommit 两路、removeDir 非空+`./`/`dir1/..`、rename+目录改名)——**`test()` 恒 15、全量 71。**注:date 断言初版未剥 js-yaml 对"时间戳样字符串"加的单引号(`date: '…'`),`Date.parse` 得 NaN 必红;实现者按纪律停手上报,授权把匹配式改为 `/^date: '?([^'\n]+)'?$/m`——剥引号后仍验本地时间 ±120s,UTC 反例实测差 8h 照样被揪出,强度不减(选项②被否:`buildTemplate` 传 Date 对象会回落 UTC `Z`,违背 nowStr 修复本意)。
 
 - [ ] **步骤 4.1:编写失败的测试(15 个用例)**
 
@@ -779,6 +780,8 @@ test("create:模板内容 + git add/commit 两连", async () => {
   const content = fs.readFileSync(path.join(docsDir, "dir1", "b.md"), "utf8");
   assert.ok(content.includes("title: b"), "模板 title=文件名(basename 去目录与 .md,规格 §6)");
   assert.ok(content.includes("date:"), "模板带 date");
+  const dm = content.match(/^date: '?([^'\n]+)'?$/m);
+  assert.ok(dm && Math.abs(Date.parse(dm[1]) - Date.now()) < 120000, "date=当前本地时间(非 UTC,容器 TZ 见 compose)");
   assert.deepEqual(gitCalls[0], ["add", "-A", "docs"]);
   assert.deepEqual(gitCalls[1], ["commit", "-m", "admin(create): dir1/b.md"]);
 });
@@ -800,16 +803,29 @@ test("read:成功返回 content 与 mtime", async () => {
   assert.ok(r.mtime > 0);
 });
 
-test("read:缺失 → 404", async () => {
+test("read:缺失→404、目录→400、路径穿文件→404", async () => {
   const { files } = mkSite();
   await assert.rejects(() => files.read("missing.md"), (e) => e.status === 404);
+  await assert.rejects(() => files.read("dir1"), (e) => e.status === 400, "目录 400 NOT_A_FILE");
+  await assert.rejects(() => files.read("index.md/x"), (e) => e.status === 404, "ENOTDIR 归 404");
 });
 
 test("write:落盘 + admin(write) commit", async () => {
-  const { files, docsDir, gitCalls } = mkSite();
+  const { files, docsDir, siteDir, gitCalls } = mkSite();
   await files.write("index.md", "---\ntitle: 改\n---\n# 改\n");
   assert.equal(fs.readFileSync(path.join(docsDir, "index.md"), "utf8"), "---\ntitle: 改\n---\n# 改\n");
   assert.deepEqual(gitCalls.at(-1), ["commit", "-m", "admin(write): index.md"]);
+  // 吞错分支:git 把 "nothing to commit" 打在 stdout(真实 execFile 链路),须视为成功;无关错误必须原样抛出
+  const ok = createFiles({ docsDir, siteDir, execGit: async () => {
+    throw Object.assign(new Error("Command failed: git commit -m admin(write): index.md"),
+      { stdout: "nothing to commit, working tree clean\n", stderr: "", code: 1 });
+  } });
+  await ok.write("index.md", "---\ntitle: 改\n---\n# 改\n");
+  const bad = createFiles({ docsDir, siteDir, execGit: async () => {
+    throw Object.assign(new Error("Command failed"),
+      { stdout: "", stderr: "fatal: not a git repository\n", code: 128 });
+  } });
+  await assert.rejects(() => bad.write("index.md", "# x"), (e) => /fatal/.test(e.stderr), "无关错误不得吞");
 });
 
 test("write:路径穿越/非 .md → 400(create 同检)", async () => {
@@ -817,6 +833,7 @@ test("write:路径穿越/非 .md → 400(create 同检)", async () => {
   await assert.rejects(() => files.write("../evil.md", "x"), (e) => e.status === 400);
   await assert.rejects(() => files.write("raw.txt", "# 非 md"), (e) => e.status === 400, "write 仅接受 .md");
   await assert.rejects(() => files.create("evil.txt"), (e) => e.status === 400, "create 仅接受 .md");
+  await assert.rejects(() => files.write("no-such-dir/x.md", "# x"), (e) => e.status === 404, "write 父目录缺失 404");
 });
 
 test("removeFile:成功 + admin(delete) commit", async () => {
@@ -832,16 +849,21 @@ test("removeFile:缺失 → 404", async () => {
 });
 
 test("createDir:成功且不调 git;重复 → 409", async () => {
-  const { files, docsDir, gitCalls } = mkSite();
+  const { files, docsDir, siteDir, gitCalls } = mkSite();
   await files.createDir("dir2");
   assert.ok(fs.statSync(path.join(docsDir, "dir2")).isDirectory());
   assert.equal(gitCalls.length, 0, "空目录 git 不追踪,不产生提交");
   await assert.rejects(() => files.createDir("dir2"), (e) => e.status === 409);
+  assert.equal(await files.lastCommit(), "abc1234 admin(x): y", "状态条:最后一次 commit 摘要");
+  const bad = createFiles({ docsDir, siteDir, execGit: async () => { throw new Error("boom"); } });
+  assert.equal(await bad.lastCommit(), null, "git 异常 → null");
 });
 
 test("removeDir:非空且未 force → 409", async () => {
   const { files } = mkSite();
   await assert.rejects(() => files.removeDir("dir1", false), (e) => e.status === 409);
+  await assert.rejects(() => files.removeDir("./", true), (e) => e.status === 400, "根目录 force 删除拒绝");
+  await assert.rejects(() => files.removeDir("dir1/..", true), (e) => e.status === 400, "归一化后等根亦拒绝");
 });
 
 test("removeDir:force 递归删除 + commit", async () => {
@@ -856,6 +878,8 @@ test("rename:成功移动 + commit", async () => {
   await files.rename("dir1/a.md", "dir1/a2.md");
   assert.equal(fs.existsSync(path.join(docsDir, "dir1", "a2.md")), true);
   assert.deepEqual(gitCalls.at(-1), ["commit", "-m", "admin(rename): dir1/a.md -> dir1/a2.md"]);
+  await files.rename("dir1", "dir2");
+  assert.ok(fs.statSync(path.join(docsDir, "dir2")).isDirectory(), "目录改名(规格 §4)");
 });
 
 test("rename:目标已存在 → 409", async () => {
@@ -882,7 +906,11 @@ import path from "node:path";
 import { EXCLUDE_DIRS, httpError, safeResolve } from "./paths.js";
 import { buildTemplate } from "./frontmatter.js";
 
-const nowStr = () => new Date().toISOString().slice(0, 19).replace("T", " ");
+const nowStr = () => {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
 
 const isDir = async (p) => {
   try {
@@ -911,8 +939,9 @@ export function createFiles({ docsDir, siteDir, execGit }) {
       await execGit(["add", "-A", "docs"]);
       await execGit(["commit", "-m", `admin(${op}): ${rel}`]);
     } catch (e) {
-      // 重复保存同一内容:git 会报 nothing to commit,视为成功
-      if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) throw e;
+      // 重复保存同一内容:git 把 "nothing to commit" 打在 stdout(promisify(execFile) 的 message 不含 stdout),三处合判视为成功
+      const out = [e.stdout, e.stderr, e.message].map(String).join("\n");
+      if (!/nothing to commit/i.test(out)) throw e;
     }
   }
 
@@ -942,7 +971,7 @@ export function createFiles({ docsDir, siteDir, execGit }) {
         return { content: await fs.readFile(abs, "utf8"), mtime: st.mtimeMs };
       } catch (e) {
         if (e.status) throw e;
-        if (e.code === "ENOENT") throw httpError(404, "NOT_FOUND", "文件不存在");
+        if (e.code === "ENOENT" || e.code === "ENOTDIR") throw httpError(404, "NOT_FOUND", "文件不存在");
         throw e;
       }
     },
@@ -983,8 +1012,8 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     },
 
     async removeDir(rel, force) {
-      if (!rel || rel === "." || rel === "/") throw httpError(400, "INVALID_PATH", "拒绝操作根目录");
       const abs = safeResolve(docsDir, rel);
+      if (path.resolve(abs) === path.resolve(docsDir)) throw httpError(400, "INVALID_PATH", "拒绝操作根目录");
       if (!(await isDir(abs))) throw httpError(404, "NOT_FOUND", "目录不存在");
       const entries = await fs.readdir(abs);
       if (entries.length && !force) throw httpError(409, "NOT_EMPTY", "目录非空,需 force=1");
@@ -1694,6 +1723,8 @@ pnpm test 2>&1 | tail -6
 
 写入 `admin/server/src/app.js`(全文):
 
+**审查落点(任务 4 质量审查):** `setErrorHandler` 的 `code` 字段已加字符串守卫(`typeof err.code === "string" ? err.code : "INTERNAL"`)——`execFile` 出错时 `err.code` 是数字退出码,契约要求 `code` 恒为字符串;照抄下方全文。
+
 ```js
 import Fastify from "fastify";
 import { parseDoc } from "./frontmatter.js";
@@ -1730,7 +1761,8 @@ export function buildApp({ auth, files, queue, config = {} }) {
   app.setErrorHandler((err, req, reply) => {
     const status = err.status || err.statusCode || 500;
     if (status >= 500) console.error("[admin]", req.method, req.url, err); // 只记方法/路径/错误,不记 body 与 cookie
-    reply.code(status).send({ code: err.code || "INTERNAL", message: err.message || "服务器错误" });
+    // execFile 的 err.code 是数字(退出码 1/128),契约要求 code 恒为字符串 → 非字符串一律 INTERNAL
+    reply.code(status).send({ code: typeof err.code === "string" ? err.code : "INTERNAL", message: err.message || "服务器错误" });
   });
 
   // 健康检查语义:登录只接受 POST(规格 §8.3)
@@ -2747,7 +2779,54 @@ du -sh /home/weno/works/Notes-Atlas/.git
 
 判定:服务器 `/` 可用空间 ≥ 4G(node_modules ~1G + dist 154M + 推送历史);不足 → 停下报告。`pnpm` 不存在则在 9.4 装。
 
-- [ ] **步骤 9.2:服务器建仓(规格 §8.2)**
+- [ ] **步骤 9.2:本地部署文件入库 + 服务器建仓(规格 §8.2)**
+
+文件表中 `admin/server/Dockerfile`、`admin/server/compose.yaml` 两个"新建"项此前无落点(任务 4 质量审查时发现的计划缺口),须在 9.3 首次推送**之前**本地入库。写入 `admin/server/Dockerfile`(全文):
+
+```dockerfile
+FROM node:20-slim
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+COPY src ./src
+EXPOSE 8477
+CMD ["node", "src/index.js"]
+```
+
+写入 `admin/server/compose.yaml`(全文):
+
+```yaml
+services:
+  notes-admin:
+    build: .
+    container_name: notes-admin
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ..:/srv/site
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - caddy-network
+    restart: unless-stopped
+
+networks:
+  caddy-network:
+    external: true
+```
+
+要点:`..` = 仓库根 → 容器内 `/srv/site` = `.env` 的 `SITE_DIR`(rw 挂载:watcher 监听、files.js 落盘、容器内 git 提交都走它);站点构建走容器内 `npm run docs:build`(node:20-slim 自带 npm,git 已装,根 node_modules 由 9.4 在宿主装好、随挂载可见,9.2 建仓时写入的 repo 身份配置在 `.git/config` 亦随挂载生效);`TZ: Asia/Shanghai` 配合任务 4 的 `nowStr` 本地分量(容器默认 UTC,不设则新文档 date 差 8 小时);宿主不发布端口(规格 §2),仅经 `caddy-network` 按容器名反代。
+
+本地提交(在 9.3 首推之前):
+
+```bash
+cd /home/weno/works/Notes-Atlas
+git add admin/server/Dockerfile admin/server/compose.yaml
+git commit -m "feat(admin): 部署文件 Dockerfile 与 compose.yaml"
+```
+
+服务器建仓:
 
 ```bash
 ssh web 'sudo mkdir -p /opt/notes-atlas && sudo chown -R "$(whoami):$(whoami)" /opt/notes-atlas \
@@ -2756,7 +2835,7 @@ ssh web 'sudo mkdir -p /opt/notes-atlas && sudo chown -R "$(whoami):$(whoami)" /
   && git config user.email "notes-admin@notes-atlas.local" && git config user.name "notes-admin" && echo REPO-OK'
 ```
 
-预期:`REPO-OK`。
+预期:本地提交成功(恰 2 文件);服务器输出 `REPO-OK`。
 
 - [ ] **步骤 9.3:本地挂远端并首次推送(服务器成为真源)**
 
@@ -3087,7 +3166,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
-7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单;均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定。
+7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单(`rename` 对目录亦放行,规格 §4 本就允许、断言已并入任务 4);`removeDir(rel, force)` 不校验排除表——`removeDir(".vitepress", true)`/`removeDir("public", true)` 可整目录抹掉并提交(删配置即构建失败,有兜底但一击致盲);`walk` 跳过符号链接而 `read` 按路径可读(树里看不见、路径读得到,UI 不感知);均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定;⑨同库并发写另两处无兜底:并发保存抢 git `index.lock`(后者 `cannot lock index` 不在 nothing-to-commit 吞错范围 → 500,文件已落盘)与 `create` 的 exists→writeFile TOCTOU(单进程单管理员下不可达,未加 `wx` 原子旗标)——均按单管理员单窗口用法规避。
 
 ---
 
