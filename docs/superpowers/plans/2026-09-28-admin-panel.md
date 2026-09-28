@@ -1349,8 +1349,12 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
-import tar from "tar";
+import { createRequire } from "node:module";
 import { createArchivePublisher } from "../../admin/server/src/publish.js";
+
+// tar 是 admin/server 的依赖(tests/ 不在其 node_modules 解析路径上,根 pnpm 隔离安装不提升传递依赖)
+// → 从拥有方 package.json 锚点 require;红阶段静态 import publish.js 在 link 期先失败,5.6 预期不变
+const tar = createRequire(new URL("../../admin/server/package.json", import.meta.url))("tar");
 
 function listenFakeDocker(handler) {
   const sock = path.join(os.tmpdir(), `na-sock-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.sock`);
@@ -1412,6 +1416,8 @@ test("Docker API 非 2xx → reject,信息含状态码与原因", async () => {
 ```
 
 > 注:`server.address()` 对 unix socket 返回的就是 socket 路径字符串。
+
+> **执行注记(计划期修正,任务 5 分派前发现)**:原 `import tar from "tar"` 在 `tests/admin/` 下解析不到——根 `node_modules/tar` 不存在(pnpm 隔离式安装只暴露声明过的依赖,传递依赖不提升),步骤 5.6 的红会先报 `tar` 缺失、5.8 的绿根本到不了。改为从拥有方 `admin/server/package.json` 锚点 `createRequire`(实测 tar@6.2.1 CJS,`create`/`extract` 往返通过),5.6/5.8 的红绿预期原文不变。
 
 - [ ] **步骤 5.6:运行确认失败**
 
