@@ -398,8 +398,9 @@ test("过期 token → null", () => {
 });
 
 test("登出后旧 token 失效,登出后新登录的 token 有效", () => {
-  const { auth } = mkAuth();
+  const { auth, tick } = mkAuth();
   const old = auth.login("admin", PASS);
+  tick(1); // 登出发生在签发之后(真实世界必然;冻结时钟下同刻三时间戳相等会让单失效点语义无解)
   auth.logout();
   assert.equal(auth.verify(old), null);
   const fresh = auth.login("admin", PASS);
@@ -533,6 +534,11 @@ node --test tests/admin/auth.test.mjs
 git add tests/admin/auth.test.mjs admin/server/src/auth.js
 git commit -m "feat(admin): 登录认证、HMAC 会话与登录限流"
 ```
+
+**执行注记(计划文本疏漏,执行期修正):**
+- 原计划测试 5 与冻结时钟(`now: () => clock` 不 tick)矛盾:登录/登出/重登三时间戳全等,`p.iat < revokeAt()` 下 `old` 不失效、改 `<=` 则 `fresh` 也被拒——两断言无解。修正 = 测试 5 内 `auth.logout()` 前加 `tick(1)`(上方测试全文已同步),实现文本与注释语义(`iat 早于此刻一律拒绝`)零改动;实测单跑 7/7、全量 51/51,提交 `bc306ed`。
+- 红阶段证据:`44/1` + `ERR_MODULE_NOT_FOUND`(先红后绿未颠倒)。
+- 既有环境观察:根测试 `tests/embed.test.mjs:69`(读失败降级)有偶发抖动(4 次全量中闪失败 1 次,复跑即绿),与本计划无关,收尾报告留意。
 
 ---
 
