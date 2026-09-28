@@ -37,8 +37,8 @@ test("正常相对路径解析到 docs 下", () => {
   assert.equal(safeResolve(docs, "dir/note.md"), path.join(docs, "dir/note.md"));
 });
 
-test("EXCLUDE_DIRS 覆盖四类排除目录", () => {
-  for (const d of [".vitepress", "public", "admin", "node_modules"]) {
+test("EXCLUDE_DIRS 覆盖六类排除目录", () => {
+  for (const d of [".vitepress", "public", "admin", "node_modules", "@fragment", "superpowers"]) {
     assert.ok(EXCLUDE_DIRS.has(d), `缺少 ${d}`);
   }
 });

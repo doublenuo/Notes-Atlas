@@ -73,7 +73,7 @@
 | `GET /build/status` | - | `{state, queued, startedAt, durationMs, log, lastCommit, publishedAt}` |
 | `GET /build/lastlog` | - | 完整日志尾部 8KB |
 
-- **树排除**:`.vitepress`、`public`、`admin`、`node_modules`、一切隐藏目录;文件白名单 `.md`。
+- **树排除**:`.vitepress`、`public`、`admin`、`node_modules`、`@fragment`、`superpowers`、一切隐藏目录;文件白名单 `.md`。(排除即"站点不发布":`@fragment` 为插件暂存、`superpowers` 被 `srcExclude`;`@pages` 是真实发布页,有意保留。)
 - **路径安全**:入参 `path.normalize` + 解析为绝对路径后必须以 `docs/` 为前缀、不以 `..` 逃逸、
   不含 `\0`;已存在目标落盘前再做 `fs.realpath` 复核父目录仍在 `docs/` 内(防符号链接逃逸)。
   违规 400(单测覆盖每类逃逸)。

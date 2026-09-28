@@ -324,6 +324,11 @@ git add tests/admin/paths.test.mjs admin/server/src/paths.js
 git commit -m "feat(admin): 路径安全解析与树排除表"
 ```
 
+**执行注记(两阶段审查后的补充修复,与规格/计划同笔 `fix(admin)` 提交):**
+- 代码质量审查发现排除表与站点现实不符 → `EXCLUDE_DIRS` 补 `@fragment`(插件暂存,resolver 亦排除)与 `superpowers`(`config.ts` `srcExclude`、不发布);测试用例 7 同步断言六项;`@pages` 是真实发布页(`/about`、`/tags`、`/privacy` 等),**有意不排除**。规格 §4 树排除行同步修订。
+- `safeResolve` 入口补 `path.resolve(docsDir)` 归一化:尾斜杠/相对形 docsDir 原会被字面比较判成全量 400(fail-closed footgun)。
+- 审查建议但按现规格**不改、记档**:①测试临时目录不清理(/tmp 攒空目录,CI 无碍);②`docsDir` 缺失时 `realpathSync` 裸 ENOENT → 500,归到任务 6 启动断言;③写路径不校验排除表(`.vitepress/config.ts` 可经 API 直写)——规格仅要求树展示排除,且构建失败即不发布、git 留历史,风险接受,记入收尾报告。
+
 ---
 
 ## 任务 2:认证(TDD)
