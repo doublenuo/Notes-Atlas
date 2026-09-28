@@ -565,7 +565,7 @@ git commit -m "feat(admin): 登录认证、HMAC 会话与登录限流"
 - 创建:`tests/admin/frontmatter.test.mjs`
 - 创建:`admin/server/src/frontmatter.js`(服务端与 UI 共用;浏览器可打包已实测)
 
-- [ ] **步骤 3.1:编写失败的测试(5 个用例)**
+- [x] **步骤 3.1:编写失败的测试(5 个用例)**
 
 写入 `tests/admin/frontmatter.test.mjs`(全文):
 
@@ -631,12 +631,12 @@ test("buildTemplate 含 title/date/tags/categories 骨架", () => {
 test("parseDoc 往返:原文件不被改动", () => {
   const { frontmatter, body } = parseDoc(HERO_SRC);
   assert.equal(frontmatter.layout, "home");
-  assert.ok(body.startsWith("# 正文开始"));
+  assert.ok(body.trimStart().startsWith("# 正文开始"), "正文容忍分隔符后空行、以标题开始");
   assert.equal(HERO_SRC.includes("# 正文开始"), true);
 });
 ```
 
-- [ ] **步骤 3.2:运行确认失败**
+- [x] **步骤 3.2:运行确认失败**
 
 ```bash
 pnpm test 2>&1 | tail -6
@@ -644,7 +644,7 @@ pnpm test 2>&1 | tail -6
 
 预期:FAIL——`Cannot find module .../frontmatter.js`,`pass` 仍为 51。
 
-- [ ] **步骤 3.3:编写最少实现**
+- [x] **步骤 3.3:编写最少实现**
 
 写入 `admin/server/src/frontmatter.js`(全文):
 
@@ -675,7 +675,7 @@ export function buildTemplate(name, nowStr) {
 }
 ```
 
-- [ ] **步骤 3.4:运行确认通过**
+- [x] **步骤 3.4:运行确认通过**
 
 ```bash
 node --test tests/admin/frontmatter.test.mjs
@@ -683,12 +683,16 @@ node --test tests/admin/frontmatter.test.mjs
 
 预期:`# pass 5`、`# fail 0`。随后 `pnpm test` → `# pass 56`、`# fail 0`。
 
-- [ ] **步骤 3.5:Commit**
+- [x] **步骤 3.5:Commit**
 
 ```bash
 git add tests/admin/frontmatter.test.mjs admin/server/src/frontmatter.js
 git commit -m "feat(admin): frontmatter 表单化纯函数(hero 嵌套键保真)"
 ```
+
+**执行注记(计划文本疏漏,执行期修正,提交 `b4c82a5`):**
+- 原计划测试 5 `assert.ok(body.startsWith("# 正文开始"))` 与 `HERO_SRC` 的"分隔符后空行"矛盾:gray-matter@4.0.3 把 `---` 之后的空行保留在 `body` 首部(`body = "\n# 正文开始"` 起),`startsWith` 必假——**测试 5 断言 × 逐字实现 × 夹具空行三者不可兼得**,实测确认且排除抄写偏差(实现者 `cat -A` 核对)。修正 = 断言原位改为 `body.trimStart().startsWith(...)`(上方测试全文已同步),实现与夹具零改动;测试 1 的 body 往返相等本就证明 applyForm/gray-matter 保真,这才是被测契约。测试 4 的 `startsWith`(buildTemplate 产出无空行)不动。
+- 红阶段 `pass 51 / fail 1`(`ERR_MODULE_NOT_FOUND`)先于实现,先红后绿未颠倒;绿阶段单跑 5/5、全量 **56/56**。
 
 ---
 
