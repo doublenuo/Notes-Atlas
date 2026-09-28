@@ -337,7 +337,7 @@ git commit -m "feat(admin): 路径安全解析与树排除表"
 - 创建:`tests/admin/auth.test.mjs`
 - 创建:`admin/server/src/auth.js`
 
-- [ ] **步骤 2.1:编写失败的测试(7 个用例)**
+- [x] **步骤 2.1:编写失败的测试(7 个用例)**
 
 写入 `tests/admin/auth.test.mjs`(全文):
 
@@ -388,6 +388,8 @@ test("篡改签名或载荷 → null", () => {
   const [body, sig] = tok.split(".");
   const forged = Buffer.from(JSON.stringify({ user: "admin", iat: 1, exp: 9999999999999 })).toString("base64url");
   assert.equal(auth.verify(`${forged}.${sig}`), null);
+  assert.equal(auth.verify(undefined), null); // 无 cookie 时任务6 onRequest 传 undefined
+  assert.equal(auth.verify("nodot"), null); // 无分隔符的畸形 token
 });
 
 test("过期 token → null", () => {
@@ -408,21 +410,28 @@ test("登出后旧 token 失效,登出后新登录的 token 有效", () => {
 });
 
 test("限流:同 IP 一分钟内第 10 次放行、第 11 次拒绝", () => {
-  const { auth } = mkAuth();
+  const { auth, tick } = mkAuth();
   for (let i = 0; i < 10; i++) assert.equal(auth.rateAllow("1.2.3.4"), true, `第 ${i + 1} 次`);
   assert.equal(auth.rateAllow("1.2.3.4"), false);
   assert.equal(auth.rateAllow("5.6.7.8"), true, "不同 IP 不受影响");
+  tick(60001); // 窗口滑出后该 IP 恢复放行
+  assert.equal(auth.rateAllow("1.2.3.4"), true, "61s 后窗口重置");
 });
 
 test("登出把全局失效点持久化到 stateDir/revoke", () => {
-  const { auth, stateDir } = mkAuth();
+  const { auth, tick, stateDir } = mkAuth();
+  const tok = auth.login("admin", PASS);
+  tick(1);
   auth.logout();
   const saved = Number(fs.readFileSync(path.join(stateDir, "revoke"), "utf8"));
   assert.ok(Number.isFinite(saved) && saved > 0);
+  // 跨实例(等价容器重启)读同一失效点:旧 token 必须失效
+  const auth2 = createAuth({ secret: "unit-test-secret", user: "admin", passHash: HASH, stateDir, now: () => saved });
+  assert.equal(auth2.verify(tok), null, "新实例读同一 revoke 后旧 token 失效");
 });
 ```
 
-- [ ] **步骤 2.2:运行确认失败**
+- [x] **步骤 2.2:运行确认失败**
 
 ```bash
 pnpm test 2>&1 | tail -6
@@ -430,7 +439,7 @@ pnpm test 2>&1 | tail -6
 
 预期:FAIL——`Cannot find module .../admin/server/src/auth.js`,`fail` ≥ 1,`pass` 仍为 44。
 
-- [ ] **步骤 2.3:编写最少实现**
+- [x] **步骤 2.3:编写最少实现**
 
 写入 `admin/server/src/auth.js`(全文):
 
@@ -456,6 +465,9 @@ export function createAuth({
   windowMs = 60000,
   limit = 10,
 }) {
+  if (typeof secret !== "string" || secret.length === 0) {
+    throw new Error("createAuth: secret 必填且非空(安全模块对自己的构造参数负责)");
+  }
   fs.mkdirSync(stateDir, { recursive: true });
   const revokeFile = path.join(stateDir, "revoke");
   const hits = new Map(); // ip -> [时间戳]
@@ -476,7 +488,8 @@ export function createAuth({
   return {
     /** 成功返回 token,失败 null。 */
     login(u, p) {
-      if (u !== user || !bcrypt.compareSync(String(p ?? ""), passHash)) return null;
+      const ok = bcrypt.compareSync(String(p ?? ""), passHash); // 无条件恒时比较,防用户名枚举时序(CWE-203)
+      if (u !== user || !ok) return null;
       const t = now();
       return sign({ user, iat: t, exp: t + 30 * DAY });
     },
@@ -500,9 +513,11 @@ export function createAuth({
       if (p.user !== user || p.exp <= now() || p.iat < revokeAt()) return null;
       return p;
     },
-    /** 写全局失效点:iat 早于此刻的 token 一律拒绝(持久化,容器重启不复活)。 */
+    /** 写全局失效点:iat 早于此刻的 token 一律拒绝(原子写,容器重启不复活)。 */
     logout() {
-      fs.writeFileSync(revokeFile, String(now()));
+      const tmp = `${revokeFile}.${process.pid}.tmp`;
+      fs.writeFileSync(tmp, String(now()));
+      fs.renameSync(tmp, revokeFile); // rename 原子替换,防半截文件把失效点静默清零
     },
     /** 每次登录尝试计数,超限 false。 */
     rateAllow(ip) {
@@ -520,7 +535,7 @@ export function createAuth({
 }
 ```
 
-- [ ] **步骤 2.4:运行确认通过**
+- [x] **步骤 2.4:运行确认通过**
 
 ```bash
 node --test tests/admin/auth.test.mjs
@@ -528,7 +543,7 @@ node --test tests/admin/auth.test.mjs
 
 预期:`# pass 7`、`# fail 0`(含 hashPassword 的一次性真实 bcrypt)。随后 `pnpm test` → `# pass 51`、`# fail 0`。
 
-- [ ] **步骤 2.5:Commit**
+- [x] **步骤 2.5:Commit**
 
 ```bash
 git add tests/admin/auth.test.mjs admin/server/src/auth.js
@@ -539,6 +554,7 @@ git commit -m "feat(admin): 登录认证、HMAC 会话与登录限流"
 - 原计划测试 5 与冻结时钟(`now: () => clock` 不 tick)矛盾:登录/登出/重登三时间戳全等,`p.iat < revokeAt()` 下 `old` 不失效、改 `<=` 则 `fresh` 也被拒——两断言无解。修正 = 测试 5 内 `auth.logout()` 前加 `tick(1)`(上方测试全文已同步),实现文本与注释语义(`iat 早于此刻一律拒绝`)零改动;实测单跑 7/7、全量 51/51,提交 `bc306ed`。
 - 红阶段证据:`44/1` + `ERR_MODULE_NOT_FOUND`(先红后绿未颠倒)。
 - 既有环境观察:根测试 `tests/embed.test.mjs:69`(读失败降级)有偶发抖动(4 次全量中闪失败 1 次,复跑即绿),与本计划无关,收尾报告留意。
+- 代码审查修复轮:`logout` 改 tmp+renameSync 原子写(防半截文件把失效点清零);`login` 无条件 bcrypt 比较(防用户名枚举时序,错用户不再 0.04ms 短路);`createAuth` 对空 secret fail-fast;测试补三处盲区(窗口滑出恢复、跨实例/容器重启失效、`verify(undefined/nodot)` 契约)——断言并入既有用例,**test 计数保持 7**,下游 51/56/71/78/80/96 计数零影响。实测单跑 7/7、全量 51/51。
 
 ---
 
@@ -1639,6 +1655,8 @@ pnpm test 2>&1 | tail -6
 
 - [ ] **步骤 6.3:编写 app.js**
 
+**审查落点(任务 2 质量审查的必须修复):** 限流键不用裸 `req.ip`(Caddy 反代后恒为容器 IP → 全员同桶,匿名者 11 次/分锁死真管理员;Fastify 5 的 `trustProxy: <数字>` 是文档明示的空操作、`true` 又取 XFF 最左项可被伪造——两者都不用)。采用 **X-Real-IP 方案**:Caddy 侧 `header_up X-Real-IP {remote_host}` 覆写注入(本地 caddy:2-alpine 实测:占位符展开为真实客户端 IP、客户端伪造头被覆盖);后端只信该头,仅经反代可达故不可伪造。下方全文中 `rateAllow(req.ip)` 已同步改为 `req.headers["x-real-ip"] || req.ip`(无反代时回退 socket 地址,本地冒烟不受影响)。
+
 写入 `admin/server/src/app.js`(全文):
 
 ```js
@@ -1686,7 +1704,7 @@ export function buildApp({ auth, files, queue, config = {} }) {
   );
 
   app.post("/admin/api/login", async (req, reply) => {
-    if (!auth.rateAllow(req.ip)) {
+    if (!auth.rateAllow(req.headers["x-real-ip"] || req.ip)) {
       return reply.code(429).send({ code: "RATE_LIMITED", message: "尝试过于频繁,请一分钟后再试" });
     }
     const { user, pass } = req.body || {};
@@ -1779,6 +1797,19 @@ if (!fs.existsSync(path.join(SITE, "docs"))) {
 ```
 
 (`fs`/`path`/`SITE` 下方全文均已具备;缺目录 = 挂载配置错误,启动即失败好过运行时 500。)
+
+同一个 env 校验循环之后再追加两行入参格式断言(任务 2 质量审查登记):
+
+```js
+if (process.env.TOKEN_SECRET.length < 32) {
+  console.error("[admin] TOKEN_SECRET 过短(应为 openssl rand -hex 32 的 64 位十六进制)");
+  process.exit(1);
+}
+if (!/^\$2[aby]\$\d{2}\$/.test(process.env.ADMIN_PASS_HASH)) {
+  console.error("[admin] ADMIN_PASS_HASH 不是 bcrypt 串(用 hashPassword 生成)");
+  process.exit(1);
+}
+```
 
 写入 `admin/server/src/watcher.js`(全文):
 
@@ -2789,7 +2820,7 @@ if "notes-admin" in s:
 m = re.search(r"blogs\.lovetulin\.cn[^{\n]*\{\n", s)
 if not m:
     raise SystemExit("未找到 blogs.lovetulin.cn 站点块,停下")
-snippet = "\thandle_path /admin/api/* {\n\t\treverse_proxy notes-admin:8477\n\t}\n"
+snippet = "\thandle_path /admin/api/* {\n\t\theader_up X-Real-IP {remote_host}\n\t\treverse_proxy notes-admin:8477\n\t}\n"
 s = s[: m.end()] + snippet + s[m.end():]
 open(p, "w").write(s)
 print("inserted at offset", m.end())
@@ -2964,6 +2995,20 @@ pnpm docs:build > /tmp/opencode/local-build.log 2>&1; echo "build-exit=$?"
 
 预期:`# tests 96`、`# pass 96`、`# fail 0`;`build-exit=0`。
 
+**实现层探针:X-Real-IP 覆写与限流键不可伪造(任务 2 审查登记,非规格验收项)**:
+
+```bash
+L='{"user":"admin","pass":"definitely-wrong-pw"}'
+u=https://blogs.lovetulin.cn/admin/api/login
+sleep 61    # 让登录限流窗口滑出,保证起点干净
+for i in $(seq 1 11); do
+  echo -n "$i:$(curl -s -o /dev/null -w '%{http_code}' -X POST "$u" -H 'Content-Type: application/json' -d "$L") "
+done; echo
+echo "伪造头=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$u" -H 'Content-Type: application/json' -H 'X-Real-IP: 9.9.9.9' -d "$L")"
+```
+
+预期:第 1–10 次 `401`(限流放行、密码错),第 11 次 `429`(桶满);末尾带伪造头那次**仍 `429`** = Caddy `header_up` 覆写生效、限流键不可伪造。若伪造头得到 `401`(换了新桶)→ 伪造穿透反代,限流可被绕过 → **停下报告**。
+
 - [ ] **步骤 9.12:清理迁移现场**
 
 ```bash
@@ -3001,7 +3046,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
-7. 技术债与风险接受存档(任务 0/1 执行注记的落点):①写路径未校验树排除表(`.vitepress/config.ts` 可经 API 直写,靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定。
+7. 技术债与风险接受存档(任务 0/1 执行注记的落点):①写路径未校验树排除表(`.vitepress/config.ts` 可经 API 直写,靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定)。
 
 ---
 
