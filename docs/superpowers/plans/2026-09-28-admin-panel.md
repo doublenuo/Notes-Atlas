@@ -1072,9 +1072,10 @@ git commit -m "feat(admin): 文件树与文档/目录 CRUD"
 - 创建:`tests/admin/build.test.mjs`(7 用例)、`tests/admin/publish.test.mjs`(2 用例)
 - 创建:`admin/server/src/build.js`、`admin/server/src/publish.js`
 
-- **审查修复轮(质量审查 1 必须 + 建议全裁定,提交 `8ccc99a`(恰 4 文件,+154/-27),下方 4 块已同步为修复后全文):** ①(必须)`createArchivePublisher` 改**零参契约**——队列 `publish()` 与原形参 `publish(distDir)` 对不上,而 `tar.create({cwd: undefined})` 实测**静默打包 `process.cwd()`**(整份仓库 PUT 进 caddy;冒烟会先死在假 socket 上掩盖缺陷,生产则"旧站看着还在、新构建永远没发出去"),改为构造方注入 `distDir`、`publish()` 零参、缺参直接抛 `publish 缺少 distDir`;②构建超时改**先 reject("构建超时"携带当前 log)再 SIGKILL**——原只 `child.kill` 后等 `close` settle,而 `close` 要等持有 stdio 的孙进程,挂死时 Promise 永不 settle、队列永久卡 `building`(恰是 10 分钟超时要防的场景);③`createBuildQueue` JSDoc 补三条契约(runBuild 必须 resolve string、publish 零参、runBuild/publish 不得回调 `trigger`)+ `publishedAt`=最后一次成功发布时间、`durationMs` 语义;成功轮 `log` 对非 string 按空处理(防上轮错误文案残留 `/build/lastlog`);`if (queued) start()` → `void start()` + 注释;④Content-Type `application/tar` → `application/x-tar`(swagger consumes 标准类型,一行零风险);⑤`put` 加默认 60s 超时 `putTimeoutMs`(daemon 卡住 → 队列落 failed,与②同类失效模式——审查原分类"记入任务 6",因 publish.js 本任务在改、**提前落地**);⑥close 错误文案对信号杀显示 signal。断言全部**并入既有用例(`test()` 恒 9、全量 80)**:status 六字段键名锁、e.log→e.message 回落、成功→失败 `publishedAt` 保留、失败→成功 log 清空、tailLimit 裁剪+stdout/stderr 合并、spawn ENOENT、超时真 spawn(<2s + "构建超时")、CT/Content-Length、tgz finally 清理、缺 distDir 拒绝、PUT 无响应超时。审查记档不改:tgz 流式与容器容量累积(→任务10 ⑩⑪)、versionless PUT 已实测可用(留句于 publish.js JSDoc)、`/tmp` 测试临时目录残留(已有清单②覆盖)。
+- **审查修复轮(质量审查 1 必须 + 建议全裁定,提交 `8ccc99a`(恰 4 文件,+154/-27),下方 4 块已同步为修复后全文):** ①(必须)`createArchivePublisher` 改**零参契约**——队列 `publish()` 与原形参 `publish(distDir)` 对不上,而 `tar.create({cwd: undefined})` 实测**静默打包 `process.cwd()`**(整份仓库 PUT 进 caddy;冒烟会先死在假 socket 上掩盖缺陷,生产则"旧站看着还在、新构建永远没发出去"),改为构造方注入 `distDir`、`publish()` 零参、缺参直接抛 `publish 缺少 distDir`;②构建超时改**先 reject("构建超时"携带当前 log)再 SIGKILL**——原只 `child.kill` 后等 `close` settle,而 `close` 要等持有 stdio 的孙进程,挂死时 Promise 永不 settle、队列永久卡 `building`(恰是 10 分钟超时要防的场景);③`createBuildQueue` JSDoc 补三条契约(runBuild 必须 resolve string、publish 零参、runBuild/publish 不得回调 `trigger`)+ `publishedAt`=最后一次成功发布时间、`durationMs` 语义;成功轮 `log` 对非 string 按空处理(防上轮错误文案残留 `/build/lastlog`);`if (queued) start()` → `void start()` + 注释;④Content-Type `application/tar` → `application/x-tar`(swagger consumes 标准类型,一行零风险),原分类'记入任务 9 前'、取其首选'直接改';⑤`put` 加默认 60s 超时 `putTimeoutMs`(daemon 卡住 → 队列落 failed,与②同类失效模式——审查原分类"记入任务 6",因 publish.js 本任务在改、**提前落地**);⑥close 错误文案对信号杀显示 signal。断言全部**并入既有用例(`test()` 恒 9、全量 80)**:status 六字段键名锁、e.log→e.message 回落、成功→失败 `publishedAt` 保留、失败→成功 log 清空、tailLimit 裁剪+stdout/stderr 合并、spawn ENOENT、超时真 spawn(<2s + "构建超时")、CT/Content-Length、tgz finally 清理、缺 distDir 拒绝、PUT 无响应超时。审查记档不改:tgz 流式与容器容量累积(→任务10 ⑩⑪)、versionless PUT 已实测可用(留句于 publish.js JSDoc)、`/tmp` 测试临时目录残留(已有清单②覆盖)。
+- **审查闭环:** 规格审查(四块逐字 EXACT、两轮红隔离独立复现 71/78、16 对抗探针、红线零违例)→ 质量审查(1 必须 + 8 建议 + 盲区表 a-f)→ 修复 `8ccc99a` → **复审 ✅ 关闭**(旧码回放证实判别力:CT、缺 distDir 守卫、超时文案、log 残留四类断言必红;孙进程持 stdio 探针 +302ms 拒绝"构建超时",永久 building 场景消除;盲区 a-f 全并入既有用例 `test()` 恒 9、80/0 连跑 3 次;override 删除经全仓调用点核查无残留;kill 无须 try/catch 经三例实测)。复审 3 项非阻塞文档订正**同笔落本计划**:清单⑩容量语义改写(含 tgz 块状泄漏)、本 bullet ④ 分类变动补注、清单②点名 `na-dist3`。
 
-- [ ] **步骤 5.1:编写失败的测试(队列 7 用例)**
+- [x] **步骤 5.1:编写失败的测试(队列 7 用例)**
 
 写入 `tests/admin/build.test.mjs`(全文):
 
@@ -1305,7 +1306,7 @@ test("runner:exit 1 → reject 携带日志;spawn ENOENT 与超时同样携带 l
 });
 ```
 
-- [ ] **步骤 5.2:运行确认失败**
+- [x] **步骤 5.2:运行确认失败**
 
 ```bash
 pnpm test 2>&1 | tail -6
@@ -1313,7 +1314,7 @@ pnpm test 2>&1 | tail -6
 
 预期:FAIL——`Cannot find module .../build.js`,`pass` 仍为 71。
 
-- [ ] **步骤 5.3:编写 build.js 实现**
+- [x] **步骤 5.3:编写 build.js 实现**
 
 写入 `admin/server/src/build.js`(全文):
 
@@ -1423,7 +1424,7 @@ export function createBuildQueue({ runBuild, publish, debounceMs = 5000 }) {
 }
 ```
 
-- [ ] **步骤 5.4:运行确认队列测试通过**
+- [x] **步骤 5.4:运行确认队列测试通过**
 
 ```bash
 node --test tests/admin/build.test.mjs
@@ -1431,7 +1432,7 @@ node --test tests/admin/build.test.mjs
 
 预期:`# pass 7`、`# fail 0`;`pnpm test` → `# pass 78`、`# fail 0`。
 
-- [ ] **步骤 5.5:编写失败的发布测试(2 用例)**
+- [x] **步骤 5.5:编写失败的发布测试(2 用例)**
 
 写入 `tests/admin/publish.test.mjs`(全文):
 
@@ -1535,7 +1536,7 @@ test("Docker API 异常:非 2xx 报状态码、无响应超时拒绝、缺 distD
 
 > **执行注记(计划期修正,任务 5 分派前发现)**:原 `import tar from "tar"` 在 `tests/admin/` 下解析不到——根 `node_modules/tar` 不存在(pnpm 隔离式安装只暴露声明过的依赖,传递依赖不提升),步骤 5.6 的红会先报 `tar` 缺失、5.8 的绿根本到不了。改为从拥有方 `admin/server/package.json` 锚点 `createRequire`(实测 tar@6.2.1 CJS,`create`/`extract` 往返通过),5.6/5.8 的红绿预期原文不变。
 
-- [ ] **步骤 5.6:运行确认失败**
+- [x] **步骤 5.6:运行确认失败**
 
 ```bash
 pnpm test 2>&1 | tail -6
@@ -1543,7 +1544,7 @@ pnpm test 2>&1 | tail -6
 
 预期:FAIL——`Cannot find module .../publish.js`,`pass` 仍为 78。
 
-- [ ] **步骤 5.7:编写 publish.js 实现**
+- [x] **步骤 5.7:编写 publish.js 实现**
 
 写入 `admin/server/src/publish.js`(全文):
 
@@ -1615,7 +1616,7 @@ export function createArchivePublisher({
 }
 ```
 
-- [ ] **步骤 5.8:运行确认通过**
+- [x] **步骤 5.8:运行确认通过**
 
 ```bash
 node --test tests/admin/publish.test.mjs
@@ -1623,7 +1624,7 @@ node --test tests/admin/publish.test.mjs
 
 预期:`# pass 2`、`# fail 0`;随后 `pnpm test` → `# pass 80`、`# fail 0`。
 
-- [ ] **步骤 5.9:Commit**
+- [x] **步骤 5.9:Commit**
 
 ```bash
 git add tests/admin/build.test.mjs tests/admin/publish.test.mjs admin/server/src/build.js admin/server/src/publish.js
@@ -3308,7 +3309,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
-7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单(`rename` 对目录亦放行,规格 §4 本就允许、断言已并入任务 4);`removeDir(rel, force)` 不校验排除表——`removeDir(".vitepress", true)`/`removeDir("public", true)` 可整目录抹掉并提交(删配置即构建失败,有兜底但一击致盲);`walk` 跳过符号链接而 `read` 按路径可读(树里看不见、路径读得到,UI 不感知);均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定;⑨同库并发写另两处无兜底:并发保存抢 git `index.lock`(后者报 `fatal: Unable to create '…/.git/index.lock': File exists.` 不在 nothing-to-commit 吞错范围 → 500,文件已落盘)与 `create` 的 exists→writeFile TOCTOU(单进程单管理员下不可达,未加 `wx` 原子旗标)——均按单管理员单窗口用法规避;⑩归档"只覆盖不删"使容器内 hashed 资产与已删页面无限累积(每次构建 ~百 MB 量级、服务器根分区余量紧),收尾报告建议给一次容量实测与可选清理方案;⑪tgz 全量 `fs.readFile` 进内存(单飞行下峰值可接受),审查建议的流式 `req.end(createReadStream)` 记为可选优化。
+7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单(`rename` 对目录亦放行,规格 §4 本就允许、断言已并入任务 4);`removeDir(rel, force)` 不校验排除表——`removeDir(".vitepress", true)`/`removeDir("public", true)` 可整目录抹掉并提交(删配置即构建失败,有兜底但一击致盲);`walk` 跳过符号链接而 `read` 按路径可读(树里看不见、路径读得到,UI 不感知);均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍;任务 5 修复轮新增 `na-dist3-` 前缀一并归此);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定;⑨同库并发写另两处无兜底:并发保存抢 git `index.lock`(后者报 `fatal: Unable to create '…/.git/index.lock': File exists.` 不在 nothing-to-commit 吞错范围 → 500,文件已落盘)与 `create` 的 exists→writeFile TOCTOU(单进程单管理员下不可达,未加 `wx` 原子旗标)——均按单管理员单窗口用法规避;⑩归档"只覆盖不删"的容量语义(复审实测订正):全量归档 PUT ~129MB(压缩,dist 155M、tar 实测 128.6MB)是**每拍全量传输/内存峰值**的量,容器内**净累积**典型 KB~MB/次——assets 池 16M/377 文件内容哈希同名覆盖、public 媒体同名覆盖,真正累积的是删除/改名页与新哈希文件(无上限),根分区余 5.5G 紧;另有更大的块状泄漏:**进程被杀时 publish 的 finally 不执行**,单个 ~129MB `notes-pub-*.tgz` 留 /tmp 至容器重启——收尾报告建议容量实测与可选清理方案;⑪tgz 全量 `fs.readFile` 进内存(单飞行下峰值可接受),审查建议的流式 `req.end(createReadStream)` 记为可选优化。
 
 ---
 
