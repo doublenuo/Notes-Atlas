@@ -131,3 +131,10 @@ node_modules
 *.pdf
 *.docx
 *.doc
+
+# =========================
+# NotesAtlas admin
+# =========================
+docs/public/admin/
+admin/server/.env
+admin/server/.state/

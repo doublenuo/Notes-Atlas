@@ -34,10 +34,10 @@
   (本地 `git remote add srv web:/opt/notes-atlas` 后 `git push srv main` 直接更新服务器工作树)。
 - **后端容器**:源码在仓库 `admin/server/`(自带 Dockerfile + compose.yaml),发布 `127.0.0.1:8477`
   (仅共享 Caddy 可反代,公网不可直连);挂载 `/opt/notes-atlas:/srv/site` 与 `/var/run/docker.sock`
-  (发布必须 `docker cp`——实测 Caddy 容器静态目录无 bind mount;docker.sock 等同 root,
+  (发布必须经 docker.sock 拷入容器——实现用 Docker 归档 API `PUT /containers/<id>/archive`,语义等价 `docker cp -a dist/.`,镜像内不装 docker CLI;实测 Caddy 容器静态目录无 bind mount;docker.sock 等同 root,
   风险接受条件:单管理员自用、API 仅经 HTTPS+登录可达)。
 - **Caddy**:共享 Caddyfile(`/data/stacks/caddy/Caddyfile`)仅新增一段
-  `handle_path /admin/api/* { reverse_proxy 127.0.0.1:8477 }`;改前备份(沿用 `.bak-日期` 惯例)、
+  `handle_path /admin/api/* { reverse_proxy notes-admin:8477 }`(后端容器加入既有外部网络 `caddy-network`,按容器名直连;宿主不发布端口,公网不可直连);改前备份(沿用 `.bak-日期` 惯例)、
   `caddy validate` 通过后 `caddy reload`(graceful 零停机),不改动既有 handle。
 - **管理 UI**:独立 Vite+Vue3 工程 `admin/ui/`,产物输出 `docs/public/admin/`(gitignore),
   随 `docs:build` 一并发布到 `/admin/`。**无任何 CDN**(服务器为国内网络环境)。
@@ -89,7 +89,7 @@
 ## 5. 构建发布管线
 
 1. 队列消费:`npm run docs:build`(cwd=`/srv/site`,超时 10 分钟,捕获 stdout+stderr 日志)。
-2. **构建成功** → `docker cp /srv/site/docs/.vitepress/dist/. <CADDY_CONTAINER>:/opt/blogs/` →
+2. **构建成功** → 把 dist 拷入容器(实现:经 docker.sock 调 Docker 归档 API `PUT /containers/<id>/archive`,等价 `docker cp /srv/site/docs/.vitepress/dist/. <CADDY_CONTAINER>:/opt/blogs/`)→
    更新 `publishedAt`。**容器内文件只在成功时更新 = 站点永远是"最后成功版本",构建失败对外无感。**
 3. **构建/发布失败** → 状态 `failed` + 日志进后台;**不自动 revert git**(错误留管理员修复,
    修复保存即自动重跑);`build/status` 轮询(2s)驱动 UI 状态条。
@@ -120,7 +120,7 @@
 
 1. 本地收拢未提交改动 → commit(不 push GitHub)。
 2. 服务器 `git init /opt/notes-atlas` + `receive.denyCurrentBranch=updateInstead` + 本地
-   `git remote add srv` + `git push srv main` + 服务器 checkout;服务器 `npm ci`
+   `git remote add srv` + `git push srv main` + 服务器 checkout;服务器 `pnpm install --frozen-lockfile`(仓库为 pnpm 管理,`package-lock.json` 已失效、不使用)
    (**构建需要 devDependencies,勿设 `NODE_ENV=production`**)。
 3. `admin/server` 构建镜像、compose 起容器(env 文件就位),健康检查 `/admin/api/login` 401/405 通。
 4. 备份共享 Caddyfile → 加反代段 → `caddy validate` → `caddy reload`(graceful)。

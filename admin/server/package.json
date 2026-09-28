@@ -1,0 +1,12 @@
+{
+  "name": "notes-atlas-admin-server",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "chokidar": "^4.0.0",
+    "fastify": "^5.0.0",
+    "gray-matter": "^4.0.3",
+    "tar": "^6.2.1"
+  }
+}
