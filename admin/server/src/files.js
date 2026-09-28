@@ -3,7 +3,11 @@ import path from "node:path";
 import { EXCLUDE_DIRS, httpError, safeResolve } from "./paths.js";
 import { buildTemplate } from "./frontmatter.js";
 
-const nowStr = () => new Date().toISOString().slice(0, 19).replace("T", " ");
+const nowStr = () => {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
 
 const isDir = async (p) => {
   try {
@@ -32,8 +36,9 @@ export function createFiles({ docsDir, siteDir, execGit }) {
       await execGit(["add", "-A", "docs"]);
       await execGit(["commit", "-m", `admin(${op}): ${rel}`]);
     } catch (e) {
-      // 重复保存同一内容:git 会报 nothing to commit,视为成功
-      if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) throw e;
+      // 重复保存同一内容:git 把 "nothing to commit" 打在 stdout(promisify(execFile) 的 message 不含 stdout),三处合判视为成功
+      const out = [e.stdout, e.stderr, e.message].map(String).join("\n");
+      if (!/nothing to commit/i.test(out)) throw e;
     }
   }
 
@@ -63,7 +68,7 @@ export function createFiles({ docsDir, siteDir, execGit }) {
         return { content: await fs.readFile(abs, "utf8"), mtime: st.mtimeMs };
       } catch (e) {
         if (e.status) throw e;
-        if (e.code === "ENOENT") throw httpError(404, "NOT_FOUND", "文件不存在");
+        if (e.code === "ENOENT" || e.code === "ENOTDIR") throw httpError(404, "NOT_FOUND", "文件不存在");
         throw e;
       }
     },
@@ -104,8 +109,8 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     },
 
     async removeDir(rel, force) {
-      if (!rel || rel === "." || rel === "/") throw httpError(400, "INVALID_PATH", "拒绝操作根目录");
       const abs = safeResolve(docsDir, rel);
+      if (path.resolve(abs) === path.resolve(docsDir)) throw httpError(400, "INVALID_PATH", "拒绝操作根目录");
       if (!(await isDir(abs))) throw httpError(404, "NOT_FOUND", "目录不存在");
       const entries = await fs.readdir(abs);
       if (entries.length && !force) throw httpError(409, "NOT_EMPTY", "目录非空,需 force=1");
