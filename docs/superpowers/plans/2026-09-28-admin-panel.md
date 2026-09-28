@@ -1072,6 +1072,8 @@ git commit -m "feat(admin): 文件树与文档/目录 CRUD"
 - 创建:`tests/admin/build.test.mjs`(7 用例)、`tests/admin/publish.test.mjs`(2 用例)
 - 创建:`admin/server/src/build.js`、`admin/server/src/publish.js`
 
+- **审查修复轮(质量审查 1 必须 + 建议全裁定,提交 `8ccc99a`(恰 4 文件,+154/-27),下方 4 块已同步为修复后全文):** ①(必须)`createArchivePublisher` 改**零参契约**——队列 `publish()` 与原形参 `publish(distDir)` 对不上,而 `tar.create({cwd: undefined})` 实测**静默打包 `process.cwd()`**(整份仓库 PUT 进 caddy;冒烟会先死在假 socket 上掩盖缺陷,生产则"旧站看着还在、新构建永远没发出去"),改为构造方注入 `distDir`、`publish()` 零参、缺参直接抛 `publish 缺少 distDir`;②构建超时改**先 reject("构建超时"携带当前 log)再 SIGKILL**——原只 `child.kill` 后等 `close` settle,而 `close` 要等持有 stdio 的孙进程,挂死时 Promise 永不 settle、队列永久卡 `building`(恰是 10 分钟超时要防的场景);③`createBuildQueue` JSDoc 补三条契约(runBuild 必须 resolve string、publish 零参、runBuild/publish 不得回调 `trigger`)+ `publishedAt`=最后一次成功发布时间、`durationMs` 语义;成功轮 `log` 对非 string 按空处理(防上轮错误文案残留 `/build/lastlog`);`if (queued) start()` → `void start()` + 注释;④Content-Type `application/tar` → `application/x-tar`(swagger consumes 标准类型,一行零风险);⑤`put` 加默认 60s 超时 `putTimeoutMs`(daemon 卡住 → 队列落 failed,与②同类失效模式——审查原分类"记入任务 6",因 publish.js 本任务在改、**提前落地**);⑥close 错误文案对信号杀显示 signal。断言全部**并入既有用例(`test()` 恒 9、全量 80)**:status 六字段键名锁、e.log→e.message 回落、成功→失败 `publishedAt` 保留、失败→成功 log 清空、tailLimit 裁剪+stdout/stderr 合并、spawn ENOENT、超时真 spawn(<2s + "构建超时")、CT/Content-Length、tgz finally 清理、缺 distDir 拒绝、PUT 无响应超时。审查记档不改:tgz 流式与容器容量累积(→任务10 ⑩⑪)、versionless PUT 已实测可用(留句于 publish.js JSDoc)、`/tmp` 测试临时目录残留(已有清单②覆盖)。
+
 - [ ] **步骤 5.1:编写失败的测试(队列 7 用例)**
 
 写入 `tests/admin/build.test.mjs`(全文):
@@ -1084,7 +1086,7 @@ import { createBuildQueue, createSpawnRunner } from "../../admin/server/src/buil
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-function fakeSpawn(code, out) {
+function fakeSpawn(code, out, errOut) {
   return () => {
     const child = new EventEmitter();
     child.stdout = new EventEmitter();
@@ -1092,6 +1094,7 @@ function fakeSpawn(code, out) {
     child.kill = () => {};
     process.nextTick(() => {
       child.stdout.emit("data", Buffer.from(out));
+      if (errOut) child.stderr.emit("data", Buffer.from(errOut));
       child.emit("close", code);
     });
     return child;
@@ -1120,6 +1123,7 @@ test("状态序列 idle→queued→building→success,publish 恰一次", async 
   assert.equal(queue.status().state, "success");
   assert.deepEqual(events, ["run", "publish"]);
   const s = queue.status();
+  assert.deepEqual(Object.keys(s), ["state", "queued", "startedAt", "durationMs", "publishedAt", "log"], "status 六字段键名(任务6 build/status 依赖)");
   assert.ok(s.startedAt > 0 && s.durationMs > 0 && s.publishedAt > 0);
   assert.equal(s.log, "build ok");
   assert.equal(s.queued, false);
@@ -1171,7 +1175,7 @@ test("构建中二次触发 → 当前构建后补跑恰好一次(共 2 次)", a
   assert.equal(runs, 2, "没有第三次");
 });
 
-test("runBuild 失败 → failed,且绝不发布", async () => {
+test("runBuild 失败 → failed 不发布;e.log 回落、publishedAt 语义、成功轮清日志", async () => {
   let published = 0;
   const queue = createBuildQueue({
     runBuild: async () => {
@@ -1188,6 +1192,62 @@ test("runBuild 失败 → failed,且绝不发布", async () => {
   assert.equal(s.state, "failed");
   assert.equal(published, 0, "失败不发布");
   assert.equal(s.log, "错误:坏 YAML", "日志来自构建输出");
+
+  // 无 e.log 的错误 → 回落 e.message
+  const q2 = createBuildQueue({
+    runBuild: async () => {
+      throw new Error("网络断了");
+    },
+    publish: async () => {},
+    debounceMs: 5,
+  });
+  q2.trigger();
+  await sleep(30);
+  assert.equal(q2.status().log, "网络断了");
+
+  // 成功→失败序列:publishedAt 保留最后一次成功发布时间(规格 §5.2 仅成功时更新)
+  let round = 0;
+  const q3 = createBuildQueue({
+    runBuild: async () => {
+      round++;
+      if (round === 2) throw Object.assign(new Error("second"), { log: "错误:第二次" });
+      return "ok";
+    },
+    publish: async () => {},
+    debounceMs: 5,
+  });
+  q3.trigger();
+  await sleep(30);
+  const first = q3.status();
+  assert.equal(first.state, "success");
+  assert.ok(first.publishedAt > 0);
+  q3.trigger();
+  await sleep(30);
+  const second = q3.status();
+  assert.equal(second.state, "failed");
+  assert.equal(second.log, "错误:第二次");
+  assert.equal(second.publishedAt, first.publishedAt, "失败轮保留最后一次成功 publishedAt");
+  assert.equal(typeof second.durationMs, "number", "失败轮 durationMs 为到失败点的数值");
+
+  // 失败→成功序列:runBuild 返回非 string → 成功轮 log 清空,不残留上轮错误
+  let n = 0;
+  const q4 = createBuildQueue({
+    runBuild: async () => {
+      n++;
+      if (n === 1) throw Object.assign(new Error("first"), { log: "错误:旧日志" });
+      return undefined;
+    },
+    publish: async () => {},
+    debounceMs: 5,
+  });
+  q4.trigger();
+  await sleep(30);
+  assert.equal(q4.status().state, "failed");
+  q4.trigger();
+  await sleep(30);
+  const st = q4.status();
+  assert.equal(st.state, "success");
+  assert.equal(st.log, "", "成功轮不残留上轮错误日志(非 string 按空处理)");
 });
 
 test("publish 失败 → failed(状态携带失败原因)", async () => {
@@ -1205,18 +1265,21 @@ test("publish 失败 → failed(状态携带失败原因)", async () => {
   assert.equal(s.log, "docker 拒绝");
 });
 
-test("runner:exit 0 → resolve(合并日志)", async () => {
+test("runner:exit 0 → resolve(合并 stdout+stderr,尾部裁剪 tailLimit)", async () => {
   const runner = createSpawnRunner({
     command: "echo",
     args: ["hi"],
     cwd: process.cwd(),
-    spawnFn: fakeSpawn(0, "构建完成\n"),
+    spawnFn: fakeSpawn(0, "HEAD" + "y".repeat(8500), "警告:构建完成\n"),
   });
   const log = await runner();
-  assert.ok(log.includes("构建完成"));
+  assert.ok(log.includes("构建完成"), "stderr 内容并入");
+  assert.ok(log.includes("警告"));
+  assert.ok(!log.includes("HEAD"), "超出 tailLimit 的头部被裁掉");
+  assert.ok(log.length <= 8000, "日志长度受 tailLimit 约束");
 });
 
-test("runner:exit 1 → reject 且携带日志", async () => {
+test("runner:exit 1 → reject 携带日志;spawn ENOENT 与超时同样携带 log", async () => {
   const runner = createSpawnRunner({
     command: "x",
     args: [],
@@ -1224,6 +1287,21 @@ test("runner:exit 1 → reject 且携带日志", async () => {
     spawnFn: fakeSpawn(1, "错误:坏 YAML\n"),
   });
   await assert.rejects(() => runner(), (e) => e.log.includes("坏 YAML"));
+
+  // 真实 spawn:命令不存在 → ENOENT 且 log 为空串
+  const missing = createSpawnRunner({ command: "/definitely/not/exist-xyz", args: [], cwd: process.cwd() });
+  await assert.rejects(() => missing(), (e) => e.code === "ENOENT" && e.log === "");
+
+  // 真实 spawn:超时先 settle("构建超时"携带已捕获日志)再 SIGKILL,不等 close
+  const slow = createSpawnRunner({
+    command: process.execPath,
+    args: ["-e", "console.log('starting'); setTimeout(() => {}, 10000)"],
+    cwd: process.cwd(),
+    timeoutMs: 400,
+  });
+  const t0 = Date.now();
+  await assert.rejects(() => slow(), (e) => e.message === "构建超时" && e.log.includes("starting"));
+  assert.ok(Date.now() - t0 < 2000, "超时快速拒绝,不等 close");
 });
 ```
 
@@ -1244,7 +1322,9 @@ import { spawn } from "node:child_process";
 
 /**
  * 执行一条构建命令:合并捕获 stdout+stderr,只保留尾部 tailLimit 字符;
- * 超时 SIGKILL;exit≠0 / spawn 错误 → reject,错误对象携带 log。
+ * 超时 → 先以"构建超时"reject(携带当前 log)再 SIGKILL——不等 close,因为 close 要等
+ * 持有 stdio 的孙进程退出,孙进程挂死时 Promise 永不 settle 会把队列永久卡在 building;
+ * exit≠0 / spawn 错误 → reject,错误对象携带 log。
  */
 export function createSpawnRunner({ command, args, cwd, timeoutMs = 600000, tailLimit = 8000, spawnFn = spawn }) {
   return function runBuild() {
@@ -1257,15 +1337,21 @@ export function createSpawnRunner({ command, args, cwd, timeoutMs = 600000, tail
       };
       child.stdout?.on("data", (d) => push(String(d)));
       child.stderr?.on("data", (d) => push(String(d)));
-      const timer = setTimeout(() => child.kill("SIGKILL"), timeoutMs);
+      const timer = setTimeout(() => {
+        reject(Object.assign(new Error("构建超时"), { log }));
+        child.kill("SIGKILL");
+      }, timeoutMs);
       child.on("error", (e) => {
         clearTimeout(timer);
         reject(Object.assign(e, { log }));
       });
-      child.on("close", (code) => {
+      child.on("close", (code, signal) => {
         clearTimeout(timer);
         if (code === 0) resolve(log);
-        else reject(Object.assign(new Error(`构建进程退出码 ${code}`), { log }));
+        else {
+          const why = code === null ? `构建被信号 ${signal ?? "未知"} 终止` : `构建进程退出码 ${code}`;
+          reject(Object.assign(new Error(why), { log }));
+        }
       });
     });
   };
@@ -1276,6 +1362,14 @@ export function createSpawnRunner({ command, args, cwd, timeoutMs = 600000, tail
  * state: idle | queued | building | success | failed
  * queued(bool): 防抖等待中,或构建中标记、待当前构建结束后的补跑请求。
  * 构建成功才 publish;失败保留日志、不回滚 git(规格 §5.3)。
+ *
+ * 契约(调用方必须遵守):
+ * - runBuild 必须 resolve 构建输出 string;非 string 按空字符串处理(成功轮不残留上轮日志)。
+ * - publish 为零参调用,目标目录由构造方闭包注入(见 createArchivePublisher 的 distDir)。
+ * - runBuild/publish 内部不得回调 trigger(),否则形成病理性自旋补跑。
+ * 语义:
+ * - publishedAt = 最后一次成功发布时间:失败轮保留旧值(规格 §5.2 仅成功时更新)。
+ * - durationMs:成功 = 构建+发布墙钟,失败 = 到失败点,building 期为 null。
  */
 export function createBuildQueue({ runBuild, publish, debounceMs = 5000 }) {
   let state = "idle";
@@ -1297,7 +1391,7 @@ export function createBuildQueue({ runBuild, publish, debounceMs = 5000 }) {
     durationMs = null;
     try {
       const out = await runBuild();
-      if (typeof out === "string") log = out;
+      log = typeof out === "string" ? out : "";
       await publish();
       publishedAt = Date.now();
       durationMs = publishedAt - startedAt;
@@ -1307,7 +1401,7 @@ export function createBuildQueue({ runBuild, publish, debounceMs = 5000 }) {
       durationMs = Date.now() - startedAt;
       state = "failed";
     }
-    if (queued) start();
+    if (queued) void start(); // start() 内部 try/catch 全包、尾部不得抛,fire-and-forget 不会成 unhandledRejection
   }
 
   return {
@@ -1362,13 +1456,13 @@ function listenFakeDocker(handler) {
   return new Promise((resolve) => server.listen(sock, () => resolve(server)));
 }
 
-test("归档发布:PUT docker socket,URL 与 tar 内容均正确", async () => {
+test("归档发布:PUT docker socket,URL、请求头与 tar 内容均正确", async () => {
   let got = null;
   const server = await listenFakeDocker((req, res) => {
     const chunks = [];
     req.on("data", (c) => chunks.push(c));
     req.on("end", () => {
-      got = { method: req.method, url: req.url, body: Buffer.concat(chunks) };
+      got = { method: req.method, url: req.url, headers: req.headers, body: Buffer.concat(chunks) };
       res.statusCode = 200;
       res.end("{}");
     });
@@ -1379,23 +1473,27 @@ test("归档发布:PUT docker socket,URL 与 tar 内容均正确", async () => {
     fs.writeFileSync(path.join(dist, "index.html"), "<h1>hi</h1>");
     fs.mkdirSync(path.join(dist, "admin"));
     fs.writeFileSync(path.join(dist, "admin", "app.js"), "console.log(1)");
-    const publish = createArchivePublisher({ socketPath: sock, container: "caddy", destPath: "/opt/blogs" });
-    await publish(dist);
+    const publish = createArchivePublisher({ socketPath: sock, container: "caddy", destPath: "/opt/blogs", distDir: dist });
+    await publish(); // 构建队列的零参形态
     assert.equal(got.method, "PUT");
     assert.ok(got.url.includes("/containers/caddy/archive"), got.url);
     assert.ok(got.url.includes(encodeURIComponent("/opt/blogs")), "path 参数 URL 编码");
+    assert.equal(got.headers["content-type"], "application/x-tar", "swagger consumes 列出的标准类型");
+    assert.equal(Number(got.headers["content-length"]), got.body.length, "content-length 与实际字节一致");
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "na-untar-"));
     const tgz = path.join(tmp, "a.tgz");
     fs.writeFileSync(tgz, zlib.gunzipSync(got.body));
     await tar.extract({ file: tgz, cwd: tmp });
     assert.equal(fs.readFileSync(path.join(tmp, "index.html"), "utf8"), "<h1>hi</h1>");
     assert.equal(fs.readFileSync(path.join(tmp, "admin", "app.js"), "utf8"), "console.log(1)");
+    const leftover = fs.readdirSync(os.tmpdir()).filter((n) => n.startsWith(`notes-pub-${process.pid}-`));
+    assert.deepEqual(leftover, [], "finally 清理临时 tgz");
   } finally {
     await new Promise((r) => server.close(r));
   }
 });
 
-test("Docker API 非 2xx → reject,信息含状态码与原因", async () => {
+test("Docker API 异常:非 2xx 报状态码、无响应超时拒绝、缺 distDir 拒绝", async () => {
   const server = await listenFakeDocker((req, res) => {
     res.statusCode = 404;
     res.end('{"message":"No such container: caddy"}');
@@ -1404,13 +1502,31 @@ test("Docker API 非 2xx → reject,信息含状态码与原因", async () => {
   try {
     const dist = fs.mkdtempSync(path.join(os.tmpdir(), "na-dist2-"));
     fs.writeFileSync(path.join(dist, "index.html"), "x");
-    const publish = createArchivePublisher({ socketPath: sock, container: "caddy", destPath: "/opt/blogs" });
-    await assert.rejects(
-      () => publish(dist),
-      (e) => /404/.test(e.message) && /No such container/.test(e.message),
-    );
+    const publish = createArchivePublisher({ socketPath: sock, container: "caddy", destPath: "/opt/blogs", distDir: dist });
+    await assert.rejects(() => publish(), (e) => /404/.test(e.message) && /No such container/.test(e.message));
+
+    // 未注入 distDir → 拒绝,绝不静默打包 process.cwd()(必须修复①)
+    const bare = createArchivePublisher({ socketPath: sock, container: "caddy", destPath: "/opt/blogs" });
+    await assert.rejects(() => bare(), /缺少 distDir/);
   } finally {
     await new Promise((r) => server.close(r));
+  }
+
+  // PUT 无响应 → 超时拒绝,队列不得因 daemon 卡住而永久卡 building
+  const hang = await listenFakeDocker(() => {});
+  try {
+    const hung = createArchivePublisher({
+      socketPath: hang.address(),
+      container: "caddy",
+      distDir: fs.mkdtempSync(path.join(os.tmpdir(), "na-dist3-")),
+      putTimeoutMs: 150,
+    });
+    const t0 = Date.now();
+    await assert.rejects(() => hung(), /归档超时/);
+    assert.ok(Date.now() - t0 < 3000, "超时在 putTimeoutMs 量级触发");
+  } finally {
+    hang.closeAllConnections();
+    await new Promise((r) => hang.close(r));
   }
 });
 ```
@@ -1438,15 +1554,16 @@ import os from "node:os";
 import path from "node:path";
 import tar from "tar";
 
-/** 经 unix socket 调 Docker HTTP API;非 2xx → reject(信息含状态码)。 */
-function put({ socketPath, requestPath, body }) {
+/** 经 unix socket 调 Docker HTTP API;非 2xx → reject(信息含状态码);超时 → reject("Docker 归档超时")。 */
+function put({ socketPath, requestPath, body, timeoutMs }) {
   return new Promise((resolve, reject) => {
     const req = http.request(
       {
         socketPath,
         method: "PUT",
         path: requestPath,
-        headers: { "Content-Type": "application/tar", "Content-Length": body.length },
+        timeout: timeoutMs,
+        headers: { "Content-Type": "application/x-tar", "Content-Length": body.length },
       },
       (res) => {
         const chunks = [];
@@ -1458,6 +1575,7 @@ function put({ socketPath, requestPath, body }) {
         });
       },
     );
+    req.on("timeout", () => req.destroy(new Error("Docker 归档超时")));
     req.on("error", reject);
     req.end(body);
   });
@@ -1467,9 +1585,19 @@ function put({ socketPath, requestPath, body }) {
  * 把 distDir 内容发布进 Caddy 容器的静态目录。
  * 归档 API 等价 `docker cp -a <dist>/. <container>:/opt/blogs/`:
  * 只覆盖/新增,不删除容器内旧文件(与既有部署语义一致)。
+ * 零参契约:构建队列调用 publish(),目标目录只能来自构造方 distDir——
+ * 未注入时直接抛错,tar.create 在 cwd: undefined 下会静默归档 process.cwd()(审查修复)。
+ * 无版本前缀的 /containers/.../archive 已实测被 daemon 接受(等同 latest API)。
  */
-export function createArchivePublisher({ socketPath = "/var/run/docker.sock", container, destPath = "/opt/blogs" }) {
-  return async function publish(distDir) {
+export function createArchivePublisher({
+  socketPath = "/var/run/docker.sock",
+  container,
+  destPath = "/opt/blogs",
+  distDir,
+  putTimeoutMs = 60000,
+}) {
+  return async function publish() {
+    if (!distDir) throw new Error("publish 缺少 distDir");
     const tmp = path.join(os.tmpdir(), `notes-pub-${process.pid}-${Date.now()}.tgz`);
     try {
       await tar.create({ gzip: true, cwd: distDir, file: tmp, portable: true }, ["."]);
@@ -1478,6 +1606,7 @@ export function createArchivePublisher({ socketPath = "/var/run/docker.sock", co
         socketPath,
         requestPath: `/containers/${encodeURIComponent(container)}/archive?path=${encodeURIComponent(destPath)}`,
         body,
+        timeoutMs: putTimeoutMs,
       });
     } finally {
       await fs.unlink(tmp).catch(() => {});
@@ -1946,9 +2075,12 @@ const execGit = async (args) => {
   return stdout;
 };
 
-// 构建命令可整体替换(本地冒烟用 BUILD_COMMAND="echo smoke-build-ok")
-const [buildCmd, ...buildArgs] = (process.env.BUILD_COMMAND || "npm run docs:build").split(/\s+/);
+// 构建命令可整体替换(本地冒烟用 BUILD_COMMAND="echo smoke-build-ok");先 trim 再按空白拆分,不支持 shell 引号语义(含引号请用包装脚本)
+const buildSpec = (process.env.BUILD_COMMAND || "").trim() || "npm run docs:build";
+const [buildCmd, ...buildArgs] = buildSpec.split(/\s+/);
 
+// 审查落点(任务 5 质量审查):①distDir 必须注入——队列零参调 publish(),缺参 createArchivePublisher 直接抛错而非 tar.create 静默打包 process.cwd()
+//   (路径 docs/.vitepress/dist 是 vitepress 默认产物,已对照 deploy.yml 的 source 行核实);②putTimeoutMs 默认 60s,daemon 卡住时队列落 failed、不永久 building
 const queue = createBuildQueue({
   runBuild: createSpawnRunner({
     command: buildCmd,
@@ -1960,6 +2092,7 @@ const queue = createBuildQueue({
     socketPath: process.env.DOCKER_SOCKET || "/var/run/docker.sock",
     container: process.env.CADDY_CONTAINER || "caddy",
     destPath: process.env.PUBLISH_PATH || "/opt/blogs",
+    distDir: path.join(SITE, "docs/.vitepress/dist"),
   }),
   debounceMs: Number(process.env.BUILD_DEBOUNCE_MS || 5000),
 });
@@ -3175,7 +3308,7 @@ git log --oneline -8 && git status --porcelain -- docs package.json pnpm-lock.ya
 4. 环境变更清单:`/opt/notes-atlas`、`admin/server/.env(600)`、`notes-admin` 容器、Caddyfile 反代段与其 `.bak-*`、(若发生)`npm registry → npmmirror`、服务器全局 `pnpm@10`。
 5. 留待用户决定:GitHub 何时 push(手动备份通道)、`deploy.yml` 去留、`/opt/blogs.bak-*` 与 `Caddyfile.bak-*` 何时删、`/tmp/opencode/admin-credentials.env` 可删。
 6. 风险重申:docker.sock 等同 root(仅单管理员、API 经 HTTPS+登录可达);共享 Caddy 只加了一段 handle_path,其他 handle 未动。
-7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单(`rename` 对目录亦放行,规格 §4 本就允许、断言已并入任务 4);`removeDir(rel, force)` 不校验排除表——`removeDir(".vitepress", true)`/`removeDir("public", true)` 可整目录抹掉并提交(删配置即构建失败,有兜底但一击致盲);`walk` 跳过符号链接而 `read` 按路径可读(树里看不见、路径读得到,UI 不感知);均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定;⑨同库并发写另两处无兜底:并发保存抢 git `index.lock`(后者报 `fatal: Unable to create '…/.git/index.lock': File exists.` 不在 nothing-to-commit 吞错范围 → 500,文件已落盘)与 `create` 的 exists→writeFile TOCTOU(单进程单管理员下不可达,未加 `wx` 原子旗标)——均按单管理员单窗口用法规避。
+7. 技术债与风险接受存档(任务 0/1/3 执行注记的落点):①`create`/`write` 已有 `.md` 扩展白名单(任务 3 质量审查补落任务 4,非 md 如 `.vitepress/config.ts` 直写已 400,封堵注入/XSS 向量),但写路径未逐项校验树排除表(`.vitepress`/`public`/`admin` 下的 `.md` 仍可经 API 直写;`removeFile`/`rename` 亦无扩展白名单(`rename` 对目录亦放行,规格 §4 本就允许、断言已并入任务 4);`removeDir(rel, force)` 不校验排除表——`removeDir(".vitepress", true)`/`removeDir("public", true)` 可整目录抹掉并提交(删配置即构建失败,有兜底但一击致盲);`walk` 跳过符号链接而 `read` 按路径可读(树里看不见、路径读得到,UI 不感知);均靠"构建失败即不发布 + git 历史"兜底);②测试临时目录不清理(/tmp 攒空目录,CI 无碍);③`admin/server/package-lock.json` 的 resolved 指向 npmmirror(integrity 兜底、国内服务器更快);④根 `package-lock.json` 已失效仍跟踪在库,是否 `git rm --cached` 待用户定;⑤`hits` 限流 Map 只增不清(按真实 IP 键,长驻容器可渐攒 MB 级,建议后续加过期键惰性剪枝);⑥限流仅 per-IP 无全局熔断(分布式洪泛每次烧 ~63ms 主线程 CPU,是否加全站上限超规格,留用户裁定);⑦frontmatter 回写归一化:每次保存经 gray-matter stringify 规整 YAML(注释、引号、缩进、日期格式,补无尾换行、去 BOM;键序保持原样、仅新增键追加尾部),实测全站 190 篇中 186 篇首存即产生归一化 diff——单管理员自用展示不变、**幂等**(首存后二次保存零 diff)已验证,若反感可后续改行级 merge;⑧保存为 read-modify-write 且无锁:关页/网络重试以旧基准覆盖新编辑、并发 PUT 互相覆盖(服务端 PUT 纯覆盖无版本号),单管理员 + SameSite Cookie + 单窗口用法规避,硬化方案(PUT 带 mtime 做 CAS)超规格留用户裁定;⑨同库并发写另两处无兜底:并发保存抢 git `index.lock`(后者报 `fatal: Unable to create '…/.git/index.lock': File exists.` 不在 nothing-to-commit 吞错范围 → 500,文件已落盘)与 `create` 的 exists→writeFile TOCTOU(单进程单管理员下不可达,未加 `wx` 原子旗标)——均按单管理员单窗口用法规避;⑩归档"只覆盖不删"使容器内 hashed 资产与已删页面无限累积(每次构建 ~百 MB 量级、服务器根分区余量紧),收尾报告建议给一次容量实测与可选清理方案;⑪tgz 全量 `fs.readFile` 进内存(单飞行下峰值可接受),审查建议的流式 `req.end(createReadStream)` 记为可选优化。
 
 ---
 
