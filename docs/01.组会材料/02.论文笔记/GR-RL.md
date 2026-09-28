@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: GR-RL
+categories:
+  - 论文笔记
+tags:
+  - 强化学习
+---
 # GR-RL: Going Dexterous and Precise for Long-Horizon Robotic Manipulation
 
 - Project Link: [https://seed.bytedance.com/en/gr_rl](https://seed.bytedance.com/en/gr_rl)

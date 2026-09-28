@@ -1,3 +1,9 @@
+---
+date: 2026-09-22 16:16:40
+title: DemoHLM
+categories:
+  - 论文笔记
+---
 # DemoHLM: From One Demonstration to Generalizable Humanoid Loco-Manipulation
 
 - Project Link: [https://beingbeyond.github.io/DemoHLM/](https://beingbeyond.github.io/DemoHLM/)

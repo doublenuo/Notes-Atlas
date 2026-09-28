@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: ManiGaussian
+categories:
+  - 论文笔记
+tags:
+  - 机器人操作
+  - 感知
+---
 # ManiGaussian: Dynamic Gaussian Splatting for  Multi-task Robotic Manipulation
 
 -   Project Link:[https://guanxinglu.github.io/ManiGaussian/](https://guanxinglu.github.io/ManiGaussian/)

@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Natural Humanoid Robot Locomotion with Generative Motion Prior
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 运动控制
+---
 # Natural Humanoid Robot Locomotion with Generative Motion Prior
 
 -   Paper Link: [https://arxiv.org/abs/2503.09015](https://arxiv.org/abs/2503.09015)

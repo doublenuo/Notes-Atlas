@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: ASE
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 模仿学习
+  - 运动控制
+---
 # ASE: Large-Scale Reusable Adversarial Skill Embeddings for Physically Simulated Characters
 
 -   Paper Link: [https://arxiv.org/abs/2205.01906](https://arxiv.org/abs/2205.01906)

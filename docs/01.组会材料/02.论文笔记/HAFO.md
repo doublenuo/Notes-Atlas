@@ -1,3 +1,9 @@
+---
+date: 2026-09-22 16:16:40
+title: HAFO
+categories:
+  - 论文笔记
+---
 # HAFO: A Force-Adaptive Control Framework for Humanoid Robots in Intense Interaction Environments
 
 - Project Link: [https://hafo-robot.github.io/](https://hafo-robot.github.io/)

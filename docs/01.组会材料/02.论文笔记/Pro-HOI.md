@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: Pro-HOI
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 数据生成
+  - 机器人操作
+---
 # Pro-HOI: Perceptive Root-guided Humanoid-Object Interaction
 
 - Project Link: [https://pro-hoi.github.io/](https://pro-hoi.github.io/)

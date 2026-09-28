@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: CWI
+categories:
+  - 论文笔记
+tags:
+  - 数据生成
+  - 机器人操作
+  - 运动控制
+---
 # CWI: Composite Humanoid Whole-Body Imitation System for Loco-manipulation
 
 - Project Link: [https://cwi-ral.github.io/CWI-RAL-Webpage/](https://cwi-ral.github.io/CWI-RAL-Webpage/)

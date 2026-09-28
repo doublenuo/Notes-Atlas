@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: AdaptManip
+categories:
+  - 论文笔记
+tags:
+  - 机器人操作
+  - 人形机器人
+---
 # AdaptManip: Learning Adaptive Whole-Body Object Lifting and Delivery with Online Recurrent State Estimation
 
 - Project Link：[https://morganbyrd03.github.io/adaptmanip/](https://morganbyrd03.github.io/adaptmanip/)

@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: HANDOFF
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 机器人操作
+  - 运动控制
+---
 # HANDOFF: Humanoid Agentic Task-Space Whole-Body Control via Distilled Complementary Teachers
 
 -   Github Link：[https://github.com/lzyang2000/HANDOFF](https://github.com/lzyang2000/HANDOFF)

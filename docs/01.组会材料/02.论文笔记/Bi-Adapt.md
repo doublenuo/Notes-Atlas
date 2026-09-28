@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Bi-Adapt
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 机器人操作
+---
 # **Bi-Adapt**: Few-shot **Bi**manual **Adapt**ation for Novel Categories of 3D Objects via Semantic Correspondence
 
 - Project Link: [https://biadapt-project.github.io/](https://biadapt-project.github.io/)

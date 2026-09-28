@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: MLM
+categories:
+  - 论文笔记
+tags:
+  - 机器人操作
+  - 运动控制
+  - 扩散模型
+---
 # MLM: Learning Multi-task Loco-Manipulation  Whole-Body Control for Quadruped Robot with Arm
 
 - Paper Link: [https://arxiv.org/pdf/2508.10538](https://arxiv.org/pdf/2508.10538)

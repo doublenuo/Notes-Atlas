@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: Agile But Safe
+categories:
+  - 论文笔记
+tags:
+  - 安全
+  - 运动控制
+  - 强化学习
+---
 # Agile But Safe: Learning Collision-Free High-Speed Legged Locomotion
 
 -   Project Link: [https://agile-but-safe.github.io/](https://agile-but-safe.github.io/)

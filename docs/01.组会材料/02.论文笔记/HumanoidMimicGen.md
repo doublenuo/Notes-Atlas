@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: HumanoidMimicGen
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 数据生成
+  - 机器人操作
+---
 # HumanoidMimicGen: Data Generation for Loco-Manipulation via Whole-Body Planning
 
 - Project Link: [https://humanoidmimicgen.github.io/](https://humanoidmimicgen.github.io/)

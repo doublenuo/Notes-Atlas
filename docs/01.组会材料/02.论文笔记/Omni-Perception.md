@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Omni-Perception
+categories:
+  - 论文笔记
+tags:
+  - 感知
+  - 运动控制
+---
 # Omni-Perception: Omnidirectional Collision Avoidance for Legged Locomotion in Dynamic Environments
 
 - Project Link: [https://acodedog.github.io/OmniPerceptionPages/](https://acodedog.github.io/OmniPerceptionPages/)

@@ -2,6 +2,11 @@
 date: 2026-04-24 11:51:53
 title: RoboTwin
 permalink: /meet/robotwin
+categories:
+  - 论文笔记
+tags:
+  - 数据生成
+  - Sim2Real
 ---
 # RoboTwin 2.0: A Scalable Data Generator and Benchmark with Strong Domain Randomization for Robust Bimanual Robotic Manipulation
 

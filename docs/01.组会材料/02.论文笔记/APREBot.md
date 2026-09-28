@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: APREBot
+categories:
+  - 论文笔记
+tags:
+  - 安全
+---
 # APREBot: Active Perception System for Reflexive Evasion Robot
 
 -   Project Link: [https://sites.google.com/view/aprebot/](https://sites.google.com/view/aprebot/)

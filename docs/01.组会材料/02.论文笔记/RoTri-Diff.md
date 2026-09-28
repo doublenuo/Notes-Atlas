@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: RoTri-Diff
+categories:
+  - 论文笔记
+tags:
+  - 扩散模型
+---
 # RoTri-Diff: A Spatial Robot–Object Triadic Interaction-Guided Diffusion Model for Bimanual Manipulation
 
 -   Paper Link: [https://arxiv.org/pdf/2603.07165](https://arxiv.org/pdf/2603.07165)

@@ -1,3 +1,16 @@
+---
+date: 2026-09-22 16:16:40
+title: >-
+  Sim-to-Real Reinforcement Learning for Vision-Based Dexterous Manipulation on
+  Humanoids
+categories:
+  - 论文笔记
+tags:
+  - Sim2Real
+  - 强化学习
+  - 机器人操作
+  - 人形机器人
+---
 # Sim-to-Real Reinforcement Learning for Vision-Based Dexterous Manipulation on Humanoids
 
 - Project Link：[https://toruowo.github.io/recipe/](https://toruowo.github.io/recipe/)

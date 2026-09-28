@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: HEFT
+categories:
+  - 论文笔记
+tags:
+  - 数据生成
+  - 运动控制
+---
 # HEFT: Heavy-Payload Full-size Humanoid Teleoperation with Privileged Motion Guidance and Windowed Payload Curriculum
 
 - Project Link： [https://heft.axell.top/](https://heft.axell.top/)

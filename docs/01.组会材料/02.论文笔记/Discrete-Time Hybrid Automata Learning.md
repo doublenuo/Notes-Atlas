@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: Discrete-Time Hybrid Automata Learning
+categories:
+  - 论文笔记
+tags:
+  - 运动控制
+---
 
 # Discrete-Time Hybrid Automata Learning: Legged  Locomotion Meets Skateboarding
 

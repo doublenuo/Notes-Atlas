@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: Learning to Plan & Schedule with Reinforcement-Learned Bimanual Robot Skills
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 机器人操作
+  - 强化学习
+---
 # Learning to Plan & Schedule with Reinforcement-Learned Bimanual Robot Skills
 
 -   Paper Link: [https://arxiv.org/abs/2510.25634](https://arxiv.org/abs/2510.25634)

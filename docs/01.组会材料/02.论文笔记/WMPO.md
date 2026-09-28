@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: WMPO
+categories:
+  - 论文笔记
+tags:
+  - 强化学习
+---
 # WMPO: World Model-based Policy Optimization for Vision-Language-Action Models
 
 -   Project Link:[https://wm-po.github.io/](https://wm-po.github.io/)

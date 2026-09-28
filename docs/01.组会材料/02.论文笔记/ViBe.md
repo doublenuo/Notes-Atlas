@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: ViBe
+categories:
+  - 论文笔记
+tags:
+  - 感知
+  - 运动控制
+---
 # ViBe: Visual Behavior Adaptation for Perceptive Humanoid Whole-Body Control
 
 - Project Link: [https://lok-i.github.io/vibe-control/](https://lok-i.github.io/vibe-control/)

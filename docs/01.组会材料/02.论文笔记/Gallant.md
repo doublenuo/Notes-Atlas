@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Gallant
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 运动控制
+---
 # Gallant: Voxel Grid-based Humanoid Locomotion and Local-navigation across 3D Constrained Terrains
 
 - Project Link: [https://gallantloco.github.io/](https://gallantloco.github.io/)

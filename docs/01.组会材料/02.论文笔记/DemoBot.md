@@ -1,3 +1,14 @@
+---
+date: 2026-09-22 16:16:40
+title: DemoBot
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 机器人操作
+  - 模仿学习
+  - 强化学习
+---
 # DemoBot: Efficient Learning of Bimanual Manipulation with Dexterous Hands From Third-Person Human Videos
 
 -   Project Link: [https://demobot-seed.github.io/](https://demobot-seed.github.io/)

@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: VLA-RL
+categories:
+  - 论文笔记
+tags:
+  - VLA
+  - 强化学习
+  - 机器人操作
+---
 # VLA-RL: Towards Masterful and General Robotic Manipulation with Scalable Reinforcement Learning
 
 - Github Link: [https://github.com/GuanxingLu/vlarl](https://github.com/GuanxingLu/vlarl)

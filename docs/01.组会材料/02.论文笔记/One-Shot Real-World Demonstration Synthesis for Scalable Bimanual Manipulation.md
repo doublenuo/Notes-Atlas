@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: One-Shot Real-World Demonstration Synthesis for Scalable Bimanual Manipulation
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 数据生成
+  - 机器人操作
+---
 # One-Shot Real-World Demonstration Synthesis for Scalable Bimanual Manipulation
 
 -   Project Link：[https://hnuzhy.github.io/projects/BiDemoSyn/](https://hnuzhy.github.io/projects/BiDemoSyn/)

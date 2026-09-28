@@ -1,3 +1,9 @@
+---
+date: 2026-09-22 16:16:40
+title: B-spline Policy
+categories:
+  - 论文笔记
+---
 # B-spline Policy: Accelerating Manipulation Policies via B-spline Action Representations
 
 - Project Link: [https://b-spline-policy.github.io/](https://b-spline-policy.github.io/)

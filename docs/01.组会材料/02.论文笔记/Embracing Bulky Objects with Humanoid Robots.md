@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: Embracing Bulky Objects with Humanoid Robots
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 机器人操作
+  - 强化学习
+---
 # Embracing Bulky Objects with Humanoid Robots: Whole-Body Manipulation with Reinforcement Learning
 
 - Github Link: [https://github.com/Chunx1nZHENG/Embracing-Bulky-Objects-with-Humanoid-Robots](https://github.com/Chunx1nZHENG/Embracing-Bulky-Objects-with-Humanoid-Robots)

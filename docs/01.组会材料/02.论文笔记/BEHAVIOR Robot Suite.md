@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: BEHAVIOR Robot Suite
+categories:
+  - 论文笔记
+tags:
+  - 机器人操作
+---
 # BEHAVIOR Robot Suite: Streamlining Real-World Whole-Body Manipulation for Everyday Household Activities
 
 - Project Link: [https://behavior-robot-suite.github.io/](https://behavior-robot-suite.github.io/)

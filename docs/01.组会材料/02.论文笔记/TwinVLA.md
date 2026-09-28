@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: TwinVLA
+categories:
+  - 论文笔记
+tags:
+  - VLA
+  - 机器人操作
+---
 # TwinVLA: Data-Efficient Bimanual Manipulation with Twin Single-Arm Vision-Language-Action Models
 
 -   Project Link: [https://jellyho.github.io/TwinVLA/](https://jellyho.github.io/TwinVLA/)

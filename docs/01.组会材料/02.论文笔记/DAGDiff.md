@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: DAGDiff
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 扩散模型
+  - 机器人操作
+---
 # DAGDiff: Guiding Dual-Arm Grasp Diffusion to Stable and  Collision-Free Grasps
 
 - Project Link: [https://dag-diff.github.io/dagdiff/](https://dag-diff.github.io/dagdiff/)

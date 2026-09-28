@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: SafeBimanual
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 安全
+  - 机器人操作
+---
 # SafeBimanual: Diffusion-based Trajectory Optimization for Safe Bimanual Manipulation
 
 - Project Link: [https://denghaoyuan123.github.io/SafeBimanip/](https://denghaoyuan123.github.io/SafeBimanip/)

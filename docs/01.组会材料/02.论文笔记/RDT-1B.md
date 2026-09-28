@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: RDT-1B
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 扩散模型
+  - 机器人操作
+---
 # RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation
 
 - Project Link: [https://rdt-robotics.github.io/rdt-robotics/](https://rdt-robotics.github.io/rdt-robotics/)

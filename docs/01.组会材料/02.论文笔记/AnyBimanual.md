@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: AnyBimanual
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 机器人操作
+---
 # AnyBimanual: Transferring Unimanual Policy for General Bimanual  Manipulation
 
 -   Project Link:[https://anybimanual.github.io/](https://anybimanual.github.io/)

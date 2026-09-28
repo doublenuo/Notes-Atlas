@@ -1,3 +1,14 @@
+---
+date: 2026-09-22 16:16:40
+title: FALCON
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 强化学习
+  - 机器人操作
+  - 运动控制
+---
 # FALCON: Learning Force-Adaptive Humanoid Loco-Manipulation
 
 - Project Link: [https://lecar-lab.github.io/falcon-humanoid](https://lecar-lab.github.io/falcon-humanoid)

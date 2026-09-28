@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: ResMimic
+categories:
+  - 论文笔记
+tags:
+  - 模仿学习
+---
 # ResMimic: From General Motion Tracking to Humanoid Whole-Body Loco-Manipulation via Residual Learning
 
 - Project Link: [https://resmimic.github.io/](https://resmimic.github.io/)

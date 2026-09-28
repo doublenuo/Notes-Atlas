@@ -1,3 +1,9 @@
+---
+date: 2026-09-22 16:16:40
+title: SplitAdapter
+categories:
+  - 论文笔记
+---
 # SplitAdapter: Load-Aware Humanoid Loco-Manipulation via Factorized Adaptation
 
 - Project Link: [https://splitadapter.github.io/](https://splitadapter.github.io/)

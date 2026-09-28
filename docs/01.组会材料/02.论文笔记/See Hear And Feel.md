@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: See Hear And Feel
+categories:
+  - 论文笔记
+tags:
+  - 感知
+---
 # See, Hear, and Feel: Smart Sensory Fusion for Robotic Manipulation
 
 -   Project Link: [https://ai.stanford.edu/~rhgao/see_hear_feel/](https://ai.stanford.edu/~rhgao/see_hear_feel/)

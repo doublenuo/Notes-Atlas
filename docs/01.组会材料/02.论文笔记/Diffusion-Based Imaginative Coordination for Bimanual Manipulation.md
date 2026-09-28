@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: Diffusion-Based Imaginative Coordination for Bimanual Manipulation
+categories:
+  - 论文笔记
+tags:
+  - 双臂操作
+  - 扩散模型
+  - 机器人操作
+---
 # Diffusion-Based Imaginative Coordination for Bimanual Manipulation
 
 - Paper Link: [https://arxiv.org/abs/2507.11296](https://arxiv.org/abs/2507.11296)

@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: DexImit
+categories:
+  - 论文笔记
+tags:
+  - 模仿学习
+  - 机器人操作
+---
 # DexImit: Learning Bimanual Dexterous Manipulation from Monocular Human Videos
 
 -   Paper Link： [https://arxiv.org/pdf/2602.10105](https://arxiv.org/pdf/2602.10105)

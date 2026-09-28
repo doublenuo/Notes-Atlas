@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: BAT
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 运动控制
+  - 强化学习
+---
 # BAT: Balancing Agility and Stability via Online Policy Switching for Long-Horizon Whole-Body Humanoid Control
 
 - Paper Link：[https://arxiv.org/pdf/2604.01064](https://arxiv.org/pdf/2604.01064)

@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: VR-Robo
+categories:
+  - 论文笔记
+tags:
+  - Sim2Real
+  - 强化学习
+---
 # VR-Robo: A Real-to-Sim-to-Real Framework for Visual Robot Navigation and Locomotion
 
 -   Project Link: [https://vr-robo.github.io/](https://vr-robo.github.io/)

@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: CLONE
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 遥操作
+---
  # CLONE: Closed-Loop Whole-Body Humanoid Teleoperation for Long-Horizon Tasks
 
 - Project Link： [https://humanoid-clone.github.io/](https://humanoid-clone.github.io/)

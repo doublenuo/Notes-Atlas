@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Humanoid Manipulation Interface
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 遥操作
+---
 # Humanoid Manipulation Interface: Humanoid Whole-Body Manipulation from Robot-Free Demonstrations
 
 - Project Link: [https://humanoid-manipulation-interface.github.io/#/](https://humanoid-manipulation-interface.github.io/#/)

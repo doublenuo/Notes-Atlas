@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Retargeting Matters
+categories:
+  - 论文笔记
+tags:
+  - 运动控制
+  - 数据生成
+---
 # Retargeting Matters: General Motion Retargeting for Humanoid  Motion Tracking
 
 - Project Link: [https://jaraujo98.github.io/retargeting_matters/](https://jaraujo98.github.io/retargeting_matters/)

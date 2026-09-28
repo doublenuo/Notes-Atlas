@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Extreme Parkour with Legged Robots
+categories:
+  - 论文笔记
+tags:
+  - 运动控制
+  - 强化学习
+---
 # Extreme Parkour with Legged Robots
 
 - Project Link: [https://extreme-parkour.github.io/](https://extreme-parkour.github.io/)

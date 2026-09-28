@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: Thor
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 运动控制
+---
 # Thor: Towards Human-Level Whole-Body Reactions for Intense Contact-Rich Environments
 
 - Project Link: [https://baai-aether.github.io/baai-thor/](https://baai-aether.github.io/baai-thor/)

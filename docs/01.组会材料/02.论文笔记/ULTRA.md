@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: ULTRA
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 数据生成
+---
 # ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation
 
 - Project Link: [https://ultra-humanoid.github.io/](https://ultra-humanoid.github.io/)

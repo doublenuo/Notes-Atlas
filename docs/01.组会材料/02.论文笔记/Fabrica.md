@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: Fabrica
+categories:
+  - 论文笔记
+tags:
+  - 机器人操作
+---
 # Fabrica: Dual-Arm Assembly of General Multi-Part Objects via Integrated Planning and Learning
 
 - Project Link：[https://fabrica.csail.mit.edu/](https://fabrica.csail.mit.edu/)

@@ -1,3 +1,13 @@
+---
+date: 2026-09-22 16:16:40
+title: SAMP
+categories:
+  - 论文笔记
+tags:
+  - 机器人操作
+  - 运动控制
+  - 安全
+---
 # SAMP: Spatial Anchor-based Motion Policy for Collision-Aware Robotic Manipulators
 
 - Github Link: [https://github.com/kkkkkaiai/SAMP](https://github.com/kkkkkaiai/SAMP)

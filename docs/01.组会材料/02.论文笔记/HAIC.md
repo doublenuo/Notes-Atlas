@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: HAIC
+categories:
+  - 论文笔记
+tags:
+  - 人形机器人
+  - 机器人操作
+---
 # HAIC: Humanoid Agile Object Interaction Controlvia Dynamics-Aware World Model
 
 - Project Link: [https://haic-humanoid.github.io/](https://haic-humanoid.github.io/)

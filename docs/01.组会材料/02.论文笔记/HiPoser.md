@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: HiPoser
+categories:
+  - 论文笔记
+tags:
+  - 感知
+---
 # HiPoser: 3D Human Pose Estimation with Hierarchical Shared Learning at Parts-Level Using Inertial Measurement Units
 
 -   Paper Link: [https://haoxuanli-pku.github.io/papers/AAAI%2025%20-%20HiPoser%203D%20Human%20Pose%20Estimation%20with%20Hierarchical%20Shared%20Learning%20at%20Parts-Level%20Using%20Inertial%20Measurement%20Units.pdf](https://haoxuanli-pku.github.io/papers/AAAI%2025%20-%20HiPoser%203D%20Human%20Pose%20Estimation%20with%20Hierarchical%20Shared%20Learning%20at%20Parts-Level%20Using%20Inertial%20Measurement%20Units.pdf)

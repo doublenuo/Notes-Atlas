@@ -2,6 +2,11 @@
 date: 2026-04-24 11:51:53
 title: GMR
 permalink: /meet/gmr
+categories:
+  - 论文笔记
+tags:
+  - 运动控制
+  - 数据生成
 ---
 # Retargeting Matters: General Motion Retargeting for Humanoid Motion Tracking
 

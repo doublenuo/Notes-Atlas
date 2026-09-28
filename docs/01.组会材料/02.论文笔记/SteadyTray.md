@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: SteadyTray
+categories:
+  - 论文笔记
+tags:
+  - 机器人操作
+---
 # SteadyTray: Learning Object Balancing Tasks in Humanoid Tray Transport via Residual Reinforcement Learning
 
 - Project Link: [https://steadytray.github.io/](https://steadytray.github.io/)
