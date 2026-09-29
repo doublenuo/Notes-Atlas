@@ -7,6 +7,7 @@ import { buildApp } from "../../admin/server/src/app.js";
 import { createAuth, hashPassword } from "../../admin/server/src/auth.js";
 import { createFiles } from "../../admin/server/src/files.js";
 import { createBuildQueue } from "../../admin/server/src/build.js";
+import { createPreviewRenderer } from "../../admin/server/src/preview.js";
 
 const PASS = "pw-app-123";
 const HASH = hashPassword(PASS); // 模块级只算一次
@@ -32,7 +33,8 @@ function mkApp({ gitFail = false } = {}) {
     : async () => "abc1234 admin(x): y";
   const files = createFiles({ docsDir, siteDir, execGit });
   const queue = createBuildQueue({ runBuild: async () => "ok", publish: async () => {}, debounceMs: 1 });
-  const app = buildApp({ auth, files, queue, config: { cookieSecure: true } });
+  const preview = createPreviewRenderer({ docsDir });
+  const app = buildApp({ auth, files, queue, preview, config: { cookieSecure: true } });
   return { app, docsDir };
 }
 

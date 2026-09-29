@@ -14,10 +14,10 @@ function parseCookie(header) {
 }
 
 /**
- * 装配 Fastify(不监听)。路由见规格 §4(13 条,前缀 /admin/api)。
+ * 装配 Fastify(不监听)。路由见规格 §4(14 条,前缀 /admin/api)。
  * 除 /login 外全部要求有效会话 cookie;错误体统一 {code, message}。
  */
-export function buildApp({ auth, files, queue, config = {} }) {
+export function buildApp({ auth, files, queue, preview, config = {} }) {
   const app = Fastify({ logger: false }); // 不用默认日志:避免任何请求体/token 入日志
   const secure = config.cookieSecure !== false;
 
@@ -96,6 +96,12 @@ export function buildApp({ auth, files, queue, config = {} }) {
     // 与登录同源属性(仅 Max-Age=0):HttpOnly/SameSite=Strict/Path=/Secure 一致
     reply.header("Set-Cookie", [`${COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secure ? "; Secure" : ""}`]);
     return reply.code(204).send();
+  });
+
+  // 预览渲染:html:false 防 XSS(嵌入正文走同一实例二次解析),解析失败经既有 setErrorHandler 收口为 INTERNAL
+  app.post("/admin/api/preview", async (req) => {
+    const r = preview.render(req.body?.content ?? "", req.body?.path ?? "");
+    return { html: r.html, title: r.title };
   });
 
   app.get("/admin/api/tree", async () => ({ nodes: await files.tree() }));

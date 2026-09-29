@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { createAuth } from "./auth.js";
 import { buildApp } from "./app.js";
 import { createFiles } from "./files.js";
+import { createPreviewRenderer } from "./preview.js";
 import { createBuildQueue, createSpawnRunner } from "./build.js";
 import { createArchivePublisher } from "./publish.js";
 import { startWatcher } from "./watcher.js";
@@ -88,7 +89,9 @@ const auth = createAuth({
 
 const files = createFiles({ docsDir: path.join(SITE, "docs"), siteDir: SITE, execGit });
 
-const app = buildApp({ auth, files, queue, config: { cookieSecure: process.env.COOKIE_SECURE !== "0" } });
+const preview = createPreviewRenderer({ docsDir: path.join(SITE, "docs") });
+
+const app = buildApp({ auth, files, queue, preview, config: { cookieSecure: process.env.COOKIE_SECURE !== "0" } });
 
 const closeWatcher = startWatcher({ siteDir: SITE, onChange: () => queue.trigger() });
 // 关闭双兜底:watcher 关闭失败也要 close server;SIGINT 同路径(本地 Ctrl-C 冒烟)
