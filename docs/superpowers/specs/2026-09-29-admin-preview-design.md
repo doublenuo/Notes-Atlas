@@ -96,17 +96,25 @@ title: 2026-09-29-admin-preview-design
 
 ## 5. 共享插件:`obsidianEmbed` 单一事实来源
 
-`docs/.vitepress/plugins/obsidianEmbed.ts` 移至仓库根 **`shared/obsidianEmbed.js`**
+`docs/.vitepress/plugins/obsidianEmbed.ts` 移至 **`admin/server/shared/obsidianEmbed.js`**
 (已验证为纯 JS 语法、无类型注解,`.ts` 后缀名不副实)。
 
+**位置为何是 `admin/server/shared/` 而非仓库根 `shared/`**:`preview.js` 位于包内
+`src/`,用相对路径 `../shared/obsidianEmbed.js` 引入。容器内包根是 `/app`(`WORKDIR /app`),
+本地包根是 `admin/server/`——两者**恰好都以 `src/` 的父目录为包根**,故同一相对路径
+在两种布局下都成立。放仓库根会让本地解析到 `admin/server/shared`(不存在)。
+Node 的 `imports` 字段不能跨出包(`../../shared/` 非法),无 import map 变通。
+
 - 改动 5 处 import:
-  - `docs/.vitepress/config.ts:6`
-  - `docs/.vitepress/plugins/docAnalysisEmbed.ts:13`
-  - `tests/resolver.test.mjs:5`
-  - `tests/helpers.mjs:4`
-  - `tests/doc-analysis.test.mjs:7`
-- `admin/server/Dockerfile` 增加 `COPY shared ./shared`
+  - `docs/.vitepress/config.ts:6` → `../../admin/server/shared/obsidianEmbed.js`
+  - `docs/.vitepress/plugins/docAnalysisEmbed.ts:13` → `../../../admin/server/shared/obsidianEmbed.js`
+  - `tests/resolver.test.mjs:5` → `../admin/server/shared/obsidianEmbed.js`
+  - `tests/helpers.mjs:4` → `../admin/server/shared/obsidianEmbed.js`
+  - `tests/doc-analysis.test.mjs:7` → `../admin/server/shared/obsidianEmbed.js`
+- `admin/server/Dockerfile` 增加 `COPY shared ./shared`(落到 `/app/shared`)
 - 构建上下文 `/data/stacks/admin` 需同步 `shared/`
+- 代价:站点配置反向依赖 `admin/server/` 目录。用一行注释标明
+  「本模块为 admin 预览与站点共用的单一事实来源」以说明
 
 **否决"复制一份进 admin"**:双份必然静默漂移——站点插件演进后预览会与线上表现
 越差越远,且没有任何信号。移动方案由现有 96 个用例(`npm test`,2026-09-29 实测
@@ -205,11 +213,26 @@ title: 2026-09-29-admin-preview-design
 
 ## 10. 部署
 
-- rsync 增量增加 `shared/` 与 `admin/server/public/vendor/`
+admin 的**真实部署路径是手工同步**:`admin/server/` → `/data/stacks/admin/` →
+`docker compose up -d --build`。已核实两点:
+
+- `.github/workflows/deploy.yml` 的 `paths:` 只含 `docs/**`、`package.json`、
+  `pnpm-lock.yaml`、`deploy.yml`,**不含 `admin/**`** → 改 admin 不会触发 CI
+- 该 workflow 的 "Upload admin frontend" 步骤把 `admin/server/public/*` 推到
+  `/data/stacks/blogs/admin/`,而该目录在服务器上**不存在**,且线上 `/admin/`
+  由 Caddy 反代到 admin 容器(8477),与此步骤无关 → 该步骤实为遗留无效步骤
+
+因此本次部署**不走 deploy.yml**,直接:
+
+- rsync 增量同步 `admin/server/`(含新增 `shared/`、`public/vendor/`)→ `/data/stacks/admin/`
 - `admin/server/Dockerfile` 增加 `COPY shared ./shared`
 - **`docker compose up -d --build`**——显式带 `--build`。
   上一次 UI 事故的根因正是 `up -d` 复用了过期镜像,导致源码已修而线上未修
 - 验证:`/admin/style.css` 200、预览分栏 CSS 生效、`/admin/api/preview` 未登录 401
+
+**遗留项**(建议后续单独处理,不在本设计范围):`admin/server/public/` 整个目录
+目前**未被 git 跟踪**(`git status` 显示 `?? admin/server/public/`),这正是上次
+"源码已修、线上未修"的结构性成因;`deploy.yml` 的无效 admin 步骤亦应删除。
 
 ## 11. 已知取舍
 
