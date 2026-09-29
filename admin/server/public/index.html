@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes Atlas Admin</title>
+  <link rel="stylesheet" href="/admin/style.css">
+  <link rel="stylesheet" href="/admin/vendor/katex/katex.min.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 登录页 -->
+    <div id="login-view" class="view">
+      <div class="login-box">
+        <h1>Notes Atlas</h1>
+        <p class="subtitle">后台管理系统</p>
+        <form id="login-form">
+          <input type="text" id="login-user" placeholder="用户名" autocomplete="username" required>
+          <input type="password" id="login-pass" placeholder="密码" autocomplete="current-password" required>
+          <button type="submit">登录</button>
+        </form>
+        <p id="login-error" class="error"></p>
+      </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="main-view" class="view hidden">
+      <header>
+        <h1>Notes Atlas</h1>
+        <div class="header-right">
+          <span id="build-status" class="status-badge"></span>
+          <span id="last-commit"></span>
+          <button id="logout-btn" class="btn-secondary">退出</button>
+        </div>
+      </header>
+
+      <div class="container">
+        <!-- 文件树 -->
+        <aside id="sidebar">
+          <div class="sidebar-header">
+            <h2>文件</h2>
+            <div class="sidebar-actions">
+              <button id="new-file-btn" title="新建文件">+</button>
+              <button id="new-dir-btn" title="新建目录">+D</button>
+              <button id="refresh-btn" title="刷新">⟳</button>
+            </div>
+          </div>
+          <div id="file-tree"></div>
+        </aside>
+
+        <!-- 编辑器 -->
+        <main id="editor-area">
+          <div id="editor-empty" class="empty-state">
+            <p>选择或创建一个文件开始编辑</p>
+          </div>
+          <div id="editor-content" class="hidden">
+            <div class="split" id="split">
+              <div class="pane pane-source">
+                <div class="editor-header">
+                  <input type="text" id="file-path" readonly>
+                  <div class="editor-actions">
+                    <button id="save-btn" class="btn-primary">保存</button>
+                    <button id="delete-btn" class="btn-danger">删除</button>
+                    <button id="rename-btn" class="btn-secondary">重命名</button>
+                  </div>
+                </div>
+                <div class="editor-info">
+                  <span id="file-mtime"></span>
+                  <span id="parse-error" class="error"></span>
+                </div>
+                <textarea id="editor" spellcheck="false"></textarea>
+              </div>
+              <div class="divider" id="divider" role="separator" aria-orientation="vertical" title="拖动调整宽度"></div>
+              <div class="pane pane-preview">
+                <div class="preview-body" id="preview"></div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/vendor/mermaid.min.js"></script>
+  <script src="/admin/vendor/katex/katex.min.js"></script>
+  <script src="/admin/vendor/katex/auto-render.min.js"></script>
+  <script src="/admin/app.js"></script>
+</body>
+</html>
