@@ -10,7 +10,7 @@
  */
 import { readFileSync } from "node:fs";
 import matter from "gray-matter";
-import { createResolver, readNote } from "./obsidianEmbed.ts";
+import { createResolver, readNote } from '../../../admin/server/shared/obsidianEmbed.js';
 
 /** 字数口径:与 vitepress-plugin-doc-analysis getCounter 逐字一致([中文字数, 英文词数]) */
 export function countWords(content) {

@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 import { teekConfig } from './teekConfig'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import { fileURLToPath } from 'node:url'
-import { obsidianEmbed } from './plugins/obsidianEmbed'
+import { obsidianEmbed } from '../../admin/server/shared/obsidianEmbed.js'
 import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
 
 const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
