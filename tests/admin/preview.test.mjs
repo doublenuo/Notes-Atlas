@@ -88,7 +88,7 @@ test("7 畸形 frontmatter → 不抛,退回渲染全文", () => {
 // ---------- HTTP 接线:构造模式照抄 tests/admin/app.test.mjs 的 mkApp ----------
 
 /** 临时 site + docs,并装出真实装配所需的 auth/files/queue/preview */
-function mkApp({ gitFail = false } = {}) {
+function mkApp() {
   const { docsDir } = mkVault();
   const siteDir = path.dirname(docsDir);
   const auth = createAuth({
@@ -97,14 +97,7 @@ function mkApp({ gitFail = false } = {}) {
     passHash: HASH,
     stateDir: path.join(siteDir, ".state"),
   });
-  const execGit = gitFail
-    ? async () => {
-        const e = new Error("spawn git ENOENT");
-        e.code = "ENOENT";
-        throw e;
-      }
-    : async () => "abc1234 admin(x): y";
-  const files = createFiles({ docsDir, siteDir, execGit });
+  const files = createFiles({ docsDir, siteDir, execGit: async () => "abc1234 admin(x): y" });
   const queue = createBuildQueue({ runBuild: async () => "ok", publish: async () => {}, debounceMs: 1 });
   const preview = createPreviewRenderer({ docsDir });
   const app = buildApp({ auth, files, queue, preview, config: { cookieSecure: true } });
@@ -157,4 +150,17 @@ test("11 GET /preview → 404(仅接受 POST)", async () => {
   const res = await app.inject({ method: "GET", url: "/admin/api/preview", headers: { cookie } });
   assert.equal(res.statusCode, 404);
   assert.equal(res.json().code, "NOT_FOUND");
+});
+
+test("12 已登录但 content 非字符串 → 400 BAD_BODY(与 /file 同字段同码)", async () => {
+  const { app } = mkApp();
+  const cookie = await loginPair(app);
+  const res = await app.inject({
+    method: "POST",
+    url: "/admin/api/preview",
+    headers: { cookie },
+    payload: { content: 123 },
+  });
+  assert.equal(res.statusCode, 400);
+  assert.equal(res.json().code, "BAD_BODY");
 });

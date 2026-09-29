@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import { parseDoc } from "./frontmatter.js";
+import { httpError } from "./paths.js";
 
 const COOKIE_NAME = "na_admin";
 
@@ -100,7 +101,11 @@ export function buildApp({ auth, files, queue, preview, config = {} }) {
 
   // 预览渲染:html:false 防 XSS(嵌入正文走同一实例二次解析),解析失败经既有 setErrorHandler 收口为 INTERNAL
   app.post("/admin/api/preview", async (req) => {
-    const r = preview.render(req.body?.content ?? "", req.body?.path ?? "");
+    // 与 files.write 同名 content 字段同守卫:非字符串返 400 BAD_BODY 而非不透明 500
+    // 用 != null 而非裸 typeof,保留「缺 content 按空串渲染」的契约(否则把缺字段也打成 400)
+    const content = req.body?.content;
+    if (content != null && typeof content !== "string") throw httpError(400, "BAD_BODY", "content 必须是字符串");
+    const r = preview.render(content ?? "", req.body?.path ?? "");
     return { html: r.html, title: r.title };
   });
 
