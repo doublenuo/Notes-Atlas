@@ -99,8 +99,16 @@ function renderTree(nodes, container) {
   for (const node of nodes) {
     const item = document.createElement('div');
     item.className = 'tree-item';
-    item.innerHTML = `<span class="icon">${node.type === 'dir' ? '📁' : '📄'}</span><span>${node.name}</span>`;
-    
+    // 文件名必须走 textContent:node.name 是服务端 readdir 的原始条目,未转义;
+    // files.create 只校验 safeResolve + .md 后缀、不校验 basename,
+    // 拼进 innerHTML 等于让任何能操作面板的人给自己种一个 XSS
+    const icon = document.createElement('span');
+    icon.className = 'icon';
+    icon.textContent = node.type === 'dir' ? '📁' : '📄';
+    const name = document.createElement('span');
+    name.textContent = node.name;
+    item.append(icon, name);
+
     if (node.type === 'file') {
       item.addEventListener('click', () => openFile(node.path));
       container.appendChild(item);
@@ -282,11 +290,24 @@ async function renderPreview() {
     });
     if (seq !== previewSeq) return; // 过期响应,丢弃
     previewEl.innerHTML = data.html;
+    hardenPreviewLinks();
     renderMath();
     renderMermaid();
   } catch (err) {
     if (seq !== previewSeq) return;
     previewEl.innerHTML = `<p class="preview-error">预览渲染失败：${escapeHtml(err.message)}</p>`;
+  }
+}
+
+// 预览里的 [[双链]] / 外链都是裸 <a>,没有 target/rel。点一下就把 admin 页面
+// 导航走,用户正在编辑但没保存的内容直接丢(数据丢失)。统一开新窗口。
+// 用「设属性」而不是 click 委托 + window.open:设属性是声明式的,
+// 浏览器自己处理中键/Ctrl+点击/右键新标签页,委托 + preventDefault 会把这些
+// 全部劫持掉,还要自己判断 href 协议,收益不抵复杂度
+function hardenPreviewLinks() {
+  for (const a of previewEl.querySelectorAll('a[href]')) {
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
   }
 }
 
@@ -309,11 +330,21 @@ function renderMath() {
   }
 }
 
+// renderMermaid 会被每次预览都调,initialize 只需一次
+// 设计文档 §6.3 要求显式关掉 startOnLoad:mermaid 默认是 true,只在
+// DOMContentLoaded 时自动跑一遍 run();现在无害仅因为 vendor 是 body 末尾的
+// 阻塞 <script>,自动钩子已经错过——这是对脚本加载位置的隐性依赖,
+// 一旦有人给它们加 defer/async 就会重复渲染
+let mermaidReady = false;
 async function renderMermaid() {
   if (!window.mermaid) return;
   const nodes = previewEl.querySelectorAll('.language-mermaid:not([data-processed])');
   if (!nodes.length) return;
   try {
+    if (!mermaidReady) {
+      window.mermaid.initialize({ startOnLoad: false });
+      mermaidReady = true;
+    }
     await window.mermaid.run({ nodes });
   } catch (err) {
     // 单图语法错只坏该图,mermaid 会把错误写进该节点
@@ -324,7 +355,14 @@ async function renderMermaid() {
 editor.addEventListener('input', schedulePreview);
 
 // 分隔条拖动:clamp 20%~80%,避免任一侧被压到不可用
+// endDrag 三个出口都要绑:只绑 mouseup 的话,拖出窗口 / alt-tab 失焦后 dragging
+// 会一直悬挂,此后每一次无关的 mousemove 都在改宽度,分隔条也一直高亮
 let dragging = false;
+function endDrag() {
+  if (!dragging) return;
+  dragging = false;
+  divider.classList.remove('dragging');
+}
 divider.addEventListener('mousedown', (e) => {
   dragging = true;
   divider.classList.add('dragging');
@@ -336,7 +374,6 @@ window.addEventListener('mousemove', (e) => {
   const pct = ((e.clientX - r.left) / r.width) * 100;
   split.style.setProperty('--split', Math.min(80, Math.max(20, pct)) + '%');
 });
-window.addEventListener('mouseup', () => {
-  dragging = false;
-  divider.classList.remove('dragging');
-});
+window.addEventListener('mouseup', endDrag);
+window.addEventListener('blur', endDrag);
+window.addEventListener('mouseleave', endDrag);
