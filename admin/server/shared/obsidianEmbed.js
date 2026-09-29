@@ -4,10 +4,11 @@
  * - `[[目标]]`（行内）→ 站内链接
  * 规格：docs/superpowers/specs/2026-09-23-obsidian-embed-design.md
  *
- * 本模块是 admin 预览与 VitePress 站点的**单一事实来源**——两端共用同一份，
- * 复制副本会导致预览与线上表现静默漂移。位置在 admin/server/shared/ 是因为
- * preview.js 以 `../shared/obsidianEmbed.js` 引入，该相对路径在本地仓库与
- * 容器镜像（包根 /app）中都成立。
+ * 本模块是 admin 预览与 VitePress 站点的单一事实来源——两端共用同一份，
+ * 复制副本会导致预览与线上表现静默漂移。放在 admin/server/shared/ 是因为
+ * admin 镜像的构建上下文就是 admin/server/，包外文件无法 COPY；preview.js
+ * 由此以 `../shared/obsidianEmbed.js` 引入，容器侧需 Dockerfile 的
+ * `COPY shared ./shared` 配套。
  */
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, resolve as pathResolve, relative, basename, sep } from "node:path";
