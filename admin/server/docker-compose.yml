@@ -1,0 +1,26 @@
+# 与生产环境(/data/stacks/admin)保持一致的版本。
+#
+# 注意:本文件此前与生产版本分叉——旧版本含一个 caddy 服务并占用 80/443,
+# 且把 vault 挂载成 /srv/site。生产上 Caddy 跑在宿主机上(由宿主机 Caddyfile
+# 负责 handle /admin/* -> 172.18.0.1:8477),容器内那份 Caddyfile 是死文件;
+# vault 的真实路径是 /opt/notes-atlas。若把旧版本 rsync 到服务器会直接
+# 打断生产(admin 读不到 vault、caddy 端口与宿主机冲突)。
+#
+# 同步到服务器时务必排除本文件:
+#   rsync -av --delete --exclude node_modules --exclude .state \
+#         --exclude .env --exclude docker-compose.yml \
+#         admin/server/ web:/data/stacks/admin/
+services:
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - /opt/notes-atlas:/opt/notes-atlas
+      - /opt/blogs:/opt/blogs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.state:/app/.state
+    network_mode: host
