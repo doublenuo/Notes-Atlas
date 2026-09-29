@@ -437,6 +437,23 @@ header h1 {
   background: var(--bg);
 }
 
+/* 预览默认关闭:进入编辑时是纯单栏,点「预览」才展开左右分栏。
+   关闭态让 .pane-source 吃满整宽(flex:1 覆盖 flex:0 0 var(--split)),
+   否则源码区会只占一半宽度、右侧留一块空白。 */
+.split:not(.show-preview) .divider,
+.split:not(.show-preview) .pane-preview {
+  display: none;
+}
+
+.split:not(.show-preview) .pane-source {
+  flex: 1;
+}
+
+#preview-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
 .preview-body {
   padding: 1.25rem 1.5rem;
   line-height: 1.75;

@@ -269,11 +269,32 @@ async function loadStatus() {
 })();
 
 // ===== 预览 =====
+// 预览默认关闭:纯单栏编辑,点「预览」才展开分栏。关闭期间不发起渲染请求,
+// 否则每次打开文件/每次按键都会白跑一次 markdown 渲染与 KaTeX 排版。
+let previewOn = false;
 
 function schedulePreview() {
+  if (!previewOn) return; // 预览未开启,不必渲染
   clearTimeout(previewTimer);
   previewTimer = setTimeout(renderPreview, 300);
 }
+
+function stopPreview() {
+  clearTimeout(previewTimer);
+  previewSeq++; // 作废在途响应,避免关闭后又被旧结果填回内容
+  previewEl.innerHTML = '';
+}
+
+$('preview-btn').addEventListener('click', () => {
+  previewOn = !previewOn;
+  split.classList.toggle('show-preview', previewOn);
+  const btn = $('preview-btn');
+  btn.textContent = previewOn ? '收起预览' : '预览';
+  btn.classList.toggle('active', previewOn);
+  btn.setAttribute('aria-pressed', String(previewOn));
+  if (previewOn) renderPreview(); // 立即出内容,不等 300ms 防抖
+  else stopPreview();
+});
 
 async function renderPreview() {
   const seq = ++previewSeq;
