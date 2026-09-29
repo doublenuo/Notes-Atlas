@@ -46,7 +46,7 @@ export function createTabStore({ storage, onChange })
 - `storage`:注入 `{ getItem, setItem, removeItem }`,测试时塞假对象
 - `onChange(state, meta)`:状态变化回调,`meta.reason` 告诉调用方需要做哪些 DOM 工作
 - 内部状态:`{ tabs, activeId, previewOn, splitPct }`
-- 方法:`open` `close` `setActive` `updateContent` `markSaved` `rename` `remove` `active` `titles` `toJSON` `restore`
+- 方法:`open` `close` `setActive` `updateContent` `setView` `markSaved` `rename` `remove` `active` `get` `getState` `titles` `toJSON` `persist` `restore` `setPreviewOn` `setSplitPct` `markMissing`
 
 **所有 DOM 写入留在 `app.js`。** `tabs.js` 只回答「哪些文件开着、各自什么状态、切过去」。
 
@@ -183,19 +183,22 @@ sessionStorage 约 5MB,vault 最大笔记 156KB。写入前先 `JSON.stringify` 
 
 ## 10. 测试
 
-新增 `tests/admin/tabs.test.mjs`,纯 `node --test` + 注入假 storage,9 个用例:
+新增 `tests/admin/tabs.test.mjs`,纯 `node --test` + 注入假 storage,13 个用例:
 
 1. 打开同一文件两次只产生一个 tab,第二次是激活而非新建
-2. `updateContent` 置 `dirty`,`markSaved` 清除
-3. 关闭 dirty tab 返回 `{ ok: false }` 且不真删
-4. 容量超限时降级为无 `content`,但 tab 与 path 仍在
-5. `toJSON` → 新 store `restore` 往返一致
-6. 恢复非法 JSON 不抛,丢弃后按空状态
-7. `rename` 后 id 同步更新,且 `open(新path)` 能激活而非新建
-8. 同名文件的标题消歧(三级降级)
-9. 恢复时 path 缺失 → 标 `missing: true`
+2. `updateContent` 置 `dirty`,`markSaved` 清除,`setView` 记录光标与滚动位置
+3. 关闭 dirty tab 返回 `{ ok: false, reason: 'dirty' }` 且不真删
+4. 关闭活动标签优先激活右侧相邻,无右侧取左侧
+5. 关掉最后一个标签清空 `activeId`(§5.2)
+6. `rename` 后 id 同步更新,且 `open(新path)` 能激活而非新建
+7. `remove` 强制关闭,绕过 dirty 检查
+8. 同名文件的标题消歧(三级降级,2 个用例)
+9. `persist`/`restore` 往返一致,含 `previewOn` 与 `splitPct`
+10. 容量超限时降级为无 `content`,但 tab 与 path 仍在
+11. 恢复非法 JSON 不抛,丢弃并按空状态
+12. 恢复时 path 缺失 → 标 `missing: true`
 
-全量目标:`108 + 9 = 117` pass / 0 fail。
+全量目标:`108 + 13 = 121` pass / 0 fail。
 
 浏览器侧另需 headless Chrome 量几何验收(§3 的 `.split` 高度改动),判据:活动 tab 宽度 180px、`#editor` 高度 > 300px、切标签后 `#editor` 内容与光标位置正确、`missing` tab 有删除线样式。
 
