@@ -2,12 +2,12 @@
    规格：docs/superpowers/specs/2026-09-30-article-export-pdf-design.md
    浏览器打印 / 另存为 PDF 时只输出纯正文（.vp-doc），隐藏导航、侧栏、右栏、评论等框架元素 */
 
-@media print {
-  @page {
-    size: A4;
-    margin: 15mm;
-  }
+@page {
+  size: A4;
+  margin: 15mm;
+}
 
+@media print {
   /* 深色模式下强制白底黑字，否则导出为黑底 */
   html,
   body,
@@ -20,7 +20,7 @@
     color: #000 !important;
   }
 
-  /* 隐藏站点框架：顶栏、左右侧栏、右栏、日期作者块、上下页、悬浮按钮、评论、壁纸彩带 */
+  /* 隐藏站点框架：顶栏、左右侧栏、右栏、日期作者块、上下页、悬浮按钮、评论、壁纸彩带、最近更新、编辑链接 */
   .VPNav,
   .VPNavBar,
   .DocSearch,
@@ -35,7 +35,11 @@
   [id^="giscus"],
   iframe,
   .tk-body-bg-image,
-  .tk-ribbon {
+  .tk-ribbon,
+  .VPLastUpdated,
+  .VPLastUpdatedContainer,
+  .VPEditLink,
+  .VPEditLinkContainer {
     display: none !important;
   }
 

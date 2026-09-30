@@ -61,7 +61,7 @@ const handleClick = async () => {
 <template>
   <div class="tk-pdf-export">
     <button class="tk-pdf-export__button" type="button" title="导出 PDF" aria-label="导出 PDF" @click="handleClick">
-      <!-- 内联 SVG（文件 + 下箭头）：不引 iconify，避免运行时联网取图标 -->
+      <!-- 内联 SVG（文件 + 下箭头） -->
       <svg
         class="tk-pdf-export__icon"
         xmlns="http://www.w3.org/2000/svg"
@@ -80,6 +80,7 @@ const handleClick = async () => {
         <path d="M12 11v5" />
         <path d="m9.5 13.5 2.5 2.5 2.5-2.5" />
       </svg>
+      <span class="tk-pdf-export__text">导出 PDF</span>
     </button>
   </div>
 </template>
@@ -114,16 +115,27 @@ const handleClick = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  gap: 6px;
   height: 36px;
-  padding: 0;
+  padding: 0 12px;
   border: 1px solid transparent;
   border-radius: 14px;
   background-color: var(--vp-c-bg-alt);
   color: var(--tk-theme-color);
-  font-size: 18px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
   transition: all var(--tk-transition-duration-slow) cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.tk-pdf-export__icon {
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.tk-pdf-export__text {
+  display: inline-block;
 }
 
 .tk-pdf-export__button:hover {
