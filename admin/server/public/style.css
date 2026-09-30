@@ -401,9 +401,12 @@ header h1 {
    否则子元素会退回内容固有尺寸——这正是"内容挤在左上角"事故的根因。 */
 .split {
   display: flex;
+  /* 原为 height:100%,那是在 .split 是 #editor-content 唯一子元素时的写法。
+     插入 .tabbar 后必须靠 flex:1 + min-height:0 分配剩余高度,否则会溢出。
+     min-height:0 不可省:缺它时 flex 子项退回内容固有尺寸且不报错——
+     这正是 2026-09-29「内容挤在左上角」事故的根因。 */
   flex: 1;
   min-height: 0;
-  height: 100%;
   --split: 50%;
 }
 
@@ -542,3 +545,121 @@ header h1 {
 }
 
 .preview-empty { color: var(--text-muted); }
+
+/* ===== 标签栏 =====
+   固定宽 180px + 横向滚动:标签压缩会让文件名窄到只剩几个字,容易点错。 */
+.tabbar {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0; /* 不可省:否则会被 .split 挤压 */
+  height: 36px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabbar-scroll {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.tabbar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 180px;
+  min-width: 0;
+  padding: 0 0.5rem 0 0.7rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 2px solid transparent;
+  font-size: 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+}
+
+.tab:hover {
+  background: var(--bg-tertiary);
+  color: var(--text);
+}
+
+.tab.active {
+  color: var(--text);
+  background: var(--bg);
+  border-bottom-color: var(--accent);
+}
+
+.tab.missing .tab-title {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.tab-dirty {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
+}
+
+.tab-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-close {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.tab-close:hover {
+  background: var(--danger);
+  color: var(--bg);
+}
+
+.tabbar-nav {
+  flex: 0 0 20px;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tabbar-nav:hover {
+  background: var(--bg-tertiary);
+  color: var(--text);
+}
+
+.tabbar-nav[hidden] {
+  display: none;
+}
+
+.tabbar-note {
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 0 0.6rem;
+  font-size: 0.78rem;
+  color: var(--warning);
+}

@@ -54,6 +54,11 @@
             <p>选择或创建一个文件开始编辑</p>
           </div>
           <div id="editor-content" class="hidden">
+            <div class="tabbar" id="tabbar">
+              <button class="tabbar-nav" id="tabbar-prev" title="向左滚动标签" aria-label="向左滚动标签">‹</button>
+              <div class="tabbar-scroll" id="tabbar-scroll"></div>
+              <button class="tabbar-nav" id="tabbar-next" title="向右滚动标签" aria-label="向右滚动标签">›</button>
+            </div>
             <div class="split" id="split">
               <div class="pane pane-source">
                 <div class="editor-header">
@@ -85,6 +90,6 @@
   <script src="/admin/vendor/mermaid.min.js"></script>
   <script src="/admin/vendor/katex/katex.min.js"></script>
   <script src="/admin/vendor/katex/auto-render.min.js"></script>
-  <script src="/admin/app.js"></script>
+  <script type="module" src="/admin/app.js"></script>
 </body>
 </html>
