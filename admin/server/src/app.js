@@ -1,4 +1,6 @@
 import Fastify from "fastify";
+import fastifyStatic from "@fastify/static";
+import path from "node:path";
 import { parseDoc } from "./frontmatter.js";
 import { httpError } from "./paths.js";
 
@@ -21,6 +23,13 @@ function parseCookie(header) {
 export function buildApp({ auth, files, queue, preview, config = {} }) {
   const app = Fastify({ logger: false }); // 不用默认日志:避免任何请求体/token 入日志
   const secure = config.cookieSecure !== false;
+
+  // 静态文件服务：托管前端页面
+  app.register(fastifyStatic, {
+    root: path.join(import.meta.dirname, "..", "public"),
+    prefix: "/admin/",
+    wildcard: false,
+  });
 
   app.addHook("onRequest", async (req, reply) => {
     if (!req.url.startsWith("/admin/api/")) return;
