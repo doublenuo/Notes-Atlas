@@ -1,7 +1,8 @@
 // Notes Atlas Admin Frontend
+import { createTabStore } from './tabs.js';
+
 const API = '/admin/api';
 
-let currentFile = null;
 let treeData = [];
 
 // DOM 元素
@@ -15,6 +16,9 @@ const editorEmpty = $('editor-empty');
 const previewEl = $('preview');
 const split = $('split');
 const divider = $('divider');
+const tabbarScroll = $('tabbar-scroll');
+const tabbarPrev = $('tabbar-prev');
+const tabbarNext = $('tabbar-next');
 
 // 防抖 + 竞态:序号只增,过期响应直接丢弃,避免连续打字时预览内容倒退
 let previewTimer = null;
@@ -25,11 +29,103 @@ const escapeHtml = (s) =>
 
 const editorContent = $('editor-content');
 const editor = $('editor');
+const saveBtn = $('save-btn');
 const filePathInput = $('file-path');
 const fileMtime = $('file-mtime');
 const parseError = $('parse-error');
 const buildStatus = $('build-status');
 const lastCommit = $('last-commit');
+
+// ===== 标签页 store =====
+// onChange 的 reason 决定 DOM 工作量:activate/open/close/rename/restore 需要
+// 把内容载入编辑器;content/saved 绝不能重载,否则光标与选区会被重置。
+const store = createTabStore({
+  storage: sessionStorage,
+  onChange(state, meta) {
+    renderTabBar(state);
+    if (meta.reason === 'content' || meta.reason === 'saved') return;
+    loadActiveIntoEditor(state);
+  },
+});
+
+function loadActiveIntoEditor(state) {
+  const t = state.tabs.find((x) => x.id === state.activeId) || null;
+  if (!t) {
+    editorContent.classList.add('hidden');
+    editorEmpty.classList.remove('hidden');
+    return;
+  }
+  editorEmpty.classList.add('hidden');
+  editorContent.classList.remove('hidden');
+  filePathInput.value = t.path;
+  fileMtime.textContent = t.mtime ? new Date(t.mtime).toLocaleString() : '';
+  parseError.textContent = t.parseError || '';
+  // 内容与光标一并还原:切回来时用户还在离开时的位置
+  editor.value = t.content;
+  editor.setSelectionRange(t.cursor, t.cursor);
+  editor.scrollTop = t.scrollTop;
+  saveBtn.disabled = t.missing; // 文件已不存在则不允许写回
+  schedulePreview();
+}
+
+function renderTabBar(state) {
+  const titles = new Map(store.titles().map((x) => [x.id, x.text]));
+  const frag = document.createDocumentFragment();
+  for (const t of state.tabs) {
+    const el = document.createElement('div');
+    el.className = 'tab' + (t.id === state.activeId ? ' active' : '') + (t.missing ? ' missing' : '');
+    el.title = t.path + (t.dirty ? '（已修改）' : '') + (t.missing ? '（文件已不存在）' : '');
+
+    if (t.dirty) {
+      const dot = document.createElement('span');
+      dot.className = 'tab-dirty';
+      el.append(dot);
+    } else {
+      // 空标签也占一个等宽位,否则标题会随脏标记出现而左右跳动
+      const spacer = document.createElement('span');
+      spacer.className = 'tab-dirty';
+      spacer.style.background = 'transparent';
+      el.append(spacer);
+    }
+
+    const title = document.createElement('span');
+    // 标题走 textContent:path 来自服务端,拼 innerHTML 等于自种 XSS
+    title.className = 'tab-title';
+    title.textContent = titles.get(t.id) || t.id;
+    el.append(title);
+
+    const close = document.createElement('button');
+    close.className = 'tab-close';
+    close.textContent = '×';
+    close.title = '关闭标签';
+    close.addEventListener('click', (e) => {
+      e.stopPropagation(); // 别连带触发切标签
+      requestClose(t.id);
+    });
+    el.append(close);
+
+    el.addEventListener('click', () => store.setActive(t.id));
+    frag.append(el);
+  }
+  tabbarScroll.replaceChildren(frag);
+
+  const overflow = tabbarScroll.scrollWidth > tabbarScroll.clientWidth;
+  tabbarPrev.hidden = !overflow;
+  tabbarNext.hidden = !overflow;
+}
+
+function requestClose(id) {
+  const r = store.close(id);
+  if (r.ok) {
+    persistSoon();
+    return;
+  }
+  // close 遇 dirty 会返回 { ok:false, reason:'dirty' } 而不真删,确认后由 remove 强制关
+  if (r.reason === 'dirty' && confirm('该文件有未保存的修改，确定关闭？')) {
+    store.remove(id);
+    persistSoon();
+  }
+}
 
 // API 请求
 async function api(path, options = {}) {
@@ -110,7 +206,7 @@ function renderTree(nodes, container) {
     item.append(icon, name);
 
     if (node.type === 'file') {
-      item.addEventListener('click', () => openFile(node.path));
+      item.addEventListener('click', () => openTab(node.path));
       container.appendChild(item);
     } else {
       const children = document.createElement('div');
@@ -127,23 +223,17 @@ function renderTree(nodes, container) {
   }
 }
 
-// 打开文件
-async function openFile(path) {
+// 打开一篇笔记:已在标签页里就只激活(不重拉,否则丢弃未保存内容),否则新建
+async function openTab(path) {
+  if (store.get(path)) {
+    store.setActive(path);
+    highlightActive(path);
+    return;
+  }
   try {
     const data = await api(`/file?path=${encodeURIComponent(path)}`);
-    currentFile = path;
-    editorEmpty.classList.add('hidden');
-    editorContent.classList.remove('hidden');
-    filePathInput.value = path;
-    editor.value = data.content;
-    // 打开即渲染一次,不等用户输入(直接赋值不触发 input 事件)
-    schedulePreview();
-    fileMtime.textContent = data.mtime ? new Date(data.mtime).toLocaleString() : '';
-    parseError.textContent = data.parseError || '';
-    
-    // 高亮当前文件
-    document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
-    // 简单高亮：遍历找到匹配的
+    store.open({ path, content: data.content, mtime: data.mtime, parseError: data.parseError });
+    loadTree();
     highlightActive(path);
   } catch (err) {
     alert('打开文件失败: ' + err.message);
@@ -162,12 +252,15 @@ function highlightActive(path) {
 
 // 保存
 $('save-btn').addEventListener('click', async () => {
-  if (!currentFile) return;
+  const t = store.active();
+  if (!t) return;
   try {
     await api('/file', {
       method: 'PUT',
-      body: JSON.stringify({ path: currentFile, content: editor.value }),
+      body: JSON.stringify({ path: t.path, content: editor.value }),
     });
+    store.markSaved(t.id, { mtime: new Date().toISOString() });
+    persistSoon();
     fileMtime.textContent = new Date().toLocaleString();
     parseError.textContent = '';
   } catch (err) {
@@ -177,13 +270,13 @@ $('save-btn').addEventListener('click', async () => {
 
 // 删除文件
 $('delete-btn').addEventListener('click', async () => {
-  if (!currentFile) return;
-  if (!confirm(`确定删除 ${currentFile}?`)) return;
+  const t = store.active();
+  if (!t) return;
+  if (!confirm(`确定删除 ${t.path}?`)) return;
   try {
-    await api(`/file?path=${encodeURIComponent(currentFile)}`, { method: 'DELETE' });
-    currentFile = null;
-    editorContent.classList.add('hidden');
-    editorEmpty.classList.remove('hidden');
+    await api(`/file?path=${encodeURIComponent(t.path)}`, { method: 'DELETE' });
+    store.remove(t.id); // 强制关,不走 dirty 确认:文件都删了
+    persistSoon();
     loadTree();
   } catch (err) {
     alert('删除失败: ' + err.message);
@@ -192,18 +285,19 @@ $('delete-btn').addEventListener('click', async () => {
 
 // 重命名
 $('rename-btn').addEventListener('click', async () => {
-  if (!currentFile) return;
-  const newName = prompt('新文件名:', currentFile.split('/').pop());
+  const t = store.active();
+  if (!t) return;
+  const newName = prompt('新文件名:', t.path.split('/').pop());
   if (!newName) return;
-  const dir = currentFile.split('/').slice(0, -1).join('/');
+  const dir = t.path.split('/').slice(0, -1).join('/');
   const newPath = dir ? `${dir}/${newName}` : newName;
   try {
     await api('/rename', {
       method: 'POST',
-      body: JSON.stringify({ from: currentFile, to: newPath }),
+      body: JSON.stringify({ from: t.path, to: newPath }),
     });
-    currentFile = newPath;
-    filePathInput.value = newPath;
+    store.rename(t.id, newPath); // id 即 path,重命名要同步改,否则 tab 定位会失效
+    persistSoon();
     loadTree();
   } catch (err) {
     alert('重命名失败: ' + err.message);
@@ -220,7 +314,7 @@ $('new-file-btn').addEventListener('click', async () => {
       body: JSON.stringify({ path }),
     });
     loadTree();
-    openFile(path);
+    openTab(path);
   } catch (err) {
     alert('创建失败: ' + err.message);
   }
@@ -299,7 +393,7 @@ $('preview-btn').addEventListener('click', () => {
 async function renderPreview() {
   const seq = ++previewSeq;
   const content = editor.value;
-  const path = currentFile || '';
+  const path = store.active()?.path ?? '';
   if (!content.trim()) {
     previewEl.innerHTML = '<p class="preview-empty">（空文档）</p>';
     return;
@@ -373,7 +467,17 @@ async function renderMermaid() {
   }
 }
 
-editor.addEventListener('input', schedulePreview);
+editor.addEventListener('input', () => {
+  const t = store.active();
+  if (t) {
+    // 走 setView 而非直接改 t.cursor:`get()` 返回的是 tab 的活引用,直接赋值
+    // 能「碰巧」生效,但那是未声明的契约——哪天 get() 改成返回副本就静默失效。
+    store.setView(t.id, { cursor: editor.selectionStart, scrollTop: editor.scrollTop });
+    store.updateContent(t.id, editor.value);
+  }
+  persistSoon();
+  schedulePreview();
+});
 
 // 分隔条拖动:clamp 20%~80%,避免任一侧被压到不可用
 // endDrag 三个出口都要绑:只绑 mouseup 的话,拖出窗口 / alt-tab 失焦后 dragging
