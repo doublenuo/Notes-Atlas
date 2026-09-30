@@ -42,7 +42,7 @@ const lastCommit = $('last-commit');
 // - renderTabBar:split 拖动时不必(宽度没变,重绘纯属浪费)
 // - loadActiveIntoEditor:只有内容类 reason 才重载编辑器;content/saved 绝不能,
 //   否则光标与选区会被重置。§4.1 行为表外的新增 reason 一律不重载。
-const RELOAD_REASONS = new Set(['open', 'activate', 'close', 'rename', 'restore', 'missing']);
+const RELOAD_REASONS = new Set(['open', 'activate', 'close', 'rename', 'restore', 'missing', 'close-others', 'close-right', 'close-all']);
 const store = createTabStore({
   storage: sessionStorage,
   onChange(state, meta) {
@@ -148,6 +148,11 @@ function renderTabBar(state) {
     el.append(close);
 
     el.addEventListener('click', () => store.setActive(t.id));
+    // 右键打开批量关闭菜单;不改变活动标签(锚点 ≠ 活动)
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openTabMenu(t.id, e.clientX, e.clientY);
+    });
     frag.append(el);
   }
   tabbarScroll.replaceChildren(frag);
@@ -156,6 +161,92 @@ function renderTabBar(state) {
   tabbarPrev.hidden = !overflow;
   tabbarNext.hidden = !overflow;
 }
+
+// ===== 标签右键菜单 =====
+let tabMenu = null;
+function ensureTabMenu() {
+  if (tabMenu) return tabMenu;
+  tabMenu = document.createElement('div');
+  tabMenu.className = 'tab-menu';
+  tabMenu.hidden = true;
+  const mk = (action, label) => {
+    const b = document.createElement('button');
+    b.className = 'tab-menu-item';
+    b.dataset.action = action;
+    b.textContent = label;
+    b.addEventListener('click', () => onMenuAction(action));
+    return b;
+  };
+  tabMenu.append(mk('close', '关闭'));
+  tabMenu.append(mk('close-others', '关闭其他标签页'));
+  tabMenu.append(mk('close-right', '关闭右侧标签页'));
+  const sep = document.createElement('div');
+  sep.className = 'tab-menu-sep';
+  tabMenu.append(sep);
+  tabMenu.append(mk('close-all', '关闭全部'));
+  document.body.append(tabMenu);
+  return tabMenu;
+}
+
+function closeTabMenu() {
+  if (tabMenu) tabMenu.hidden = true;
+}
+
+function openTabMenu(anchorId, x, y) {
+  const menu = ensureTabMenu();
+  const tabs = store.getState().tabs;
+  const idx = tabs.findIndex((t) => t.id === anchorId);
+  if (idx < 0) return; // 锚点已被并发关掉,不开菜单(§7 not-found 静默)
+  menu._anchorId = anchorId;
+  menu.querySelector('[data-action="close-others"]').disabled = tabs.length <= 1;
+  menu.querySelector('[data-action="close-right"]').disabled = tabs.length <= 1 || idx === tabs.length - 1;
+  menu.hidden = false;
+  // 定位后右/下溢出翻转,保证不出视口
+  menu.style.left = '0px';
+  menu.style.top = '0px';
+  const mw = menu.offsetWidth;
+  const mh = menu.offsetHeight;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  menu.style.left = (x + mw + 4 > vw ? vw - mw - 4 : x) + 'px';
+  menu.style.top = (y + mh + 4 > vh ? vh - mh - 4 : y) + 'px';
+}
+
+function onMenuAction(action) {
+  const anchorId = tabMenu && tabMenu._anchorId;
+  closeTabMenu();
+  if (action === 'close') {
+    if (anchorId) requestClose(anchorId); // requestClose 内部已 persistSoon
+    return;
+  }
+  if (anchorId == null && action !== 'close-all') return; // 锚点丢失,静默(close-all 不依赖锚点)
+  const call = (force) => {
+    if (action === 'close-others') return store.closeOthers(anchorId, { force });
+    if (action === 'close-right') return store.closeRight(anchorId, { force });
+    return store.closeAll({ force });
+  };
+  const r = call(false);
+  if (!r.ok && r.reason === 'dirty') {
+    const label = { 'close-others': '关闭其他标签页', 'close-right': '关闭右侧标签页', 'close-all': '关闭全部标签页' }[action];
+    if (!confirm(`${label}将同时关闭 ${r.count} 个未保存的标签，确定？`)) {
+      return; // 取消:store 拒绝时未改任何状态,无需持久化
+    }
+    call(true);
+  } else if (!r.ok) {
+    return; // not-found 等,静默忽略
+  }
+  persistSoon();
+}
+
+// 全局:点菜单外收起、Esc 收起、标签栏横向滚动收起(capture 才能收到 scrollBy 触发的滚动)
+document.addEventListener('click', (e) => {
+  if (tabMenu && !tabMenu.hidden && !tabMenu.contains(e.target)) closeTabMenu();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeTabMenu();
+});
+// 标签栏横向滚动收起菜单(capture 才能收到 scrollBy 触发的滚动)
+tabbarScroll.addEventListener('scroll', closeTabMenu, true);
 
 function requestClose(id) {
   const r = store.close(id);
