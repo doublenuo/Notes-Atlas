@@ -250,3 +250,61 @@ test("19 closeRight 锚点是最后一个:ok 且状态原封不动", () => {
   assert.deepEqual(s2.closeRight("a.md"), { ok: true }); // 单标签同理
   assert.equal(s2.getState().tabs.length, 1);
 });
+
+test("20 closeAll 全关:activeId 清空、tabs 空", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  assert.deepEqual(s.closeAll(), { ok: true });
+  const st = s.getState();
+  assert.equal(st.tabs.length, 0);
+  assert.equal(st.activeId, null);
+});
+
+test("21 closeAll 遇 dirty 拒绝计数,force 后全关", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  s.updateContent("a.md", "改");
+  s.updateContent("b.md", "改2");
+  assert.deepEqual(s.closeAll(), { ok: false, reason: "dirty", count: 2 });
+  assert.equal(s.getState().tabs.length, 2); // 未变
+  assert.deepEqual(s.closeAll({ force: true }), { ok: true });
+  assert.equal(s.getState().tabs.length, 0);
+  assert.equal(s.getState().activeId, null);
+});
+
+test("22 三种批量对 missing 的 dirty tab 均不计数、直接关", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "gone.md", missing: true });
+  s.updateContent("gone.md", "陈旧缓冲"); // dirty 但 missing
+  assert.deepEqual(s.closeOthers("a.md"), { ok: true }); // gone 被关,无拒绝
+  assert.deepEqual(s.getState().tabs.map((t) => t.id), ["a.md"]);
+
+  const s2 = mkStore();
+  s2.open({ path: "a.md" });
+  s2.open({ path: "gone.md", missing: true });
+  s2.updateContent("gone.md", "旧");
+  assert.deepEqual(s2.closeRight("a.md"), { ok: true });
+  assert.deepEqual(s2.getState().tabs.map((t) => t.id), ["a.md"]);
+
+  const s3 = mkStore();
+  s3.open({ path: "gone.md", missing: true });
+  s3.updateContent("gone.md", "旧");
+  assert.deepEqual(s3.closeAll(), { ok: true }); // 唯一标签是 missing dirty,不弹
+  assert.equal(s3.getState().tabs.length, 0);
+});
+
+test("23 not-found 拒绝不改状态;批量关闭后 open/rename 仍正常", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  assert.deepEqual(s.closeOthers("zzz.md"), { ok: false, reason: "not-found" });
+  assert.deepEqual(s.closeRight("zzz.md"), { ok: false, reason: "not-found" });
+  assert.equal(s.getState().tabs.length, 2); // 未被改动
+  assert.deepEqual(s.closeOthers("a.md"), { ok: true }); // 组合回归
+  assert.deepEqual(s.open({ path: "c.md" }), { ok: true, created: true });
+  s.rename("c.md", "d.md");
+  assert.equal(s.get("d.md").id, "d.md");
+});

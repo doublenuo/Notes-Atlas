@@ -119,6 +119,16 @@ export function createTabStore({ storage, onChange = () => {} }) {
     return { ok: true };
   }
 
+  /** 批量:关掉全部。activeId 清空,回编辑器空态(与关最后一个标签同一条规则)。 */
+  function closeAll({ force = false } = {}) {
+    const n = countDirty(state.tabs);
+    if (n > 0 && !force) return { ok: false, reason: "dirty", count: n };
+    state.tabs = [];
+    state.activeId = null;
+    emit("close-all", null);
+    return { ok: true };
+  }
+
   function updateContent(id, content) {
     const t = get(id);
     if (!t) return;
@@ -279,6 +289,6 @@ export function createTabStore({ storage, onChange = () => {} }) {
   return {
     getState, get, active, open, setActive, close, remove, updateContent, setView, markSaved, rename,
     titles, setPreviewOn, setSplitPct, markMissing, toJSON, persist, restore,
-    closeOthers, closeRight,
+    closeOthers, closeRight, closeAll,
   };
 }
