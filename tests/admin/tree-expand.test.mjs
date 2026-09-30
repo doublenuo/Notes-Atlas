@@ -40,3 +40,39 @@ test("3 findConflict 路径精确命中;同 basename 不同路径不命中;根�
   assert.equal(te.findConflict(tree, "zzz.md"), null);
   assert.equal(te.findConflict([], "x.md"), null);
 });
+test("4 setFromTree:collapseAll 得全部目录路径;expandAll 得空", () => {
+  const tree = [
+    { type: "dir", name: "a", path: "a", children: [{ type: "dir", name: "b", path: "a/b", children: [] }, { type: "file", name: "f.md", path: "a/f.md" }] },
+    { type: "file", name: "g.md", path: "g.md" },
+  ];
+  assert.deepEqual([...te.setFromTree(tree, "collapseAll")].sort(), ["a", "a/b"]);
+  assert.deepEqual([...te.setFromTree(tree, "expandAll")], []);
+});
+
+test("5 isCollapsed 缺省 false;createCollapsedSet 为空;加入后 true", () => {
+  const s = te.createCollapsedSet();
+  assert.equal(s.size, 0);
+  assert.equal(te.isCollapsed(s, "a"), false);
+  s.add("a");
+  assert.equal(te.isCollapsed(s, "a"), true);
+});
+
+test("6 saveCollapsed/loadCollapsed 往返;非法 JSON/非数组/缺 key → 空集", () => {
+  const st = fakeStorage();
+  te.saveCollapsed(new Set(["a", "b/c"]), st);
+  assert.deepEqual([...te.loadCollapsed(st)].sort(), ["a", "b/c"]);
+  const st2 = fakeStorage();
+  st2.setItem(te.COLLAPSED_KEY, "not-json");
+  assert.equal(te.loadCollapsed(st2).size, 0);
+  const st3 = fakeStorage();
+  st3.setItem(te.COLLAPSED_KEY, JSON.stringify({ a: 1 }));
+  assert.equal(te.loadCollapsed(st3).size, 0);
+  assert.equal(te.loadCollapsed(fakeStorage()).size, 0);
+});
+
+test("7 prune 只保留仍存在的目录;不修改原集合", () => {
+  const s = new Set(["a", "gone", "a/b"]);
+  const pruned = te.prune(s, ["a", "a/b", "c"]);
+  assert.deepEqual([...pruned].sort(), ["a", "a/b"]);
+  assert.equal(s.has("gone"), true);
+});
