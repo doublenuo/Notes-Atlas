@@ -396,6 +396,166 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeTreeMenu();
 });
 
+// ===== 行内输入与树操作 =====
+let inline = null;
+
+function cancelInline() {
+  if (!inline) return;
+  const r = inline;
+  inline = null;
+  if (r.restore) r.restore();
+}
+
+function showInlineErr(r, msg) {
+  r.err.textContent = msg;
+  r.err.hidden = false;
+  r.input.focus();
+}
+
+function wireInline() {
+  if (!inline) return;
+  const r = inline;
+  r.input.addEventListener('keydown', (e) => {
+    if (r.pending) { e.preventDefault(); return; }
+    if (e.key === 'Enter') { e.preventDefault(); submitInline(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancelInline(); }
+  });
+  r.input.addEventListener('input', () => { r.err.hidden = true; r.err.textContent = ''; });
+  r.input.addEventListener('blur', () => {
+    if (inline && !r.pending && !r.input.value.trim()) cancelInline();
+  });
+}
+
+function startInlineCreate(dirPath, type) {
+  cancelInline();
+  if (dirPath) expandDirByPath(dirPath); // 折叠目录里新建先展开,让用户看到输入行
+  const container = dirPath
+    ? document.querySelector(`.tree-row[data-path="${CSS.escape(dirPath)}"] .tree-children`)
+    : fileTree;
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'tree-row tree-inline-row';
+  const input = document.createElement('input');
+  input.className = 'tree-input';
+  input.value = defaultName(type);
+  const err = document.createElement('div');
+  err.className = 'tree-error';
+  err.hidden = true;
+  row.append(input, err);
+  container.prepend(row);
+  inline = { mode: 'create', type, dirPath, input, err, pending: false, restore: () => row.remove() };
+  input.focus();
+  input.select();
+  wireInline();
+}
+
+function startInlineRename(path, type) {
+  cancelInline();
+  const row = document.querySelector(`.tree-row[data-path="${CSS.escape(path)}"]`);
+  if (!row) return;
+  const nameEl = row.querySelector('.tree-name');
+  const oldName = nameEl.textContent;
+  const input = document.createElement('input');
+  input.className = 'tree-input';
+  input.value = oldName;
+  const dot = oldName.lastIndexOf('.');
+  input.setSelectionRange(0, dot > 0 ? dot : oldName.length);
+  const err = document.createElement('div');
+  err.className = 'tree-error';
+  err.hidden = true;
+  nameEl.replaceWith(input);
+  input.after(err);
+  inline = { mode: 'rename', path, type, input, err, pending: false, restore: () => { input.replaceWith(nameEl); err.remove(); } };
+  input.focus();
+  wireInline();
+}
+
+async function submitInline() {
+  const r = inline;
+  if (!r || r.pending) return;
+  const name = r.input.value.trim();
+  if (!name) { showInlineErr(r, '名称不能为空'); return; }
+  if (r.mode === 'create') {
+    if (r.type === 'file' && !name.endsWith('.md')) { showInlineErr(r, '仅支持 .md 文件'); return; }
+    const fullPath = pathJoin(r.dirPath, name);
+    if (findConflict(treeData, fullPath)) { showInlineErr(r, '同名文件或目录已存在'); return; }
+    r.pending = true;
+    try {
+      await api(r.type === 'file' ? '/file' : '/dir', { method: 'POST', body: JSON.stringify({ path: fullPath }) });
+    } catch (err) {
+      r.pending = false;
+      showInlineErr(r, err.message);
+      return;
+    }
+    cancelInline();
+    await loadTree();
+    if (r.type === 'file') openTab(fullPath);
+    // 新建目录:缺省展开,loadTree 后自然可见
+  } else {
+    // rename
+    const to = pathJoin(pathDir(r.path), name);
+    if (r.type === 'file' && !name.endsWith('.md')) { showInlineErr(r, '仅支持 .md 文件'); return; }
+    if (to === r.path) { cancelInline(); return; }
+    if (findConflict(treeData, to)) { showInlineErr(r, '同名文件或目录已存在'); return; }
+    r.pending = true;
+    try {
+      await api('/rename', { method: 'POST', body: JSON.stringify({ from: r.path, to }) });
+    } catch (err) {
+      r.pending = false;
+      showInlineErr(r, err.message);
+      return;
+    }
+    // 标签同步:文件改 id;目录用 renameMap 覆盖所有打开的前缀标签
+    if (r.type === 'file') {
+      if (store.get(r.path)) store.rename(r.path, to);
+    } else {
+      for (const m of renameMap(r.path, to, store.getState().tabs.map((t) => t.id))) {
+        store.rename(m.from, m.to);
+      }
+    }
+    cancelInline();
+    persistSoon();
+    await loadTree();
+  }
+}
+
+async function delNode(path, type) {
+  if (type === 'file') {
+    if (!confirm(`确定删除 ${path}?`)) return;
+    try {
+      await api(`/file?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
+    } catch (err) {
+      alert('删除失败: ' + err.message);
+      return;
+    }
+    if (store.get(path)) { store.remove(path); persistSoon(); }
+  } else {
+    const node = findConflict(treeData, path);
+    const n = node ? descendantCount(node) : 0;
+    if (!confirm(`目录 ${path} 含 ${n} 项内容,确定连同内容一并删除?`)) return;
+    try {
+      await api(`/dir?path=${encodeURIComponent(path)}&force=1`, { method: 'DELETE' });
+    } catch (err) {
+      alert('删除失败: ' + err.message);
+      return;
+    }
+    const prefix = path + '/';
+    for (const t of [...store.getState().tabs]) { // 快照遍历:remove 会 splice 改动原数组
+      if (t.id.startsWith(prefix)) { store.remove(t.id); }
+    }
+    persistSoon();
+  }
+  await loadTree();
+}
+
+// 子树节点总数(不含自身),文件为 0 —— 删除确认文案用的「N 项内容」
+function descendantCount(node) {
+  let n = 0;
+  const walk = (ls) => { for (const x of ls) { n++; if (x.children) walk(x.children); } };
+  walk(node && node.children ? node.children : []);
+  return n;
+}
+
 function requestClose(id) {
   const r = store.close(id);
   if (r.ok) {
