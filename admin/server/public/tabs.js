@@ -25,6 +25,13 @@ function nextActiveId(tabs, closedIdx) {
   return left ? left.id : null;
 }
 
+/** 范围内需要确认的 dirty 数量:missing 的不计(文件已不存在,缓冲仅留作查看)。 */
+function countDirty(list) {
+  let n = 0;
+  for (const t of list) if (t.dirty && !t.missing) n++;
+  return n;
+}
+
 export function createTabStore({ storage, onChange = () => {} }) {
   const state = { tabs: [], activeId: null, previewOn: false, splitPct: 50 };
 
@@ -82,6 +89,19 @@ export function createTabStore({ storage, onChange = () => {} }) {
     state.tabs.splice(idx, 1);
     if (wasActive) state.activeId = nextId;
     emit("close", id);
+    return { ok: true };
+  }
+
+  /** 批量:关掉锚点以外的全部标签。锚点保留并激活(标准归属)。 */
+  function closeOthers(anchorId, { force = false } = {}) {
+    const anchor = get(anchorId);
+    if (!anchor) return { ok: false, reason: "not-found" };
+    const targets = state.tabs.filter((t) => t.id !== anchorId);
+    const n = countDirty(targets);
+    if (n > 0 && !force) return { ok: false, reason: "dirty", count: n };
+    state.tabs = [anchor];
+    state.activeId = anchorId;
+    emit("close-others", anchorId);
     return { ok: true };
   }
 
@@ -245,5 +265,6 @@ export function createTabStore({ storage, onChange = () => {} }) {
   return {
     getState, get, active, open, setActive, close, remove, updateContent, setView, markSaved, rename,
     titles, setPreviewOn, setSplitPct, markMissing, toJSON, persist, restore,
+    closeOthers,
   };
 }

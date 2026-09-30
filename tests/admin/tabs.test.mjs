@@ -169,3 +169,39 @@ test("13 恢复时校验缺失文件标 missing", () => {
   assert.equal(s2.get("a.md").missing, false);
   assert.equal(s2.get("gone.md").missing, true);
 });
+test("14 closeOthers 保留锚点并激活,其余全关", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  s.open({ path: "c.md" });
+  s.open({ path: "d.md" });
+  assert.deepEqual(s.closeOthers("c.md"), { ok: true });
+  const st = s.getState();
+  assert.deepEqual(st.tabs.map((t) => t.id), ["c.md"]);
+  assert.equal(st.activeId, "c.md");
+});
+
+test("15 closeOthers 遇 dirty 拒绝返回 count 且状态不变,force 后全关", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  s.open({ path: "c.md" });
+  s.updateContent("b.md", "B改");
+  assert.deepEqual(s.closeOthers("c.md"), { ok: false, reason: "dirty", count: 1 });
+  assert.equal(s.getState().tabs.length, 3); // 未被改动
+  assert.equal(s.get("b.md").content, "B改"); // 缓冲还在
+  assert.deepEqual(s.closeOthers("c.md", { force: true }), { ok: true });
+  assert.deepEqual(s.getState().tabs.map((t) => t.id), ["c.md"]);
+  assert.equal(s.getState().activeId, "c.md");
+});
+
+test("16 closeOthers 锚点自身 dirty 保留且不计入 count", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  s.updateContent("b.md", "B改"); // 锚点是 b 且 dirty
+  assert.deepEqual(s.closeOthers("b.md"), { ok: true }); // a 干净,不拒绝
+  assert.deepEqual(s.getState().tabs.map((t) => t.id), ["b.md"]);
+  assert.equal(s.getState().activeId, "b.md");
+  assert.equal(s.get("b.md").dirty, true); // dirty 缓冲原样保留
+});
