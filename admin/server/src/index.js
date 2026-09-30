@@ -93,7 +93,11 @@ const preview = createPreviewRenderer({ docsDir: path.join(SITE, "docs") });
 
 const app = buildApp({ auth, files, queue, preview, config: { cookieSecure: process.env.COOKIE_SECURE !== "0" } });
 
-const closeWatcher = startWatcher({ siteDir: SITE, onChange: () => queue.trigger() });
+/** 自动构建开关:宿主机内存仅 1.9G,容器内全量 vitepress 构建会 OOM(实测被杀过,且殃及 dockerd/uptime-kuma)。
+ *  站点发布已移交 GitHub Actions(BUILD_AUTO=0 时 watcher 不启动,面板保存→git push→CI 构建→scp /opt/blogs)。 */
+const closeWatcher = process.env.BUILD_AUTO !== "0"
+  ? startWatcher({ siteDir: SITE, onChange: () => queue.trigger() })
+  : (() => { console.log("[admin] BUILD_AUTO=0:自动构建关闭,站点发布由 GitHub Actions 承担"); return () => {}; })();
 // 关闭双兜底:watcher 关闭失败也要 close server;SIGINT 同路径(本地 Ctrl-C 冒烟)
 const shutdown = async () => {
   try {
