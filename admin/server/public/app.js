@@ -37,15 +37,58 @@ const buildStatus = $('build-status');
 const lastCommit = $('last-commit');
 
 // ===== 标签页 store =====
-// onChange 的 reason 决定 DOM 工作量:activate/open/close/rename/restore 需要
-// 把内容载入编辑器;content/saved 绝不能重载,否则光标与选区会被重置。
+// onChange 的 reason 决定 DOM 工作量:
+// - applyLayout:每次都要(预览开关、分栏宽度是布局态,拖分隔条时被高频调用)
+// - renderTabBar:split 拖动时不必(宽度没变,重绘纯属浪费)
+// - loadActiveIntoEditor:只有内容类 reason 才重载编辑器;content/saved 绝不能,
+//   否则光标与选区会被重置。§4.1 行为表外的新增 reason 一律不重载。
+const RELOAD_REASONS = new Set(['open', 'activate', 'close', 'rename', 'restore', 'missing']);
 const store = createTabStore({
   storage: sessionStorage,
   onChange(state, meta) {
-    renderTabBar(state);
-    if (meta.reason === 'content' || meta.reason === 'saved') return;
+    applyLayout(state);
+    if (meta.reason !== 'split') renderTabBar(state);
+    if (!RELOAD_REASONS.has(meta.reason)) return;
     loadActiveIntoEditor(state);
   },
+});
+
+// 布局态唯一落点:预览开关视觉、show-preview 类、分栏宽度都由这里写。
+// show-preview 类不可省:CSS 靠它显示预览面板与分隔条(style.css:443-448)。
+function applyLayout(state) {
+  split.style.setProperty('--split', state.splitPct + '%');
+  split.classList.toggle('show-preview', state.previewOn);
+  const btn = $('preview-btn');
+  btn.textContent = state.previewOn ? '收起预览' : '预览';
+  btn.classList.toggle('active', state.previewOn);
+  btn.setAttribute('aria-pressed', String(state.previewOn));
+}
+
+// 持久化防抖 500ms:与预览的 300ms 分开,两者时机不同
+let persistTimer = null;
+function persistSoon() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    const r = store.persist();
+    if (r.status === 'degraded' && !$('tabbar-note')) {
+      // 降级 = 标签还在但未保存内容被剥掉,刷新后不保留,必须提示用户
+      const note = document.createElement('span');
+      note.id = 'tabbar-note';
+      note.className = 'tabbar-note';
+      note.textContent = '标签过多,未保存内容不会被保留';
+      $('tabbar').append(note);
+    } else if (r.status === 'failed') {
+      console.warn('[admin] 标签页持久化失败,本次编辑不会跨刷新保留');
+    }
+  }, 500);
+}
+
+window.addEventListener('beforeunload', (e) => {
+  if (store.getState().tabs.some((t) => t.dirty)) {
+    // 有未保存修改时交给浏览器原生「离开此页面?」提示
+    e.preventDefault();
+    e.returnValue = '';
+  }
 });
 
 function loadActiveIntoEditor(state) {
@@ -352,11 +395,35 @@ async function loadStatus() {
   }
 }
 
+// 启动时恢复标签页
+// 必须在 treeData 就绪后做 missing 校验:恢复的是当时的未保存内容,而磁盘上的
+// 文件可能已被删除或改名。不校验的话,打开一个已删文件、随手一存,就会在磁盘
+// 上重新创建它。因此不能放在 showMain() 的同步调用之后——那时 loadTree 还没
+// 返回,treeData 是空数组,会把所有恢复出来的标签错标成 missing。
+async function restoreTabs() {
+  const restored = store.restore();
+  if (!restored.ok) return;
+  if (!store.getState().tabs.length) return;
+  const flat = [];
+  (function walk(nodes) {
+    for (const n of nodes) {
+      if (n.type === 'dir') walk(n.children || []);
+      else flat.push(n.path);
+    }
+  })(treeData);
+  const gone = new Set(
+    store.getState().tabs.filter((t) => !flat.includes(t.path)).map((t) => t.id)
+  );
+  store.markMissing(gone); // emit('missing') -> onChange 重载活动标签,saveBtn 禁用
+}
+
 // 检查是否已登录
 (async () => {
   try {
     await api('/tree');
     showMain();
+    await loadTree(); // 等 treeData 就绪,restoreTabs 的 missing 校验依赖它
+    restoreTabs();
   } catch {
     showLogin();
   }
@@ -365,10 +432,10 @@ async function loadStatus() {
 // ===== 预览 =====
 // 预览默认关闭:纯单栏编辑,点「预览」才展开分栏。关闭期间不发起渲染请求,
 // 否则每次打开文件/每次按键都会白跑一次 markdown 渲染与 KaTeX 排版。
-let previewOn = false;
+// 开关本身在 store 里(previewOn),可随标签页一并持久化,刷新后布局不变。
 
 function schedulePreview() {
-  if (!previewOn) return; // 预览未开启,不必渲染
+  if (!store.getState().previewOn) return; // 预览未开启,不必渲染
   clearTimeout(previewTimer);
   previewTimer = setTimeout(renderPreview, 300);
 }
@@ -379,15 +446,13 @@ function stopPreview() {
   previewEl.innerHTML = '';
 }
 
+// 预览开关与分栏宽度已移入 store,故可随标签页一并持久化(刷新后布局不变)
 $('preview-btn').addEventListener('click', () => {
-  previewOn = !previewOn;
-  split.classList.toggle('show-preview', previewOn);
-  const btn = $('preview-btn');
-  btn.textContent = previewOn ? '收起预览' : '预览';
-  btn.classList.toggle('active', previewOn);
-  btn.setAttribute('aria-pressed', String(previewOn));
-  if (previewOn) renderPreview(); // 立即出内容,不等 300ms 防抖
+  const next = !store.getState().previewOn;
+  store.setPreviewOn(next); // 视觉与 show-preview 类由 onChange -> applyLayout 处理
+  if (next) renderPreview(); // 立即出内容,不等 300ms 防抖
   else stopPreview();
+  persistSoon();
 });
 
 async function renderPreview() {
@@ -497,7 +562,8 @@ window.addEventListener('mousemove', (e) => {
   if (!dragging) return;
   const r = split.getBoundingClientRect();
   const pct = ((e.clientX - r.left) / r.width) * 100;
-  split.style.setProperty('--split', Math.min(80, Math.max(20, pct)) + '%');
+  // clamp 交给 store.setSplitPct(20~80),它还会 emit('split')->applyLayout 写 --split
+  store.setSplitPct(pct);
 });
 window.addEventListener('mouseup', endDrag);
 window.addEventListener('blur', endDrag);
