@@ -1,5 +1,8 @@
 FROM node:22-alpine
 
+# 面板文件操作(新建/保存/重命名/删除)依赖仓库内执行 git add/commit,镜像必须带 git
+RUN apk add --no-cache git
+
 WORKDIR /app
 
 # 安装依赖
