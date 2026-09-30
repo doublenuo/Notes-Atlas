@@ -1,7 +1,9 @@
 FROM node:22-alpine
 
 # 面板文件操作(新建/保存/重命名/删除)依赖仓库内执行 git add/commit/push,镜像必须带 git 与 ssh 客户端
-RUN apk add --no-cache git openssh
+RUN apk add --no-cache git openssh \
+  && mkdir -p /root/.ssh \
+  && ssh-keyscan github.com > /root/.ssh/known_hosts 2>/dev/null
 
 WORKDIR /app
 

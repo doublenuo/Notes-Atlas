@@ -23,6 +23,6 @@ services:
       - /opt/blogs:/opt/blogs
       - /var/run/docker.sock:/var/run/docker.sock
       - ./.state:/app/.state
-      # 容器内 git push origin(GitHub 部署 key);仓库 origin 为 ssh 形态,容器以 root 运行,HOME=/root
-      - /root/.ssh:/root/.ssh:ro
+      # 容器内 git push origin(GitHub 部署 key):只挂私钥,known_hosts 已由镜像构建时预置(ssh-keyscan github.com)
+      - /root/.ssh/id_rsa:/root/.ssh/id_rsa:ro
     network_mode: host
