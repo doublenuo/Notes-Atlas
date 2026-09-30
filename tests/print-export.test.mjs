@@ -49,3 +49,34 @@ test("print.scss：深色模式强制白底黑字，标题不与正文分离", (
   assert.match(printScss, /break-after:\s*avoid/, "标题应避免与正文分页");
   assert.match(printScss, /break-inside:\s*avoid/, "块元素应避免跨页撕裂");
 });
+
+const component = read("components", "ArticleExportPdf.vue");
+
+// 裸 window.print() 会导出空白图：字体未就绪掉字、图未加载留白、mermaid 未画完缺图
+test("导出按钮组件：等字体与图片就绪，且预处理异常不阻断打印", () => {
+  assert.match(component, /document\.fonts\.ready/, "应等待字体就绪");
+  assert.match(component, /\.decode\(\)/, "应等待图片解码");
+  assert.match(component, /finally\s*{[^}]*window\.print\(\)/s, "应在 finally 中确保打印被调起");
+  assert.match(component, /window\.print\(\)/, "应调起浏览器打印");
+});
+
+test("导出按钮组件：等 mermaid 画完并展开 details", () => {
+  assert.match(component, /waitForMermaid/, "应有等待 mermaid 的逻辑");
+  assert.match(component, /\.mermaid/, "应通过 .mermaid 判断是否渲染完");
+  assert.match(component, /details/, "应展开正文内折叠的 details");
+});
+
+test("导出按钮组件：与分享按钮并排且右栏总宽不变", () => {
+  assert.match(component, /\.VPDocAside:has\(> \.tk-pdf-export\)/, "应通过 :has() 改造父容器实现并排");
+  assert.match(component, /column-gap:\s*8px/, "两按钮间距应为 8px");
+  assert.match(component, /> \.tk-article-share\s*{[^}]*flex:\s*1 1 auto/, "分享按钮应 flex:1 吃掉剩余宽度");
+  assert.match(component, /> \.tk-pdf-export\s*{[^}]*flex:\s*0 0 auto/, "导出按钮应固定宽度");
+  assert.match(component, /width:\s*36px/, "导出按钮应为 36px 方块");
+});
+
+test("导出按钮组件：纯图标但有可访问名称，不引新依赖", () => {
+  assert.match(component, /aria-label="导出 PDF"/, "纯图标按钮必须有 aria-label");
+  assert.match(component, /title="导出 PDF"/, "应有悬停提示");
+  assert.match(component, /viewBox="0 0 24 24"/, "图标应为内联 SVG");
+  assert.ok(!/from\s+["']@iconify/.test(component), "不应引入 iconify 依赖");
+});
