@@ -847,7 +847,9 @@ print(m.group(1) if m else 'geom 未找到')
 PY_EOF
 ```
 
-预期:所有布尔字段全为 `true`(含 `rows.A`、`esc.flip`);`rows.count` 为 `5`;`menu.dirItems`/`menu.rootItems` 为 `5`、`menu.fileCtxDir` 为 `true`。若有 `false`,对照本任务代码逐项修到全绿再 commit。
+预期:所有布尔字段全为 `true`(含 `rows.A`、`esc.flip`);`rows.count` 为 `5`;`menu.dirItems`/`menu.rootItems` 为 `4`、`menu.fileCtxDir` 为 `true`。若有 `false`,对照本任务代码逐项修到全绿再 commit。
+
+> 实测更正(2026-09-30):目录/文件/根三类菜单均构建为 4 个 `.tab-menu-item` 按钮 + 1 条 `.tab-menu-sep` 分隔线,分隔线类不含 `tab-menu-item`,故 `querySelectorAll('.tree-menu .tab-menu-item').length` 为 `4`(非计划初估的 5)。
 
 > 已知陷阱:`rows().length` 会统计到 `tree-inline-row`(此时还没有,无碍);`rowsByPath` 用 `CSS.escape` 防 `/` 与 `.`。`loadTree` 是 async,smoke 里必须 `await loadTree()` 后再断言(顺序照抄)。
 
@@ -1065,6 +1067,8 @@ ln -s /home/weno/works/Notes-Atlas/admin/server/public/vendor /tmp/opencode/tree
   window.onerror = (m) => { R.errors.push('onerror: ' + m); };
   const json = (body, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  // 204 一律无 body:fetch 规范禁止 204 携带 body,Chromium 会抛 TypeError(实测踩坑,见步骤说明)
+  const json204 = () => new Response(null, { status: 204 });
   const TREE = [
     { type: "dir", name: "A", path: "A", children: [
       { type: "dir", name: "B", path: "A/B", children: [{ type: "file", name: "x.md", path: "A/B/x.md" }] },
@@ -1073,13 +1077,14 @@ ln -s /home/weno/works/Notes-Atlas/admin/server/public/vendor /tmp/opencode/tree
     { type: "file", name: "root.md", path: "root.md" },
   ];
   const calls = [];
+  window.alert = () => {};  // headless 原生 alert 阻塞主线程,必须覆盖
   window.fetch = async (url, opts = {}) => {
     const u = String(url);
     calls.push({ url: u, method: opts.method || 'GET', body: opts.body });
     if (u.endsWith('/tree')) return json({ nodes: TREE });
     if (u.includes('/file?path=') && !opts.method) return json({ content: '内容', mtime: null, parseError: '' });
-    if (opts.method === 'DELETE') return json(null, 204);
-    if (u.endsWith('/file') || u.endsWith('/dir') || u.endsWith('/rename')) return json(null, 204);
+    if (opts.method === 'DELETE') return json204();
+    if (u.endsWith('/file') || u.endsWith('/dir') || u.endsWith('/rename')) return json204();
     return json({ message: 'not found' }, 404);
   };
   function objEqual(a, b) {
@@ -1151,14 +1156,14 @@ ln -s /home/weno/works/Notes-Atlas/admin/server/public/vendor /tmp/opencode/tree
     rowP('root.md').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 300, clientY: 200 }));
     menuItem('delete').click();
     await new Promise((r) => setTimeout(r, 60));
-    R.delF.posted = calls.some((c) => c.url === '/admin/api/file?path=root.md');
+    R.delF.posted = calls.some((c) => c.url.includes('/admin/api/file?path=root.md'));
     // 6. 删除目录 A(非空):confirm 含计数 3,请求带 force=1
     window.confirm = (msg) => { R.delD.msg = msg; return true; };
     rowP('A').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 300, clientY: 200 }));
     menuItem('delete').click();
     await new Promise((r) => setTimeout(r, 60));
     R.delD.count3 = /含 3 项内容/.test(R.delD.msg || '');
-    R.delD.force = calls.some((c) => c.url.includes('/dir?path=') && c.url.includes('force=1') && c.url.includes('path=A'));
+    R.delD.force = calls.some((c) => c.url.endsWith('/dir?path=A&force=1'));
   } catch (e) {
     R.errors.push('probe-crash: ' + (e && e.stack || e));
   }
@@ -1183,6 +1188,11 @@ PY_EOF
 ```
 
 预期:所有布尔字段全为 `true`(含 `dup.stillOpen`、`create.dirPosted`、`renameF.posted`/`renameD.posted`/`delF.posted`/`delD.force`、`create.dirPrefilled`);`errors: []`。若有 `false`,对照任务 6 代码排查(常见原因:`loadTree` 未 await、`confirm` 拦截时机、fetch stub 未覆盖某端点返回 404 导致 `store.rename` 被跳过)。全绿后 commit。
+
+> 实测勘误(2026-09-30,三处,均已回改副本并验证全绿):
+> 1. **204 禁带 body**:`new Response(JSON.stringify(body), { status: 204 })` 违反 fetch 规范,Chromium 抛 `TypeError: Response with null body status cannot have body` → `api()` 抛错 → `delNode` 走 catch → 原生 `alert()` 在 headless 下阻塞主线程,表现为整页 dump 0 字节挂死。修复:204 一律 `new Response(null, { status: 204 })`(无 body)。
+> 2. **alert 必须覆盖**:probe 开头加 `window.alert = () => {};`,否则删除失败路径会进原生对话框死锁。
+> 3. **URL 断言**:`api()` 实际 fetch 的是绝对 URL(含 origin),`c.url === '/admin/api/file?path=root.md'` 永不成立,应改 `.includes(...)`(见上文两处)。
 
 - [ ] **步骤 4:Commit**
 
