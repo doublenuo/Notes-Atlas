@@ -11,6 +11,11 @@
 
 const KEY = "admin.tabs.v1";
 
+// sessionStorage 上限约 5MB;vault 最大 .md 约 156KB,20 个大标签就可能撑爆。
+// 故写入前先量长度,超 4MB 就剥离全部 content 再写;setItem 仍抛(浏览器可能
+// 给更小配额)则只留 activeId/previewOn/splitPct。任何一档失败都不阻断编辑。
+const PERSIST_LIMIT = 4 * 1024 * 1024;
+
 /** 关闭一个 tab 后该激活谁:优先右侧相邻,无右侧取左侧。 */
 function nextActiveId(tabs, closedIdx) {
   if (closedIdx < 0) return null;
@@ -138,5 +143,107 @@ export function createTabStore({ storage, onChange = () => {} }) {
     });
   }
 
-  return { getState, get, active, open, setActive, close, remove, updateContent, setView, markSaved, rename, titles };
+  function setPreviewOn(v) {
+    state.previewOn = !!v;
+    emit("preview", null);
+  }
+
+  function setSplitPct(n) {
+    state.splitPct = Math.min(80, Math.max(20, Number(n) || 50));
+    emit("split", null);
+  }
+
+  /** 标记文件已不存在。app.js 在 tree 加载后核对,缺失的置 true。 */
+  function markMissing(goneSet) {
+    for (const t of state.tabs) t.missing = goneSet.has(t.id);
+    emit("missing", null);
+  }
+
+  function toJSON() {
+    return {
+      activeId: state.activeId,
+      previewOn: state.previewOn,
+      splitPct: state.splitPct,
+      tabs: state.tabs.map(({ id, path, content, mtime, cursor, scrollTop, dirty }) => ({
+        id, path, content, mtime, cursor, scrollTop, dirty,
+      })),
+    };
+  }
+
+  /**
+   * 写入 storage。返回 ok | degraded | failed。
+   * degraded = 剥掉了未保存内容(标签还在,但刷新后未保存修改会丢),
+   * 调用方需据此在标签栏给用户提示。
+   */
+  function persist() {
+    const snap = toJSON();
+    const full = JSON.stringify(snap);
+    if (full.length > PERSIST_LIMIT) {
+      const stripped = { ...snap, tabs: snap.tabs.map((t) => ({ ...t, content: "" })) };
+      try {
+        storage.setItem(KEY, JSON.stringify(stripped));
+        return { status: "degraded" };
+      } catch {
+        /* 落到下面的兜底 */
+      }
+    } else {
+      try {
+        storage.setItem(KEY, full);
+        return { status: "ok" };
+      } catch {
+        /* 落到下面的兜底 */
+      }
+    }
+    try {
+      storage.setItem(KEY, JSON.stringify({ activeId: state.activeId, previewOn: state.previewOn, splitPct: state.splitPct, tabs: [] }));
+      return { status: "degraded" };
+    } catch {
+      return { status: "failed" };
+    }
+  }
+
+  /** 从 storage 恢复。结构非法则丢弃并按空状态,不抛错阻断启动。 */
+  function restore() {
+    let raw = null;
+    try {
+      raw = storage.getItem(KEY);
+    } catch {
+      return { ok: false, reason: "invalid" };
+    }
+    if (!raw) return { ok: true, reason: "empty" };
+    let snap;
+    try {
+      snap = JSON.parse(raw);
+    } catch {
+      storage.removeItem(KEY);
+      return { ok: false, reason: "invalid" };
+    }
+    if (!snap || !Array.isArray(snap.tabs)) {
+      storage.removeItem(KEY);
+      return { ok: false, reason: "invalid" };
+    }
+    state.tabs = snap.tabs
+      .filter((t) => t && typeof t.path === "string")
+      .map((t) => ({
+        id: t.id || t.path,
+        path: t.path,
+        content: typeof t.content === "string" ? t.content : "",
+        mtime: t.mtime ?? null,
+        parseError: "",
+        cursor: Number(t.cursor) || 0,
+        scrollTop: Number(t.scrollTop) || 0,
+        dirty: !!t.dirty,
+        missing: false,
+      }));
+    state.activeId = snap.tabs.some((t) => t && t.path === snap.activeId) ? snap.activeId : state.tabs[0]?.id ?? null;
+    state.previewOn = !!snap.previewOn;
+    state.splitPct = Math.min(80, Math.max(20, Number(snap.splitPct) || 50));
+    emit("restore", state.activeId);
+    return { ok: true, reason: "empty-tabs" };
+  }
+
+  return {
+    getState, get, active, open, setActive, close, remove, updateContent, setView, markSaved, rename,
+    titles, setPreviewOn, setSplitPct, markMissing, toJSON, persist, restore,
+  };
 }

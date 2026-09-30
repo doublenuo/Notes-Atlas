@@ -15,7 +15,9 @@ function mkStore(extra = {}) {
       this.data.delete(k);
     },
   };
-  return createTabStore({ storage, ...extra });
+  const store = createTabStore({ storage, ...extra });
+  store._storage = storage;
+  return store;
 }
 
 test("1 打开同一文件两次只产生一个 tab,第二次是激活", () => {
@@ -112,4 +114,58 @@ test("9 标题消歧:同父目录名仍冲突则升级为完整相对路径", ()
   const t = s.titles();
   assert.equal(t.find((x) => x.id.startsWith("docs/x/")).text, "docs/x/dir/index.md");
   assert.equal(t.find((x) => x.id.startsWith("docs/y/")).text, "docs/y/dir/index.md");
+});
+
+test("10 persist/restore 往返一致", () => {
+  const s = mkStore();
+  s.open({ path: "a.md", content: "A" });
+  s.open({ path: "b.md", content: "B" });
+  s.updateContent("b.md", "BB");
+  s.setPreviewOn(true);
+  s.setSplitPct(37);
+  assert.equal(s.persist().status, "ok");
+
+  const s2 = mkStore({ storage: s._storage });
+  assert.deepEqual(s2.restore(), { ok: true, reason: "empty-tabs" });
+  const st = s2.getState();
+  assert.equal(st.tabs.length, 2);
+  assert.equal(st.tabs[1].content, "BB");
+  assert.equal(st.tabs[1].dirty, true);
+  assert.equal(st.activeId, "b.md");
+  assert.equal(st.previewOn, true);
+  assert.equal(st.splitPct, 37);
+});
+
+test("11 容量超限时降级为无 content,但 tab 与 path 仍在", () => {
+  const s = mkStore();
+  s.open({ path: "a.md", content: "x".repeat(5 * 1024 * 1024) });
+  s.updateContent("a.md", "y".repeat(5 * 1024 * 1024));
+  const r = s.persist();
+  assert.equal(r.status, "degraded");
+  const raw = s._storage.getItem("admin.tabs.v1");
+  assert.ok(raw.length < 1024 * 1024, "降级后不应还有 5MB 内容");
+  const parsed = JSON.parse(raw);
+  assert.equal(parsed.tabs.length, 1);
+  assert.equal(parsed.tabs[0].path, "a.md");
+  assert.equal(parsed.tabs[0].content, "");
+});
+
+test("12 restore 遇非法 JSON 丢弃,按空状态", () => {
+  const s = mkStore();
+  s._storage.setItem("admin.tabs.v1", "{不是合法 JSON");
+  assert.deepEqual(s.restore(), { ok: false, reason: "invalid" });
+  assert.equal(s.getState().tabs.length, 0);
+  assert.equal(s._storage.getItem("admin.tabs.v1"), null);
+});
+
+test("13 恢复时校验缺失文件标 missing", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "gone.md" });
+  s.persist();
+  const s2 = mkStore({ storage: s._storage });
+  s2.restore();
+  s2.markMissing(new Set(["gone.md"]));
+  assert.equal(s2.get("a.md").missing, false);
+  assert.equal(s2.get("gone.md").missing, true);
 });
