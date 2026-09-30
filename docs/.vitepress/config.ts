@@ -22,6 +22,8 @@ export default withMermaid(defineConfig({
     ['link', { rel: 'preconnect', href: 'https://www.google-analytics.com', crossorigin: 'anonymous' }],
     ['link', { rel: 'preconnect', href: 'https://busuanzi.ibruce.info', crossorigin: 'anonymous' }],
     ['link', { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: 'anonymous' }],
+    // 内联 @page 规则：直接写入 HTML <head>，避免外部 CSS 打包顺序导致 Chrome headless 忽略
+    ['style', { type: 'text/css' }, '@page { size: A4; margin: 15mm; }'],
   ],
   cleanUrls: true,
   srcExclude: ["superpowers/**"],
