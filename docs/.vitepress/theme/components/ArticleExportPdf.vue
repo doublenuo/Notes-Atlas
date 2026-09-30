@@ -86,12 +86,14 @@ const handleClick = async () => {
 </template>
 
 <style>
-/* 分享按钮本是 width:100% 整宽胶囊：让它 flex:1 收缩 + 8px 间距 + 36px 方块，
-   行总宽恒等于原分享按钮宽度，右栏 224px 不会被撑宽。
-   不支持 :has() 的浏览器整块规则失效，按钮退化为排在分享按钮下方，不破版。 */
+/* 并排布局：.VPDocAside 改为横向 flex，分享按钮 flex:1 收缩、导出按钮固定宽。
+   关键：设 flex-grow:0 + height:auto，防止 .VPDocAside 撑满整屏导致元素分散。
+   不支持 :has() 的浏览器退化为上下排列，不破版。 */
 .VPDocAside:has(> .tk-pdf-export) {
   flex-direction: row;
   flex-wrap: wrap;
+  flex-grow: 0;
+  height: auto;
   column-gap: 8px;
 }
 
@@ -100,7 +102,6 @@ const handleClick = async () => {
   min-width: 0;
 }
 
-/* 补 padding:14px 0 与分享块上下对齐（分享块自带同样内边距） */
 .VPDocAside:has(> .tk-pdf-export) > .tk-pdf-export {
   flex: 0 0 auto;
   padding: 14px 0;
@@ -109,6 +110,14 @@ const handleClick = async () => {
 /* 目录（content）、spacer 等其余块回到整行 */
 .VPDocAside:has(> .tk-pdf-export) > :not(.tk-article-share):not(.tk-pdf-export) {
   flex: 1 1 100%;
+}
+
+/* 目录长文本自动换行 */
+.VPDocAside:has(> .tk-pdf-export) .outline-link,
+.VPDocAside:has(> .tk-pdf-export) .VPDocAsideOutline a {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .tk-pdf-export__button {

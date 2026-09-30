@@ -69,6 +69,7 @@ test("导出按钮组件：等 mermaid 画完并展开 details", () => {
 test("导出按钮组件：与分享按钮并排且右栏总宽不变", () => {
   assert.match(component, /\.VPDocAside:has\(> \.tk-pdf-export\)/, "应通过 :has() 改造父容器实现并排");
   assert.match(component, /column-gap:\s*8px/, "两按钮间距应为 8px");
+  assert.match(component, /flex-grow:\s*0/, "应抑制 flex-grow 防止容器撑满整屏");
   assert.match(component, /> \.tk-article-share\s*{[^}]*flex:\s*1 1 auto/, "分享按钮应 flex:1 吃掉剩余宽度");
   assert.match(component, /> \.tk-pdf-export\s*{[^}]*flex:\s*0 0 auto/, "导出按钮容器应固定宽度");
   assert.match(component, /height:\s*36px/, "导出按钮高度应为 36px");
