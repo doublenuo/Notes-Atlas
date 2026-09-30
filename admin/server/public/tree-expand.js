@@ -84,3 +84,14 @@ export function loadCollapsed(storage) {
     return new Set();
   }
 }
+
+// ---- 目录重命名映射:paths(标签 id)中以 oldDir/ 为前缀者映射到 newDir ----
+export function renameMap(oldDir, newDir, paths) {
+  if (!oldDir || !newDir) return [];
+  const prefix = oldDir + "/";
+  const out = [];
+  for (const p of paths) {
+    if (p.startsWith(prefix)) out.push({ from: p, to: newDir + "/" + p.slice(prefix.length) });
+  }
+  return out;
+}

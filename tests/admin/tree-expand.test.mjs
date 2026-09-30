@@ -76,3 +76,19 @@ test("7 prune 只保留仍存在的目录;不修改原集合", () => {
   assert.deepEqual([...pruned].sort(), ["a", "a/b"]);
   assert.equal(s.has("gone"), true);
 });
+
+test("8 renameMap:目录下命中、非前缀不命中、from/to 完整路径正确", () => {
+  const paths = ["notes/a.md", "notes/b.md", "other/c.md", "notes/sub/d.md"];
+  assert.deepEqual(te.renameMap("notes", "docs", paths), [
+    { from: "notes/a.md", to: "docs/a.md" },
+    { from: "notes/b.md", to: "docs/b.md" },
+    { from: "notes/sub/d.md", to: "docs/sub/d.md" },
+  ]);
+});
+
+test("9 renameMap:空目录/根级/空列表/无匹配 → []", () => {
+  assert.deepEqual(te.renameMap("", "docs", ["notes/a.md"]), []);
+  assert.deepEqual(te.renameMap("notes", "", ["notes/a.md"]), []);
+  assert.deepEqual(te.renameMap("notes", "docs", []), []);
+  assert.deepEqual(te.renameMap("notes", "docs", ["other.md"]), []);
+});
