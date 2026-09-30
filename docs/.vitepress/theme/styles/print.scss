@@ -1,0 +1,103 @@
+/* 打印样式：文章导出 PDF
+   规格：docs/superpowers/specs/2026-09-30-article-export-pdf-design.md
+   浏览器打印 / 另存为 PDF 时只输出纯正文（.vp-doc），隐藏导航、侧栏、右栏、评论等框架元素 */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  /* 深色模式下强制白底黑字，否则导出为黑底 */
+  html,
+  body,
+  .VPContent,
+  .VPDoc,
+  .VPDoc .content,
+  .VPDoc .content-container,
+  .vp-doc {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* 隐藏站点框架：顶栏、左右侧栏、右栏、日期作者块、上下页、悬浮按钮、评论、壁纸彩带 */
+  .VPNav,
+  .VPNavBar,
+  .DocSearch,
+  .VPSidebar,
+  .VPLocalNav,
+  .VPDocAside,
+  .VPSkipLink,
+  .tk-article-analyze,
+  .pager,
+  .tk-right-bottom-button,
+  .tk-comment-giscus,
+  [id^="giscus"],
+  iframe,
+  .tk-body-bg-image,
+  .tk-ribbon {
+    display: none !important;
+  }
+
+  /* 结构归零：取消两栏布局与居中窄栏，让正文铺满纸张 */
+  .VPDoc .container {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  .VPDoc .content,
+  .VPDoc .content-container,
+  .vp-doc {
+    max-width: none !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* A4 排版：代码块换行不横向裁切 */
+  pre {
+    white-space: pre-wrap !important;
+    word-break: break-word;
+  }
+
+  /* A4 排版：宽表格不丢列 */
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  th,
+  td {
+    word-break: break-word;
+  }
+
+  /* 长 URL、长路径不断行错乱 */
+  a,
+  code,
+  p {
+    overflow-wrap: anywhere;
+  }
+
+  /* 图片不超页宽；height:auto 抵消 medium-zoom 可能残留的缩放 */
+  img {
+    display: block;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* 标题不与正文分页分离 */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* 块元素不跨页撕裂 */
+  pre,
+  table,
+  blockquote,
+  img {
+    break-inside: avoid;
+  }
+}
