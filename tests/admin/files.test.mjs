@@ -38,7 +38,7 @@ test("tree:含 index.md 与 dir1/a.md,排除 .vitepress/public/非 md", async ()
   assert.ok(!flat.includes("cfg.md") && !flat.includes("raw.md") && !flat.includes("raw.txt"));
 });
 
-test("create:模板内容 + git add/commit 两连", async () => {
+test("create:模板内容 + git add/commit/push 三连", async () => {
   const { files, docsDir, gitCalls } = mkSite();
   await files.create("dir1/b.md");
   const content = fs.readFileSync(path.join(docsDir, "dir1", "b.md"), "utf8");
@@ -48,6 +48,7 @@ test("create:模板内容 + git add/commit 两连", async () => {
   assert.ok(dm && Math.abs(Date.parse(dm[1]) - Date.now()) < 120000, "date=当前本地时间(非 UTC,容器 TZ 见 compose)");
   assert.deepEqual(gitCalls[0], ["add", "-A", "docs"]);
   assert.deepEqual(gitCalls[1], ["commit", "-m", "admin(create): dir1/b.md"]);
+  assert.deepEqual(gitCalls[2], ["push", "origin", "main"], "提交后推送,触发站点 CI 重建");
 });
 
 test("create:已存在 → 409", async () => {
@@ -74,22 +75,43 @@ test("read:缺失→404、目录→400、路径穿文件→404", async () => {
   await assert.rejects(() => files.read("index.md/x"), (e) => e.status === 404, "ENOTDIR 归 404");
 });
 
-test("write:落盘 + admin(write) commit", async () => {
+test("write:落盘 + admin(write) commit + push", async () => {
   const { files, docsDir, siteDir, gitCalls } = mkSite();
   await files.write("index.md", "---\ntitle: 改\n---\n# 改\n");
   assert.equal(fs.readFileSync(path.join(docsDir, "index.md"), "utf8"), "---\ntitle: 改\n---\n# 改\n");
-  assert.deepEqual(gitCalls.at(-1), ["commit", "-m", "admin(write): index.md"]);
-  // 吞错分支:git 把 "nothing to commit" 打在 stdout(真实 execFile 链路),须视为成功;无关错误必须原样抛出
-  const ok = createFiles({ docsDir, siteDir, execGit: async () => {
-    throw Object.assign(new Error("Command failed: git commit -m admin(write): index.md"),
-      { stdout: "nothing to commit, working tree clean\n", stderr: "", code: 1 });
+  assert.deepEqual(gitCalls.at(-2), ["commit", "-m", "admin(write): index.md"]);
+  assert.deepEqual(gitCalls.at(-1), ["push", "origin", "main"]);
+  // 吞错分支:git 把 "nothing to commit" 打在 stdout(真实 execFile 链路),须视为成功、且无新提交不得推送;无关错误必须原样抛出
+  const okCalls = [];
+  const ok = createFiles({ docsDir, siteDir, execGit: async (args) => {
+    okCalls.push(args);
+    if (args[0] === "commit") {
+      throw Object.assign(new Error("Command failed: git commit -m admin(write): index.md"),
+        { stdout: "nothing to commit, working tree clean\n", stderr: "", code: 1 });
+    }
+    return "ok";
   } });
   await ok.write("index.md", "---\ntitle: 改\n---\n# 改\n");
+  assert.deepEqual(okCalls, [["add", "-A", "docs"], ["commit", "-m", "admin(write): index.md"]], "nothing to commit → 不推送");
   const bad = createFiles({ docsDir, siteDir, execGit: async () => {
     throw Object.assign(new Error("Command failed"),
       { stdout: "", stderr: "fatal: not a git repository\n", code: 128 });
   } });
   await assert.rejects(() => bad.write("index.md", "# x"), (e) => /fatal/.test(e.stderr), "无关错误不得吞");
+});
+
+test("push 失败不阻断保存(内容已本地提交)", async () => {
+  const { docsDir, siteDir } = mkSite();
+  const calls = [];
+  const files = createFiles({ docsDir, siteDir, execGit: async (args) => {
+    calls.push(args[0]);
+    if (args[0] === "push") {
+      throw Object.assign(new Error("push failed"), { stdout: "", stderr: "fatal: 远端不可达\n", code: 128 });
+    }
+    return "ok";
+  } });
+  await files.write("index.md", "---\ntitle: 改\n---\n# 改\n");
+  assert.deepEqual(calls, ["add", "commit", "push"], "add+commit+push 均调用,推送异常被吞、保存成功");
 });
 
 test("write:路径穿越/非 .md → 400(create 同检)", async () => {
@@ -100,11 +122,12 @@ test("write:路径穿越/非 .md → 400(create 同检)", async () => {
   await assert.rejects(() => files.write("no-such-dir/x.md", "# x"), (e) => e.status === 404, "write 父目录缺失 404");
 });
 
-test("removeFile:成功 + admin(delete) commit", async () => {
+test("removeFile:成功 + admin(delete) commit + push", async () => {
   const { files, docsDir, gitCalls } = mkSite();
   await files.removeFile("dir1/a.md");
   assert.equal(fs.existsSync(path.join(docsDir, "dir1", "a.md")), false);
-  assert.deepEqual(gitCalls.at(-1), ["commit", "-m", "admin(delete): dir1/a.md"]);
+  assert.deepEqual(gitCalls.at(-2), ["commit", "-m", "admin(delete): dir1/a.md"]);
+  assert.deepEqual(gitCalls.at(-1), ["push", "origin", "main"]);
 });
 
 test("removeFile:缺失 → 404", async () => {
@@ -130,18 +153,20 @@ test("removeDir:非空且未 force → 409", async () => {
   await assert.rejects(() => files.removeDir("dir1/..", true), (e) => e.status === 400, "归一化后等根亦拒绝");
 });
 
-test("removeDir:force 递归删除 + commit", async () => {
+test("removeDir:force 递归删除 + commit + push", async () => {
   const { files, docsDir, gitCalls } = mkSite();
   await files.removeDir("dir1", true);
   assert.equal(fs.existsSync(path.join(docsDir, "dir1")), false);
-  assert.deepEqual(gitCalls.at(-1), ["commit", "-m", "admin(delete): dir1"]);
+  assert.deepEqual(gitCalls.at(-2), ["commit", "-m", "admin(delete): dir1"]);
+  assert.deepEqual(gitCalls.at(-1), ["push", "origin", "main"]);
 });
 
-test("rename:成功移动 + commit", async () => {
+test("rename:成功移动 + commit + push", async () => {
   const { files, docsDir, gitCalls } = mkSite();
   await files.rename("dir1/a.md", "dir1/a2.md");
   assert.equal(fs.existsSync(path.join(docsDir, "dir1", "a2.md")), true);
-  assert.deepEqual(gitCalls.at(-1), ["commit", "-m", "admin(rename): dir1/a.md -> dir1/a2.md"]);
+  assert.deepEqual(gitCalls.at(-2), ["commit", "-m", "admin(rename): dir1/a.md -> dir1/a2.md"]);
+  assert.deepEqual(gitCalls.at(-1), ["push", "origin", "main"]);
   await files.rename("dir1", "dir2");
   assert.ok(fs.statSync(path.join(docsDir, "dir2")).isDirectory(), "目录改名(规格 §4)");
 });

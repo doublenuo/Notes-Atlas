@@ -32,13 +32,23 @@ const exists = async (p) => {
  */
 export function createFiles({ docsDir, siteDir, execGit }) {
   async function commit(op, rel) {
+    let didCommit = false;
     try {
       await execGit(["add", "-A", "docs"]);
       await execGit(["commit", "-m", `admin(${op}): ${rel}`]);
+      didCommit = true;
     } catch (e) {
       // 重复保存同一内容:git 把 "nothing to commit" 打在 stdout(promisify(execFile) 的 message 不含 stdout),三处合判视为成功
       const out = [e.stdout, e.stderr, e.message].map(String).join("\n");
       if (!/nothing to commit/i.test(out)) throw e;
+    }
+    if (!didCommit) return; // 无新提交,不推送
+    // 推送 GitHub → 触发站点 CI 重建(保存即上线)。非致命:失败不阻断文件操作,内容已本地提交。
+    try {
+      await execGit(["push", "origin", "main"]);
+    } catch (e) {
+      const out = [e.stdout, e.stderr, e.message].map(String).join("\n");
+      console.error(`[admin] git push 失败(内容已本地提交,可在宿主机手动同步): ${out}`);
     }
   }
 
