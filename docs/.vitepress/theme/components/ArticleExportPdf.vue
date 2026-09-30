@@ -12,7 +12,7 @@ const waitForImages = async () => {
   const doc = getDoc();
   if (!doc) return;
 
-  const images = Array.from(doc.querySelectorAll<HTMLImageElement>(".vp-doc img"));
+  const images = Array.from(doc.querySelectorAll<HTMLImageElement>("img"));
   await Promise.all(
     images.map(async img => {
       if (img.complete) return;
