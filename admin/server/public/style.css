@@ -664,8 +664,8 @@ header h1 {
   color: var(--warning);
 }
 
-/* ===== 标签右键菜单 ===== */
-.tab-menu {
+/* ===== 标签/树右键菜单(共用浮层样式) ===== */
+.tab-menu, .tree-menu {
   position: fixed;
   z-index: 1000;
   min-width: 160px;
@@ -678,7 +678,7 @@ header h1 {
   flex-direction: column;
 }
 
-.tab-menu[hidden] {
+.tab-menu[hidden], .tree-menu[hidden] {
   display: none;
 }
 
@@ -708,4 +708,67 @@ header h1 {
   height: 1px;
   background: var(--border);
   margin: 4px 6px;
+}
+
+/* ===== 文件树交互 ===== */
+.tree-row {
+  position: relative;
+}
+
+.tree-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-actions {
+  display: inline-flex;
+  gap: 2px;
+  opacity: 0;
+  margin-left: auto;
+}
+
+.tree-item:hover .tree-actions,
+.tree-item.active .tree-actions {
+  opacity: 1;
+}
+
+.tree-action {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 1px 3px;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 3px;
+}
+
+.tree-action:hover {
+  color: var(--text);
+  background: var(--bg-secondary);
+}
+
+.tree-input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 1px 4px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.tree-error {
+  color: var(--danger);
+  font-size: 0.75rem;
+  padding: 2px 0.5rem;
+}
+
+.tree-inline-row {
+  padding: 0.1rem 0;
 }
