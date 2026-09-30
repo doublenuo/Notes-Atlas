@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: 第三章：Docker安装与基础配置
+categories:
+  - 开发工具与环境搭建
+tags:
+  - Docker
+  - 教程
+---
 # 安装Docker
 
 Docker Engine 是 Docker 最核心的运行环境，也就是通常所说的 **Docker**。它负责真正创建、启动、停止和管理容器，是 Linux 上运行 Docker 的核心组件。

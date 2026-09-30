@@ -93,7 +93,7 @@ export default withMermaid(defineConfig({
     },
     nav: [
       { text: '首页', link: '/' },
-      { text: '组会内容', link: '/meet/' },
+      { text: '论文笔记', link: '/meet/' },
       { text: '学习笔记', link: '/study/' },
       { text: '工具和资源', link: '/tools/' },
       {
@@ -135,29 +135,6 @@ export default withMermaid(defineConfig({
         {
           text: '组会记录',
           collapsed: true,
-          items: [
-            { text: '2025-10-20', link: '/meet/docs/20251020.md' },
-            { text: '2025-10-27', link: '/meet/docs/20251027.md' },
-            { text: '2025-11-11', link: '/meet/docs/20251111.md' },
-            { text: '2025-11-18', link: '/meet/docs/20251118.md' },
-            { text: '2025-11-25', link: '/meet/docs/20251125.md' },
-            { text: '2025-12-02', link: '/meet/docs/20251202.md' },
-            { text: '2025-12-09', link: '/meet/docs/20251209.md' },
-            { text: '2025-12-16', link: '/meet/docs/20251216.md' },
-            { text: '2025-12-23', link: '/meet/docs/20251223.md' },
-            { text: '2025-12-30', link: '/meet/docs/20251230.md' },
-            { text: '2026-01-06', link: '/meet/docs/20260106.md' },
-            { text: '2026-01-13', link: '/meet/docs/20260113.md' },
-            { text: '2026-01-20', link: '/meet/docs/20260120.md' },
-            { text: '2026-02-03', link: '/meet/docs/20260203.md' },
-            { text: '2026-03-08', link: '/meet/docs/20260308.md' },
-            { text: '2026-03-17', link: '/meet/docs/20260317.md' },
-            { text: '2026-03-23', link: '/meet/docs/20260323.md' },
-            { text: '2026-03-31', link: '/meet/docs/20260331.md' },
-            { text: '2026-04-08', link: '/meet/docs/20260408.md' },
-            { text: '2026-04-15', link: '/meet/docs/20260415.md' },
-            { text: '2026-04-22', link: '/meet/docs/20260422.md' }
-          ]
         },
         {
           text: '其他论文',

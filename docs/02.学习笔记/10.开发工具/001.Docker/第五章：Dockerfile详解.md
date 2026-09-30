@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: 第五章：Dockerfile详解
+categories:
+  - 开发工具与环境搭建
+tags:
+  - Docker
+  - 教程
+---
 # Dockerfile 指令详解
 
 **Dockerfile** 是一种用于描述如何构建 Docker 镜像的文本文件，它通过一系列声明式指令定义镜像的基础环境、软件安装、文件复制、环境变量、启动命令等内容。Docker 根据 Dockerfile 中的指令自动执行构建流程，最终生成一个可运行的 Docker 镜像。

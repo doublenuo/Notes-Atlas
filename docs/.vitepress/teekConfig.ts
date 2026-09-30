@@ -379,7 +379,7 @@ export const teekConfig = defineTeekConfig({
       initItems: false,
       // 注意：插件按「目录/文件原始名」精确匹配（或正则），不是路径，
       // 所以要写磁盘上的真实目录名（含序号前缀）
-      ignoreList: ["03.pdfs", "组会pptx"],
+      ignoreList: ["03.pdfs", "04. 组会pptx"],
     },
     permalink: true,
   },

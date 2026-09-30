@@ -1,9 +1,12 @@
 ---
 date: 2026-04-24 15:46:25
 title: Docker基础教程
-categories:
-  - 必备工具
 permalink: /tools/resources/docker
+categories:
+  - 开发工具与环境搭建
+tags:
+  - Docker
+  - 教程
 ---
 
 

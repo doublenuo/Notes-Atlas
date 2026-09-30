@@ -1,3 +1,12 @@
+---
+date: 2026-09-22 16:16:40
+title: 第一章：Docker快速入门
+categories:
+  - 开发工具与环境搭建
+tags:
+  - Docker
+  - 教程
+---
 # Docker快速入门
 
 > 本文示例统一使用WSL安装的Docker 29.6.2进行编写，开始前请确保完成[[第三章：Docker安装与基础配置]]，并确认`docker version`与`docker run hello-world`可以正常运行。

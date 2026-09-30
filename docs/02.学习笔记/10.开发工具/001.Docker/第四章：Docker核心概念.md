@@ -1,4 +1,12 @@
-
+---
+date: 2026-09-22 16:16:40
+title: 第四章：Docker核心概念
+categories:
+  - 开发工具与环境搭建
+tags:
+  - Docker
+  - 教程
+---
 # Docker基础概念
 
 > 写在前面的话：本文的全部命令均在WSL2配置Ubuntu 26系统下进行完成，系统详细信息如下图所示，如有错误或问题欢迎随时指出！
@@ -196,7 +204,7 @@ ubuntu:latest                                      3131b4cc82a7        161MB    
 |  -a,--all   |   显示所有的镜像，包括中间镜像和虚悬镜像    |                 docker images -a                  |
 | -f,--filter | 高级过滤选项，可以根据多种条件进行查看指定的镜像 |          docker images -f dangling=true           |
 | -q,--quiet  |         只输出镜像ID          |                 docker images -q                  |
-|  --format   |        自定义格式化输出结果        | docker images --format "{{.ID}}: {{.Repository}}" |
+|  --format   |        自定义格式化输出结果        | <code v-pre>docker images --format "{{.ID}}: {{.Repository}}"</code> |
 |  --digests  |      输出镜像的sha256哈希值      |              docker images --digests              |
 |   --tree    |  将多个平台的镜像展示为树形结构（实验性功能）  |               docker images --tree                |
 

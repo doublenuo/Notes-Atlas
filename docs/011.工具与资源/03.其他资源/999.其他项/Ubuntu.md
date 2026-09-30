@@ -1,3 +1,11 @@
+---
+date: 2026-09-22 16:16:40
+title: Ubuntu
+categories:
+  - 开发工具与环境搭建
+tags:
+  - Linux
+---
 # 我的Ubuntu桌面
 
 我用Ubuntu Desktop 24.04 LTS也很长时间了，对新手而言还是强烈推荐Ubuntu系统。重点说GNOME桌面，尤其是它的Workspace，默认按住Super就能看到所有虚拟桌面，左右滑动，丝滑如触控板，可以一个桌面开浏览器查资料，一个桌面写代码，一个桌面挂微信和音乐，**这也是我用gnome桌面的重大原因**。
