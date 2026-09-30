@@ -105,6 +105,20 @@ export function createTabStore({ storage, onChange = () => {} }) {
     return { ok: true };
   }
 
+  /** 批量:关掉锚点右侧全部。左侧与锚点保留;原活动落在被关范围时切锚点,否则不变。 */
+  function closeRight(anchorId, { force = false } = {}) {
+    const idx = state.tabs.findIndex((t) => t.id === anchorId);
+    if (idx < 0) return { ok: false, reason: "not-found" };
+    const targets = state.tabs.slice(idx + 1);
+    const n = countDirty(targets);
+    if (n > 0 && !force) return { ok: false, reason: "dirty", count: n };
+    const activeWasClosed = targets.some((t) => t.id === state.activeId);
+    state.tabs = state.tabs.slice(0, idx + 1);
+    if (activeWasClosed) state.activeId = anchorId;
+    emit("close-right", anchorId);
+    return { ok: true };
+  }
+
   function updateContent(id, content) {
     const t = get(id);
     if (!t) return;
@@ -265,6 +279,6 @@ export function createTabStore({ storage, onChange = () => {} }) {
   return {
     getState, get, active, open, setActive, close, remove, updateContent, setView, markSaved, rename,
     titles, setPreviewOn, setSplitPct, markMissing, toJSON, persist, restore,
-    closeOthers,
+    closeOthers, closeRight,
   };
 }

@@ -205,3 +205,48 @@ test("16 closeOthers 锚点自身 dirty 保留且不计入 count", () => {
   assert.equal(s.getState().activeId, "b.md");
   assert.equal(s.get("b.md").dirty, true); // dirty 缓冲原样保留
 });
+
+test("17 closeRight 关锚点右侧;原活动在右侧被关切锚点", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" }); // 锚点
+  s.open({ path: "c.md" });
+  s.setActive("c.md"); // 活动在右侧,会被关
+  assert.deepEqual(s.closeRight("b.md"), { ok: true });
+  const st = s.getState();
+  assert.deepEqual(st.tabs.map((t) => t.id), ["a.md", "b.md"]);
+  assert.equal(st.activeId, "b.md"); // 切到锚点
+});
+
+test("18 closeRight 原活动在左侧或就是锚点时保持不变", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  s.open({ path: "c.md" });
+  s.open({ path: "d.md" });
+  s.setActive("a.md"); // 原活动在左侧(open 会激活新开标签,必须显式设回)
+  assert.deepEqual(s.closeRight("b.md"), { ok: true });
+  assert.deepEqual(s.getState().tabs.map((t) => t.id), ["a.md", "b.md"]);
+  assert.equal(s.getState().activeId, "a.md"); // 没被关,保持
+  const s2 = mkStore();
+  s2.open({ path: "a.md" });
+  s2.open({ path: "b.md" });
+  s2.open({ path: "c.md" });
+  s2.setActive("b.md"); // 锚点即活动
+  assert.deepEqual(s2.closeRight("b.md"), { ok: true });
+  assert.equal(s2.getState().activeId, "b.md");
+});
+
+test("19 closeRight 锚点是最后一个:ok 且状态原封不动", () => {
+  const s = mkStore();
+  s.open({ path: "a.md" });
+  s.open({ path: "b.md" });
+  s.open({ path: "c.md" });
+  const before = JSON.stringify(s.getState());
+  assert.deepEqual(s.closeRight("c.md"), { ok: true });
+  assert.equal(JSON.stringify(s.getState()), before);
+  const s2 = mkStore();
+  s2.open({ path: "a.md" });
+  assert.deepEqual(s2.closeRight("a.md"), { ok: true }); // 单标签同理
+  assert.equal(s2.getState().tabs.length, 1);
+});
