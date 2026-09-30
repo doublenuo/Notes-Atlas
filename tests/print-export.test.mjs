@@ -80,3 +80,12 @@ test("导出按钮组件：纯图标但有可访问名称，不引新依赖", ()
   assert.match(component, /viewBox="0 0 24 24"/, "图标应为内联 SVG");
   assert.ok(!/from\s+["']@iconify/.test(component), "不应引入 iconify 依赖");
 });
+
+const indexTs = read("index.ts");
+
+// 不接插槽则组件永不渲染；不 import print.scss 则打印样式不生效
+test("主题入口：挂载 teek-article-share-after 插槽并引入 print.scss", () => {
+  assert.match(indexTs, /import ArticleExportPdf from "\.\/components\/ArticleExportPdf\.vue"/, "应引入导出组件");
+  assert.match(indexTs, /import "\.\/styles\/print\.scss"/, "应引入打印样式");
+  assert.match(indexTs, /"teek-article-share-after":\s*\(\)\s*=>\s*h\(ArticleExportPdf\)/, "应挂在分享按钮之后的插槽上");
+});

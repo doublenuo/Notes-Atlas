@@ -19,6 +19,7 @@ import "vitepress-theme-teek/theme-chalk/tk-banner-desc-gradient.css"; // 博客
 import "vitepress-theme-teek/theme-chalk/tk-home-card-hover.css"; // 首页卡片悬停效果
 import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加载的动画效果
 import ContributeChart from "./components/ContributeChart.vue";
+import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 
 import Giscus from "@giscus/vue";
 import { useData, useRoute } from "vitepress";
@@ -28,6 +29,7 @@ import "./styles/homepage.scss";
 import "./styles/iframe.scss";
 import "./styles/embed.scss";
 import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变换（须在主题 CSS 之后）
+import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（须在主题 CSS 之后）
 
 export default {
   extends: Teek,
@@ -89,6 +91,8 @@ export default {
         "teek-archives-top-before": () => h(ContributeChart),
         // 右上角设置弹层底部注入「主题配置」区块
         "teek-theme-enhance-bottom": () => h(ThemeConfig, { onChange: handleThemeConfigChange }),
+        // 「分享此页面」右侧的「导出 PDF」按钮
+        "teek-article-share-after": () => h(ArticleExportPdf),
       });
     },
   })
