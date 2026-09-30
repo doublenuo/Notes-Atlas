@@ -115,5 +115,28 @@ export function createTabStore({ storage, onChange = () => {} }) {
     return { ok: true };
   }
 
-  return { getState, get, active, open, setActive, close, remove, updateContent, setView, markSaved, rename };
+  /**
+   * 标签标题三级降级:basename → 父目录/basename → 完整相对路径。
+   * 因 vault 存在同名文件(index.md 等),只显示 basename 会分不清。
+   * 纯函数,只依赖当前 tabs,不做 I/O。
+   */
+  function titles() {
+    const base = new Map();
+    for (const t of state.tabs) {
+      const b = t.path.split("/").pop();
+      base.set(b, (base.get(b) || 0) + 1);
+    }
+    return state.tabs.map((t) => {
+      const parts = t.path.split("/");
+      const b = parts.pop();
+      const parent = parts.pop();
+      let text = b;
+      if (base.get(b) > 1) text = parent ? `${parent}/${b}` : b;
+      // 升级后仍可能重复(不同目录下同名子目录),再冲突就上完整路径
+      if (state.tabs.some((o) => o.id !== t.id && o.path.endsWith(`/${text}`))) text = t.path;
+      return { id: t.id, text };
+    });
+  }
+
+  return { getState, get, active, open, setActive, close, remove, updateContent, setView, markSaved, rename, titles };
 }

@@ -93,3 +93,23 @@ test("7 remove 强制关闭,绕过 dirty 检查", () => {
   assert.equal(s.remove("a.md").ok, true);
   assert.equal(s.getState().tabs.length, 0);
 });
+
+test("8 标题消歧:默认 basename,同名升级为 父目录/basename", () => {
+  const s = mkStore();
+  s.open({ path: "docs/学习笔记/LLM/index.md" });
+  s.open({ path: "docs/参考/agent/index.md" });
+  s.open({ path: "docs/单独/独有.md" });
+  const t = s.titles();
+  assert.equal(t.find((x) => x.id.endsWith("LLM/index.md")).text, "LLM/index.md");
+  assert.equal(t.find((x) => x.id.endsWith("agent/index.md")).text, "agent/index.md");
+  assert.equal(t.find((x) => x.id.endsWith("独有.md")).text, "独有.md");
+});
+
+test("9 标题消歧:同父目录名仍冲突则升级为完整相对路径", () => {
+  const s = mkStore();
+  s.open({ path: "docs/x/dir/index.md" });
+  s.open({ path: "docs/y/dir/index.md" });
+  const t = s.titles();
+  assert.equal(t.find((x) => x.id.startsWith("docs/x/")).text, "docs/x/dir/index.md");
+  assert.equal(t.find((x) => x.id.startsWith("docs/y/")).text, "docs/y/dir/index.md");
+});
