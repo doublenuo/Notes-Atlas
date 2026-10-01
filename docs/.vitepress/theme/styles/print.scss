@@ -26,12 +26,19 @@
   .DocSearch,
   .VPSidebar,
   .VPLocalNav,
+  /* 右栏整块：只藏 .VPDocAside 会留下 .aside-container/.aside-content/.aside-curtain
+     （目录渐变遮罩），它们仍占 224px 宽并把底部分页撑出空白 */
+  .aside,
   .VPDocAside,
   .VPSkipLink,
   .tk-article-analyze,
   .pager,
+  /* teek 的上下页导航容器（内含 nav.prev-next），自带 margin-top:64px，
+     不隐藏会在正文末尾留一整块空白并多出空白页 */
+  .VPDocFooter,
   .tk-right-bottom-button,
-  .tk-comment-giscus,
+  /* 侧栏触发按钮：position:fixed 的悬浮控件，打印时固定在纸面中部 */
+  .tk-sidebar-trigger,
   [id^="giscus"],
   iframe,
   .tk-body-bg-image,

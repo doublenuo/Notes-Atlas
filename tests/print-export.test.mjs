@@ -62,6 +62,18 @@ test("print.scss：提供通用 .no-print 隐藏类", () => {
   assert.match(printScss, /\.no-print\s*,?\s*(\[data-no-print\])?\s*{[^}]*display:\s*none/, "应提供 .no-print / [data-no-print] 通用隐藏类");
 });
 
+// 只藏模块本体不够：外围容器、悬浮控件、margin 都会在正文末尾留下空白
+test("print.scss：隐藏右栏容器、上下页导航与悬浮控件，消除隐藏后的残留空白", () => {
+  // .VPDocAside 只是右栏内容；.aside-container/.aside-content/.aside-curtain 会残留
+  assert.ok(printScss.includes(".aside,"), "应隐藏右栏容器 .aside（连带 aside-container/content/curtain）");
+  // teek 上下页容器自带 margin-top:64px，不隐藏则正文末尾留整块空白
+  assert.ok(printScss.includes(".VPDocFooter"), "应隐藏上下页导航 .VPDocFooter");
+  assert.ok(printScss.includes(".tk-sidebar-trigger"), "应隐藏 position:fixed 的侧栏触发悬浮按钮");
+  // 残留空白必须靠 display:none 消除（元素脱离文档流，margin 一并不再生效），
+  // 不能用 visibility/遮罩/负 margin 糊住
+  assert.ok(!/visibility:\s*hidden/.test(printScss), "不得用 visibility:hidden（仍占布局空间）");
+});
+
 test("print.scss：代码块换行、宽表格不丢列、图片不超宽", () => {
   assert.match(printScss, /pre\s*{[^}]*white-space:\s*pre-wrap/, "代码块应 white-space: pre-wrap");
   assert.match(printScss, /table\s*{[^}]*table-layout:\s*fixed/, "宽表格应 table-layout: fixed");
