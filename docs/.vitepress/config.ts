@@ -2,7 +2,6 @@ import { defineConfig } from 'vitepress'
 
 import { teekConfig } from './teekConfig'
 import { withMermaid } from 'vitepress-plugin-mermaid'
-import { createRewrites } from 'vitepress-plugin-permalink'
 import { fileURLToPath } from 'node:url'
 import { obsidianEmbed } from '../../admin/server/shared/obsidianEmbed.js'
 import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
@@ -28,12 +27,6 @@ export default withMermaid(defineConfig({
   ],
   cleanUrls: true,
   srcExclude: ["superpowers/**"],
-  // 用 frontmatter 的 permalink 作为实际构建路径（如 /meet/20260929）。
-  // 不配这一项，permalink 会被静默忽略：产物里没有该路径、站内也无链接指向它，
-  // 这类地址靠 SPA 路由"看起来能开"，一刷新就 404。
-  // ignoreList 必须排除 superpowers/**：其中的文档含用于测试的非法 frontmatter
-  // 片段（如 title: [未闭合），插件用 gray-matter 解析会抛异常导致构建失败。
-  rewrites: createRewrites({ path: 'docs', ignoreList: ['superpowers'] }),
   // 打包构建优化
   vite: {
     // 文档分析(字数/阅读时长)按嵌入展开后重算,覆盖 doc-analysis 的原始源码口径
