@@ -20,6 +20,22 @@
     color: #000 !important;
   }
 
+  /* teek 的 H1 用「渐变背景裁剪文字」渲染：color:transparent + background-clip:text。
+     浏览器打印对话框默认 print-color-adjust:economy —— 不打印背景。
+     背景一丢，H1 就是纯透明：文本层仍在（pdftotext 提取得到），纸上却完全看不见。
+     故打印时改回实色文字，让可见性不再依赖「是否打印背景」。
+     刻意不开全局 print-color-adjust:exact：那会把代码块底色等所有背景一并印上。
+     注：Chrome headless --print-to-pdf 会强制打印背景，headless 验证看不出此问题，
+     必须以像素是否「无彩色」来判断修复是否生效。 */
+  .VPDoc h1,
+  .vp-doc h1 {
+    background: none !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
+    color: #000 !important;
+    -webkit-text-fill-color: currentColor !important;
+  }
+
   /* 隐藏站点框架：顶栏、左右侧栏、右栏、日期作者块、上下页、悬浮按钮、评论、壁纸彩带、最近更新、编辑链接 */
   .VPNav,
   .VPNavBar,
