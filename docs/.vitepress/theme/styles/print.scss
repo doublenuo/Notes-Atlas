@@ -39,7 +39,13 @@
   .VPLastUpdated,
   .VPLastUpdatedContainer,
   .VPEditLink,
-  .VPEditLinkContainer {
+  .VPEditLinkContainer,
+  /* teek 主题用自有类名渲染「最后更新 / 在 GitHub 上编辑」，VitePress 原生选择器命中不到 */
+  .edit-info,
+  .edit-link,
+  .edit-link-button,
+  .last-updated,
+  .page-edit-info {
     display: none !important;
   }
 

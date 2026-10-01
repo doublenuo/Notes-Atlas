@@ -36,6 +36,13 @@ test("print.scss：A4 页面与结构归零，正文铺满纸张", () => {
   assert.match(printScss, /\.vp-doc\s*{[^}]*max-width:\s*none/, "应取消 .vp-doc 最大宽度");
 });
 
+// teek 用 .edit-info/.last-updated 渲染更新信息，只写 VitePress 原生类名会漏进 PDF
+test("print.scss：隐藏 teek 自有类名的「最后更新」与「在 GitHub 上编辑」", () => {
+  for (const selector of [".edit-info", ".edit-link", ".last-updated"]) {
+    assert.ok(printScss.includes(selector), `print.scss 应隐藏 ${selector}`);
+  }
+});
+
 test("print.scss：代码块换行、宽表格不丢列、图片不超宽", () => {
   assert.match(printScss, /pre\s*{[^}]*white-space:\s*pre-wrap/, "代码块应 white-space: pre-wrap");
   assert.match(printScss, /table\s*{[^}]*table-layout:\s*fixed/, "宽表格应 table-layout: fixed");
@@ -66,19 +73,31 @@ test("导出按钮组件：等 mermaid 画完并展开 details", () => {
   assert.match(component, /details/, "应展开正文内折叠的 details");
 });
 
-test("导出按钮组件：与分享按钮并排且右栏总宽不变", () => {
-  assert.match(component, /\.VPDocAside:has\(> \.tk-pdf-export\)/, "应通过 :has() 改造父容器实现并排");
-  assert.match(component, /column-gap:\s*8px/, "两按钮间距应为 8px");
-  assert.match(component, /flex-grow:\s*0/, "应抑制 flex-grow 防止容器撑满整屏");
-  assert.match(component, /> \.tk-article-share\s*{[^}]*flex:\s*1 1 auto/, "分享按钮应 flex:1 吃掉剩余宽度");
+test("导出按钮组件：搬进分享块内并排，且不改 .VPDocAside 的垂直布局", () => {
+  assert.match(component, /querySelector<HTMLElement>\("\.tk-article-share"\)/, "应定位 teek 分享块作为挂载目标");
+  assert.match(component, /<Teleport[^>]*:to="shareHost"/, "应通过 Teleport 把按钮搬进分享块");
+
+  // .VPDocAside 是 100vh 固定容器里的 column flex；改它的 flex 方向会让子元素
+  // （含 flex-grow:1 的 .spacer 与目录）重新分配，导致右栏被撑满、元素纵向散开
+  assert.ok(!/\.VPDocAside\s*[:{]/.test(component), "不应给 .VPDocAside 写任何样式");
+  assert.ok(!/flex:\s*1 1 100%/.test(component), "不应把 flex-basis 设为 100%，那会把 .spacer 撑成整屏高");
+  assert.ok(!/flex-grow:\s*0/.test(component), "不应调 .VPDocAside 的 flex-grow");
+
+  assert.match(component, /\.tk-article-share:has\(> \.tk-pdf-export\)\s*{[^}]*display:\s*flex/, "分享块应改为横向 flex");
+  assert.match(component, /align-items:\s*stretch/, "分享块应 stretch，使两按钮自适应等高");
+  assert.match(component, /gap:\s*8px/, "两按钮间距应为 8px");
+  assert.match(component, /> \.tk-article-share__button\s*{[^}]*flex:\s*1 1 auto/, "分享按钮应 flex:1 吃掉剩余宽度");
+  // 被挤窄时 teek 的文字会换行，把按钮撑高到 64px，两按钮将不齐
+  assert.match(component, /> \.tk-article-share__button\s*{[^}]*white-space:\s*nowrap/s, "分享按钮文字应禁止换行");
   assert.match(component, /> \.tk-pdf-export\s*{[^}]*flex:\s*0 0 auto/, "导出按钮容器应固定宽度");
-  assert.match(component, /height:\s*36px/, "导出按钮高度应为 36px");
+  assert.match(component, /align-self:\s*stretch/, "导出按钮应 stretch 到与分享按钮同高");
   assert.match(component, /white-space:\s*nowrap/, "按钮文字不换行");
 });
 
-test("导出按钮组件：纯图标但有可访问名称，不引新依赖", () => {
-  assert.match(component, /aria-label="导出 PDF"/, "纯图标按钮必须有 aria-label");
+test("导出按钮组件：带可见文字标签与可访问名称，不引新依赖", () => {
+  assert.match(component, /aria-label="导出 PDF"/, "按钮必须有 aria-label");
   assert.match(component, /title="导出 PDF"/, "应有悬停提示");
+  assert.match(component, /<span class="tk-pdf-export__text">导出 PDF<\/span>/, "应有可见文字标签");
   assert.match(component, /viewBox="0 0 24 24"/, "图标应为内联 SVG");
   assert.ok(!/from\s+["']@iconify/.test(component), "不应引入 iconify 依赖");
 });
