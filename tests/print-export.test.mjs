@@ -43,6 +43,25 @@ test("print.scss：隐藏 teek 自有类名的「最后更新」与「在 GitHub
   }
 });
 
+// 「最近更新」卡片与 giscus 评论区都不在 VitePress 原生类名体系内，命中不到就会漏进 PDF
+test("print.scss：隐藏「最近更新」卡片（标题、日期列表、更多文章）", () => {
+  assert.ok(printScss.includes(".tk-article-update"), "应隐藏 .tk-article-update 整张卡片");
+  assert.match(printScss, /:has\(a\[aria-label="最近更新"\]\)/, "应有 :has() 按 aria-label 兜底命中");
+  assert.match(printScss, /:has\(a\[aria-label\^="更多文章"\]\)/, "应一并覆盖「更多文章」链接");
+});
+
+test("print.scss：隐藏表情反应区与评论区（评论列表、输入框）", () => {
+  assert.ok(printScss.includes("#tk-comment"), "应隐藏 giscus 挂载容器 #tk-comment");
+  assert.ok(printScss.includes(".tk-layout__comment"), "应隐藏评论布局容器 .tk-layout__comment");
+  assert.ok(printScss.includes("#giscus-container"), "应隐藏 giscus 自建容器作为冗余保险");
+  assert.ok(printScss.includes(".giscus-frame"), "应隐藏 giscus iframe");
+});
+
+// 统一隐藏类：给任意元素一个「不进 PDF」的约定，避免每次都写专用选择器
+test("print.scss：提供通用 .no-print 隐藏类", () => {
+  assert.match(printScss, /\.no-print\s*,?\s*(\[data-no-print\])?\s*{[^}]*display:\s*none/, "应提供 .no-print / [data-no-print] 通用隐藏类");
+});
+
 test("print.scss：代码块换行、宽表格不丢列、图片不超宽", () => {
   assert.match(printScss, /pre\s*{[^}]*white-space:\s*pre-wrap/, "代码块应 white-space: pre-wrap");
   assert.match(printScss, /table\s*{[^}]*table-layout:\s*fixed/, "宽表格应 table-layout: fixed");

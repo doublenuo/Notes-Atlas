@@ -49,6 +49,36 @@
     display: none !important;
   }
 
+  /* ── ①「最近更新」卡片：标题 + 日期列表 +「更多文章 >」链接 ──────────
+     首选 teek 类名；:has() 兜底按 aria-label 命中，
+     teek 改类名时仍能定位到同一张卡片。 */
+  .tk-article-update,
+  .content-container > div:has(a[aria-label="最近更新"]),
+  .tk-article-update:has(a[aria-label^="更多文章"]) {
+    display: none !important;
+  }
+
+  /* ── ② 表情反应区 + ③ 评论列表 / 评论输入框 ──────────────────────
+     三者由 giscus 渲染在同一个挂载容器里：#tk-comment 是 teek 为 giscus
+     保留的 id（稳定，不随 teek 改版失效），表情计数、表情图标、评论数、
+     评论输入框全在它内部，隐藏它三者一并消失。
+     后三条是 giscus 自行插入节点的冗余保险：只隐藏 iframe 会让外层容器
+     留下空白占位，多出几厘米纸面空白。 */
+  #tk-comment,
+  .tk-layout__comment,
+  #giscus-container,
+  .giscus-frame {
+    display: none !important;
+  }
+
+  /* ── 通用隐藏类：只想在屏幕上出现、不进 PDF 的元素加 no-print ────────
+     Vue 用法 <div class="no-print">…</div> 或 <div data-no-print>…</div>。
+     本规则来自全局 print.scss（无 scoped），故组件内 scoped 样式不会使其失效。 */
+  .no-print,
+  [data-no-print] {
+    display: none !important;
+  }
+
   /* 结构归零：取消两栏布局与居中窄栏，让正文铺满纸张 */
   .VPDoc .container {
     display: block !important;
