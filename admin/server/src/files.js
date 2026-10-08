@@ -31,6 +31,10 @@ const exists = async (p) => {
  * 每次落盘类改动:git add -A docs && git commit -m "admin(<op>): <path>"。
  */
 export function createFiles({ docsDir, siteDir, execGit }) {
+  // 最近一次 push 的结果,供 /build/status 一并返回给 UI。
+  // null = 尚未推送过(进程刚起)
+  let pushState = null;
+
   async function commit(op, rel) {
     let didCommit = false;
     try {
@@ -44,10 +48,24 @@ export function createFiles({ docsDir, siteDir, execGit }) {
     }
     if (!didCommit) return; // 无新提交,不推送
     // 推送 GitHub → 触发站点 CI 重建(保存即上线)。非致命:失败不阻断文件操作,内容已本地提交。
+    // 但必须把失败暴露给 UI —— 否则保存按钮"看起来成功了",用户却发现改动根本没上线,
+    // 只能去翻服务端日志(这是「点击没反应」的根因之一)。
     try {
+      // 先 fetch:本地长期运行,远端常有其它来源的提交(你在本机改代码、或 GitHub
+      // 上直接编辑)。不先同步就 push,必然被拒(non-fast-forward)并静默失败。
+      await execGit(["fetch", "origin"]);
+      const behind = Number((await execGit(["rev-list", "--count", "HEAD..origin/main"])).trim()) || 0;
+      if (behind > 0) {
+        // 远端有新提交:先 rebase 到最新,再推。冲突时 rebase 会非零退出,
+        // 由下面的 catch 捕获并如实上报,不做危险的强推。
+        await execGit(["rebase", "origin/main"]);
+      }
       await execGit(["push", "origin", "main"]);
+      pushState = { ok: true, at: Date.now(), message: "" };
     } catch (e) {
       const out = [e.stdout, e.stderr, e.message].map(String).join("\n");
+      // 只留尾部,git 的 hint 可能有几十行
+      pushState = { ok: false, at: Date.now(), message: out.trim().split("\n").slice(-3).join(" ") };
       console.error(`[admin] git push 失败(内容已本地提交,可在宿主机手动同步): ${out}`);
     }
   }
@@ -140,6 +158,11 @@ export function createFiles({ docsDir, siteDir, execGit }) {
       if (!(await isDir(path.dirname(b)))) throw httpError(404, "PARENT_MISSING", "父目录不存在");
       await fs.rename(a, b);
       await commit("rename", `${from} -> ${to}`);
+    },
+
+    /** 最近一次 push 结果:null=未推送过,{ok,at,message}。UI 用它提示「已保存但未上线」。 */
+    pushStatus() {
+      return pushState;
     },
 
     /** 状态条展示用:最后一次 commit 摘要,无仓库/无提交返回 null。 */

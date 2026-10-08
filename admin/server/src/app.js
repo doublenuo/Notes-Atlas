@@ -166,6 +166,7 @@ export function buildApp({ auth, files, queue, preview, config = {} }) {
   app.get("/admin/api/build/status", async () => ({
     ...queue.status(),
     lastCommit: await files.lastCommit(),
+    push: files.pushStatus(),
   }));
 
   app.get("/admin/api/build/lastlog", async () => ({ log: queue.status().log }));

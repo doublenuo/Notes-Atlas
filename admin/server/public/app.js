@@ -43,6 +43,7 @@ const fileMtime = $('file-mtime');
 const parseError = $('parse-error');
 const buildStatus = $('build-status');
 const lastCommit = $('last-commit');
+const pushWarning = $('push-warning');
 
 // ===== 标签页 store =====
 // onChange 的 reason 决定 DOM 工作量:
@@ -789,6 +790,15 @@ async function loadStatus() {
     buildStatus.className = `status-badge ${data.state}`;
     if (data.lastCommit) {
       lastCommit.textContent = data.lastCommit;
+    }
+    // push 失败 = 内容已存到服务器,但没推上 GitHub,站点不会重建。
+    // 这时必须显式告警,否则「保存」看起来成功,用户却发现线上没变。
+    if (data.push && data.push.ok === false) {
+      pushWarning.textContent = '⚠ 已保存，未推送到 GitHub';
+      pushWarning.title = data.push.message || 'git push 失败';
+      pushWarning.classList.remove('hidden');
+    } else {
+      pushWarning.classList.add('hidden');
     }
   } catch (err) {
     console.error('加载状态失败:', err);

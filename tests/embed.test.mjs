@@ -44,7 +44,9 @@ test("真实库集成：Multi-Loco 嵌入（组会页实际用法）", async () 
   const html = md.render("![[Multi-Loco]]");
   assert.match(html, /class="na-embed"/);
   assert.ok(!html.includes("![[Multi-Loco]]"), "不应残留字面语法");
-  assert.ok(html.includes(`class="na-embed-source" href="${encodeURI("/01.组会材料/02.论文笔记/Multi-Loco")}"`), "来源条应精确回链 Multi-Loco 源页（该笔记无 permalink）");
+  // Multi-Loco 已有 permalink（/materials/paper/multi-loco），noteHref 应优先用它而非磁盘源路径。
+  // 依据：docs/01.组会材料/02.论文笔记/Multi-Loco.md 的 frontmatter。
+  assert.ok(html.includes(`class="na-embed-source" href="${encodeURI("/materials/paper/multi-loco")}"`), "来源条应回链 Multi-Loco 的 permalink");
   assert.match(html, /<h2[^>]*>Multi-Loco: Unifying/, "H1 应降级为 H2 且文本锚定正确");
 });
 

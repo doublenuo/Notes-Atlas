@@ -140,6 +140,24 @@ header h1 {
   text-transform: uppercase;
 }
 
+/* 推送失败告警:保存成功但没上线,必须显眼 —— 否则用户以为一切正常 */
+.push-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 22rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: help;
+}
+
 .status-badge.idle { background: var(--bg-tertiary); color: var(--text-muted); }
 .status-badge.building { background: var(--warning); color: var(--bg); }
 .status-badge.success { background: var(--success); color: var(--bg); }
