@@ -1,0 +1,13 @@
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+
+# vitepress-plugin-mermaid 会把 mermaid 的传递依赖硬编码进 vite optimizeDeps.include，
+# 但 pnpm 严格模式下这些依赖不会提升到根 node_modules，导致 Vite 预构建时报
+# "Failed to resolve dependency"。精确提升这 5 个包到根目录即可消除告警。
+publicHoistPattern:
+  - '@braintree/sanitize-url'
+  - dayjs
+  - debug
+  - cytoscape
+  - cytoscape-cose-bilkent
