@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: DexImit
+permalink: /materials/paper/deximit
 categories:
   - 论文笔记
 tags:

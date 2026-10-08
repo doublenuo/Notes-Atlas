@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: B-spline Policy
+permalink: /materials/paper/b-spline-policy
 categories:
   - 论文笔记
 ---

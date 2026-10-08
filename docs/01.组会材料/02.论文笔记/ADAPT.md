@@ -6,6 +6,7 @@ categories:
 tags:
   - 机器人操作
   - 人形机器人
+permalink: /materials/paper/adapt
 ---
 # ADAPT: Analytical Disturbance-Aware Policy Training for Humanoid Locomotion
 

@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: Humanoid Manipulation Interface
+permalink: /materials/paper/humanoid-manipulation-interface
 categories:
   - 论文笔记
 tags:

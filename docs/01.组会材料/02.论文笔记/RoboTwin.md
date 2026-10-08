@@ -1,7 +1,7 @@
 ---
 date: 2026-04-24 11:51:53
 title: RoboTwin
-permalink: /meet/robotwin
+permalink: /materials/meet/robotwin
 categories:
   - 论文笔记
 tags:

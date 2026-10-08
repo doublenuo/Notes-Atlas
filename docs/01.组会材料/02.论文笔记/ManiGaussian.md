@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: ManiGaussian
+permalink: /materials/paper/manigaussian
 categories:
   - 论文笔记
 tags:

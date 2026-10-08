@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: Discrete-Time Hybrid Automata Learning
+permalink: /materials/paper/discrete-time-hybrid-automata
 categories:
   - 论文笔记
 tags:

@@ -1,3 +1,7 @@
+---
+date: 2026-10-01 21:57:10
+title: 2026-09-30-admin-tree-vscode
+---
 # VSCode 式文件树实现计划
 
 > **面向 AI 代理的工作者:**必需子技能:使用 superpowers:subagent-driven-development(推荐)或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框(`- [ ]`)语法来跟踪进度。

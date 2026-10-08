@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: Diffusion-Based Imaginative Coordination for Bimanual Manipulation
+permalink: /materials/paper/diffusion-based-imaginative-coordination-for-bimanual-manipulation
 categories:
   - 论文笔记
 tags:

@@ -1,6 +1,7 @@
 ---
 date: 2026-09-23 10:54:14
 title: HOVER
+permalink: /materials/paper/hover
 categories:
   - 论文笔记
 tags:

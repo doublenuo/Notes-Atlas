@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: See Hear And Feel
+permalink: /materials/paper/see-hear-and-feel
 categories:
   - 论文笔记
 tags:

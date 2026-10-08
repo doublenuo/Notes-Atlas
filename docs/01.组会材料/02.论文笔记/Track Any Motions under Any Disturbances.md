@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: Track Any Motions under Any Disturbances
+permalink: /materials/paper/track-any-motions-under-any-disturbances
 categories:
   - 论文笔记
 tags:

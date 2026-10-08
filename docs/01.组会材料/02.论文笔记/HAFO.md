@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: HAFO
+permalink: /materials/paper/hafo
 categories:
   - 论文笔记
 ---

@@ -7,6 +7,7 @@ tags:
   - 双臂操作
   - 机器人操作
   - 强化学习
+permalink: /materials/paper/learning-to-plan-schedule
 ---
 # Learning to Plan & Schedule with Reinforcement-Learned Bimanual Robot Skills
 

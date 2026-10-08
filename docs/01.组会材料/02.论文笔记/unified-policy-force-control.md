@@ -8,6 +8,7 @@ categories:
 tags:
   - 机器人操作
   - 运动控制
+permalink: /materials/paper/unified-policy-force-control
 ---
 # Learning a Unified Policy for Position and Force Control in Legged Loco-Manipulation
 

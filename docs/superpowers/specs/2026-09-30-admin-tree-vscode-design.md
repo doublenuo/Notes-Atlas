@@ -1,3 +1,7 @@
+---
+date: 2026-10-01 21:57:10
+title: 2026-09-30-admin-tree-vscode-design
+---
 # VSCode 式文件树设计规格
 
 **日期：** 2026-09-30

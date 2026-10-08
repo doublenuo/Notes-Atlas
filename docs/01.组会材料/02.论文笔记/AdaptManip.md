@@ -6,6 +6,7 @@ categories:
 tags:
   - 机器人操作
   - 人形机器人
+permalink: /materials/paper/adaptmanip
 ---
 # AdaptManip: Learning Adaptive Whole-Body Object Lifting and Delivery with Online Recurrent State Estimation
 

@@ -7,6 +7,7 @@ tags:
   - 安全
   - 运动控制
   - 强化学习
+permalink: /materials/paper/agile-but-safe
 ---
 # Agile But Safe: Learning Collision-Free High-Speed Legged Locomotion
 

@@ -1,6 +1,7 @@
 ---
 date: 2026-09-23 10:24:57
 title: Rhythm
+permalink: /materials/paper/rhythm
 categories:
   - 论文笔记
 tags:

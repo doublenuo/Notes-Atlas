@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: RDT-1B
+permalink: /materials/paper/rdt-1b
 categories:
   - 论文笔记
 tags:

@@ -7,6 +7,7 @@ tags:
   - 双臂操作
   - 数据生成
   - 机器人操作
+permalink: /materials/paper/one-shot-demonstration-synthesis
 ---
 # One-Shot Real-World Demonstration Synthesis for Scalable Bimanual Manipulation
 

@@ -10,6 +10,7 @@ tags:
   - 强化学习
   - 机器人操作
   - 人形机器人
+permalink: /materials/paper/sim-to-real-reinforcement-learning
 ---
 # Sim-to-Real Reinforcement Learning for Vision-Based Dexterous Manipulation on Humanoids
 

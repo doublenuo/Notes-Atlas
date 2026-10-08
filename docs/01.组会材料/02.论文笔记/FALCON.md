@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: FALCON
+permalink: /materials/paper/falcon
 categories:
   - 论文笔记
 tags:

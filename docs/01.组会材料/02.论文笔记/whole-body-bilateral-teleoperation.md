@@ -9,6 +9,7 @@ tags:
   - 遥操作
   - 人形机器人
   - 机器人操作
+permalink: /materials/paper/whole-body-bilateral-teleoperation
 ---
 # Whole-Body Bilateral Teleoperation with Multi-Stage Object Parameter Estimation for Wheeled Humanoid Locomanipulation
 

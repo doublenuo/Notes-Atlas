@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: Pro-HOI
+permalink: /materials/paper/pro-hoi
 categories:
   - 论文笔记
 tags:

@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: Embracing Bulky Objects with Humanoid Robots
+permalink: /materials/paper/embracing-bulky-objects
 categories:
   - 论文笔记
 tags:
