@@ -40,7 +40,22 @@ export default withMermaid(defineConfig({
   // 打包构建优化
   vite: {
     // 文档分析(字数/阅读时长)按嵌入展开后重算,覆盖 doc-analysis 的原始源码口径
-    plugins: [docAnalysisEmbed(), seo({ siteUrl: SITE_URL })],
+    plugins: [
+      docAnalysisEmbed(),
+      seo({ siteUrl: SITE_URL }),
+      // vitepress-plugin-mermaid 会把 mermaid 的传递依赖硬编码进 optimizeDeps.include，
+      // 其中 debug 是旧版 mermaid 的依赖，mermaid 11 已不再使用、依赖树里不存在，
+      // 导致 dev 启动时反复报 "Failed to resolve dependency: debug"。这里从 include 中剔除。
+      {
+        name: 'drop-stale-mermaid-dep',
+        config(config) {
+          const include = config.optimizeDeps?.include
+          if (Array.isArray(include)) {
+            config.optimizeDeps.include = include.filter((id) => id !== 'debug')
+          }
+        },
+      },
+    ],
     build: {
       target: 'es2020',                    // 现代浏览器目标，减小 polyfill 体积
       cssMinify: 'esbuild',                // 使用 esbuild 压缩 CSS（比 lightningcss 稳定）
