@@ -4,7 +4,7 @@ import TeekLayoutProvider from "./components/TeekLayoutProvider.vue";
 import ThemeConfig, { type ChangeType } from "./components/ThemeConfig.vue";
 import { useRibbon } from "./composables/useRibbon";
 
-import { defineComponent, provide, h, ref } from 'vue'
+import { defineComponent, provide, h, ref, computed, watch, onMounted } from 'vue'
 import "vitepress-theme-teek/index.css";
 import "vitepress-theme-teek/theme-chalk/tk-code-block-mobile.css"; // 移动端代码块样式优化
 import "vitepress-theme-teek/theme-chalk/tk-sidebar.css"; // 侧边栏优化
@@ -25,6 +25,7 @@ import Giscus from "@giscus/vue";
 import { useData, useRoute } from "vitepress";
 
 import "./styles/code-bg.scss";
+import "./styles/theme-color.scss"; // 主题色板区块：对齐 teek 官网观感（色块不带文字）
 import "./styles/homepage.scss";
 import "./styles/iframe.scss";
 import "./styles/embed.scss";
@@ -44,8 +45,27 @@ export default {
       const teekConfig = ref<TeekConfig>({});
       provide(teekConfigContext, teekConfig);
 
-      // 「主题配置」→ 彩带背景开关
+      // 「主题配置」→ 彩带背景开关（默认开启，仅在首页渲染）
+      // 这里不用 useRibbon 的 immediate，改为自行控制，避免与下面的路由监听重复初始化
       const { start: startRibbon, stop: stopRibbon } = useRibbon({ immediate: false, clickReRender: true });
+      const ribbonEnabled = ref(true);
+      // 顶层 index.md 即站点首页，判断方式与 permalinks.ts 保持一致
+      const isHomePage = computed(() => page.value.relativePath === "index.md");
+      let ribbonActive = false;
+      // 记录当前是否已渲染，防止 start 重复调用：initRibbon 在 canvas 已存在时会返回空清理函数，
+      // 会覆盖掉真正的清理函数，导致后续 stop 无法移除 canvas
+      const syncRibbon = () => {
+        const shouldRender = ribbonEnabled.value && isHomePage.value;
+        if (shouldRender === ribbonActive) return;
+        if (shouldRender) startRibbon();
+        else stopRibbon();
+        ribbonActive = shouldRender;
+      };
+      // 不在 setup 里同步：站点是 SSG，构建时 setup 跑在服务端，initRibbon 会被 isClient 守卫跳过，
+      // 但 ribbonActive 已被置 true，客户端 hydration 时 isHomePage 不再变化就再也不会补上 canvas。
+      // 首次同步放到 onMounted，后续由路由变化驱动。
+      onMounted(syncRibbon);
+      watch(isHomePage, syncRibbon);
 
       const handleThemeConfigChange = (config: TeekConfig, type: ChangeType) => {
         // 首页壁纸模式
@@ -78,10 +98,10 @@ export default {
         else if (type === "loading") teekConfig.value.loading = config.loading;
         // Giscus 评论区
         else if (type === "comment") teekConfig.value.comment = config.comment;
-        // 彩带背景
+        // 彩带背景（仅首页渲染，非首页切换只记录开关状态）
         else if (type === "ribbon") {
-          if (config) startRibbon();
-          else stopRibbon();
+          ribbonEnabled.value = Boolean(config);
+          syncRibbon();
         }
 
         TkMessage.success({ message: "切换配置成功！", customClass: "antd" });

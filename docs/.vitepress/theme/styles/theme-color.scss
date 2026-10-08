@@ -1,0 +1,49 @@
+/**
+ * 主题增强面板「主题色板」区块：对齐 vitepress-theme-teek 官网（1.6.2）观感
+ *
+ * 依赖：本文件在主题 CSS 之后加载（theme/index.ts 的 import 顺序），用于覆盖主题自带规则
+ *
+ * 差异说明：本项目使用 teek 1.5.6，其 ThemeColor 组件会在色块下方渲染 option.label 文字，
+ * 且色块较大（24px + 6px/12px 外边距 + 6px 圆角）。Teek 1.6.2 已移除该文字节点，
+ * 色块收紧为 18px + 2px 内边距 + 4px 圆角。此处按 1.6.2 的规则覆盖，无需升级主题版本。
+ */
+
+/* 隐藏色块下方的文字（1.6.2 已移除该节点，1.5.6 仍渲染） */
+.tk-theme-enhance__theme-color .color-list li > span {
+  display: none;
+}
+
+/* 组标题间距，对齐官网：h3:first-child{margin-top:0} */
+.tk-theme-enhance__theme-color h3 {
+  display: inline-block;
+  font-size: 12px;
+  opacity: 0.8;
+  margin: 6px 0;
+}
+
+.tk-theme-enhance__theme-color h3:first-child {
+  margin-top: 0;
+}
+
+.tk-theme-enhance__theme-color .color-list {
+  gap: 10px;
+}
+
+/* 色块外框：内边距 6px/4px → 2px，圆角 6px → 4px */
+.tk-theme-enhance__theme-color .color-wrapper {
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.tk-theme-enhance__theme-color .color-wrapper:hover,
+.tk-theme-enhance__theme-color .color-wrapper.is-active {
+  outline: 2px solid var(--tk-theme-color);
+}
+
+/* 色块本体：24px + margin → 18px 无外边距，圆角 6px → 4px */
+.tk-theme-enhance__theme-color .color-wrapper .color-bg {
+  border-radius: 4px;
+  height: 18px;
+  margin: 0;
+  width: 18px;
+}

@@ -39,33 +39,84 @@ export const teekConfig = defineTeekConfig({
     },
     themeColor: {
       disabled: false,
-      defaultColorName: "vp-default",
-      defaultSpread: true,
+      // 默认主题色：扩展主题色板的第一个「紫罗兰」（#7166f0）
+      defaultColorName: "violet",
+      defaultSpread: false,
       disabledInMobile: false,
+      // 完全自定义，不使用主题内置色板：隐藏 VitePress 主题 / ElementPlus 主题两组，
+      // 只显示下方的内置主题色板与扩展主题色板
+      // 注意：1.5.6 该开关语义为 true=不使用内置色板（与 1.6.2 相反）
+      customize: true,
       append: [
         {
-          label: "博客扩展主题",
-          tip: "博客扩展主题",
+          // value 沿用主题内置标识，选中后仍由主题 CSS 变量取色；此处 color 仅用于色块预览
+          label: "内置主题色板",
+          tip: "内置主题色板",
           options: [
-            { label: "深海蓝", value: "deep-blue", color: "#1e3a8a" },
-            { label: "科技蓝", value: "tech-blue", color: "#2563eb" },
-            { label: "天空蓝", value: "sky-blue", color: "#38bdf8" },
+            { label: "VP 预设", value: "vp-default", color: "#3451b2" },
+            { label: "VP 绿", value: "vp-green", color: "#18794e" },
+            { label: "VP 黄", value: "vp-yellow", color: "#915930" },
+            { label: "VP 红", value: "vp-red", color: "#b8272c" },
+            { label: "EP 蓝", value: "ep-blue", color: "#409eff" },
+            { label: "EP 绿", value: "ep-green", color: "#67c23a" },
+            { label: "EP 黄", value: "ep-yellow", color: "#e6a23c" },
+            { label: "EP 红", value: "ep-red", color: "#f56c6c" },
+          ],
+        },
+        {
+          // 前 24 个与 vitepress-theme-teek 官网保持一致
+          label: "扩展主题色板",
+          tip: "扩展主题色板",
+          options: [
             { label: "紫罗兰", value: "violet", color: "#7166f0" },
-            { label: "深紫", value: "deep-purple", color: "#5b21b6" },
-            { label: "薰衣草紫", value: "lavender", color: "#a78bfa" },
+            { label: "珊瑚粉", value: "coral-pink", color: "#ff6b6b" },
+            { label: "天蓝", value: "sky-blue", color: "#00bbf9" },
+            { label: "蓝绿", value: "blue-green", color: "#00f5d4" },
+            { label: "粉红", value: "pink", color: "#f15bb5" },
+            { label: "黄绿", value: "yellow-green", color: "#8ac926" },
+            { label: "橙红", value: "orange-red", color: "#ff9e6b" },
+            { label: "石板灰", value: "slate-gray", color: "#708090" },
+            { label: "深海蓝", value: "ocean-blue", color: "#0077be" },
+            { label: "科技蓝", value: "tech-blue", color: "#0056b3" },
+            { label: "靛青色", value: "indigo", color: "#4b0082" },
+            { label: "炭灰色", value: "charcoal", color: "#36454f" },
+            { label: "薄荷绿", value: "mint", color: "#3eb489" },
+            { label: "松石绿", value: "turquoise", color: "#40e0d0" },
+            { label: "橄榄绿", value: "olive-green", color: "#808000" },
+            { label: "柠檬黄", value: "lemon", color: "#ffd700" },
+            { label: "薰衣草", value: "lavender", color: "#967bb6" },
+            { label: "玫瑰金", value: "rose-gold", color: "#b76e79" },
+            { label: "豆沙红", value: "bean-paste-red", color: "#d27d7d" },
+            { label: "雾霾蓝", value: "haze-blue", color: "#6699cc" },
+            { label: "霓虹紫", value: "neon-purple", color: "#bc13fe" },
+            { label: "极光绿", value: "aurora-green", color: "#00ff9d" },
+            { label: "日落橙", value: "sunset-orange", color: "#ff7f50" },
+            { label: "琥珀色", value: "amber", color: "#ffbf00" },
+            // 以下为本站补充
+            { label: "克莱因蓝", value: "klein-blue", color: "#3b5bdb" },
+            { label: "天青蓝", value: "azure", color: "#0ea5e9" },
+            { label: "冰川蓝", value: "glacier", color: "#7dd3fc" },
+            { label: "孔雀蓝", value: "peacock", color: "#0891b2" },
+            { label: "湖蓝", value: "lagoon", color: "#22d3ee" },
+            { label: "葡萄紫", value: "grape", color: "#7c3aed" },
+            { label: "丁香紫", value: "lilac", color: "#c4b5fd" },
             { label: "祖母绿", value: "emerald", color: "#10b981" },
-            { label: "薄荷绿", value: "mint", color: "#2dd4bf" },
-            { label: "青色", value: "cyan", color: "#06b6d4" },
-            { label: "珊瑚橙", value: "coral", color: "#fb7185" },
-            { label: "活力橙", value: "orange", color: "#f97316" },
-            { label: "琥珀", value: "amber", color: "#f59e0b" },
+            { label: "苔原绿", value: "moss", color: "#4d7c0f" },
+            { label: "青柠绿", value: "lime", color: "#84cc16" },
+            { label: "朱红", value: "vermilion", color: "#dc2626" },
             { label: "玫红", value: "rose", color: "#e11d48" },
+            { label: "活力橙", value: "orange", color: "#f97316" },
             { label: "樱花粉", value: "sakura", color: "#f472b6" },
-            { label: "石墨灰", value: "graphite", color: "#374151" },
-            { label: "深夜黑", value: "night", color: "#0f172a" }
-          ]
-        }
-      ]
+            { label: "藕荷粉", value: "dusty-rose", color: "#c08497" },
+            { label: "深夜黑", value: "night", color: "#0f172a" },
+            { label: "暖棕", value: "coffee", color: "#78350f" },
+            { label: "黛蓝", value: "dark-navy", color: "#2c3e50" },
+            { label: "胭脂", value: "rouge", color: "#a4243b" },
+            { label: "蜜桃", value: "peach", color: "#ffb4a2" },
+            { label: "缥碧", value: "pale-jade", color: "#8fd3b6" },
+          ],
+        },
+      ],
     },
     spotlight: {
       disabled: false,
@@ -91,6 +142,15 @@ export const teekConfig = defineTeekConfig({
   //     content: `<img src='/teek-logo-large.png'>`,
   //   },
   // },
+  // 风险链接提示：点击站外链接先弹提示页，确认后再跳转。
+  // 对应页面 docs/@pages/riskLinkPage.md（permalink /risk-link）。
+  riskLink: {
+    enabled: true,
+    // 白名单：命中的链接直接跳转，不做提示。
+    // 判定是 href 前缀匹配（支持正则），站内邮箱、GitHub 这类高频可信来源放行。
+    whitelist: ["mailto:", "https://github.com/doublenuo", "https://cnb.cool"],
+    // 未设 blacklist：默认拦截所有跨域链接
+  },
   author: {
     name: "doublenuo",
     link: "https://github.com/doublenuo",
@@ -124,7 +184,7 @@ export const teekConfig = defineTeekConfig({
     //   {
     //     title: "持续沉淀",
     //     details: "围绕论文、课程和工具链持续建立可回顾的知识脉络",
-    //     link: "/meet/",
+    //     link: "/materials",
     //   },
     //   {
     //     title: "工程复用",
@@ -230,10 +290,12 @@ export const teekConfig = defineTeekConfig({
     wordCount: true,
     readingTime: true,
     statistics: {
-      provider: "busuanzi",
+      // 默认的 busuanzi 端点（busuanzi.ibruce.info）已失效（502/404），改用主题内置的 vercount
+      provider: "vercount",
       siteView: true,
       pageView: true,
-      tryRequest: false,
+      // vercount 脚本加载失败时 useUvPv 会 reject 且不重置 isGet，开启重试避免整页浏览量永久失效
+      tryRequest: true,
       tryCount: 5,
       tryIterationTime: 2000,
       permalink: true,
@@ -268,16 +330,15 @@ export const teekConfig = defineTeekConfig({
         { name: "关于本站", link: "/about" },
         { name: "隐私政策", link: "/privacy" },
         { name: "免责声明", link: "/disclaimer" },
-        { name: "赞助支持", link: "/sponsor" },
       ],
     },
     {
       title: "内容",
       links: [
-        { name: "组会内容", link: "/meet/" },
+        { name: "组会内容", link: "/materials" },
         { name: "深度学习", link: "/study/dl" },
         { name: "强化学习", link: "/study/rl" },
-        { name: "ROS", link: "/study/ros" },
+        { name: "ROS", link: "/study/ros/install" },
       ],
     },
     {
@@ -294,7 +355,6 @@ export const teekConfig = defineTeekConfig({
       links: [
         { name: "GitHub", link: "https://github.com/doublenuo" },
         { name: "邮箱", link: "mailto:zwn200401@gmail.com" },
-        { name: "友链", link: "/links" },
       ],
     },
   ],
@@ -374,14 +434,19 @@ export const teekConfig = defineTeekConfig({
       "**/01.组会材料/03.pdfs/**",
       "**/superpowers/**"
     ],
-    sidebar: true,
+    // teek 的 sidebar 插件（vitepress-plugin-sidebar-resolve）按**磁盘目录名**生成
+    // sidebar 键。config.ts 已改用 VitePress 原生 rewrites 把页面 URL 换成 permalink，
+    // 两者对不上会让全站侧边栏变空白，故关掉，改由 config.ts 的 buildSidebar 生成。
+    sidebar: false,
     sidebarOption: {
       initItems: false,
       // 注意：插件按「目录/文件原始名」精确匹配（或正则），不是路径，
       // 所以要写磁盘上的真实目录名（含序号前缀）
       ignoreList: ["03.pdfs", "04. 组会pptx"],
     },
-    permalink: true,
+    // 同理：Proxy 模式的 permalink 插件会在客户端把 /materials/meet/20260929 改写回磁盘源路径，
+    // 而 rewrites 产出的 HTML 只存在于 permalink 路径，会造成 404，故一并关掉。
+    permalink: false,
   },
   siteAnalytics: [
     {
