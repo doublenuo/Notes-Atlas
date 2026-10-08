@@ -1,4 +1,7 @@
 ---
+title: NotesAtlas
+# 首页标题不需要再拼站点名，否则会变成「NotesAtlas | NotesAtlas」
+titleTemplate: false
 layout: home
 
 hero:
