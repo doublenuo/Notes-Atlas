@@ -15,7 +15,7 @@ tags:
 -   Paper Link: [https://arxiv.org/abs/2403.08321](https://arxiv.org/abs/2403.08321)
 ## 模型架构图
 
-![image-20260326145039736](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326145039852.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201312294.png)
 
-![image-20260326145047747](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326145047833.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201331759.png)
 

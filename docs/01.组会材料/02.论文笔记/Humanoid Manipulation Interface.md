@@ -29,4 +29,4 @@ HuMI 由两个组件组成:一个机器人自由演示系统和一个分层策�
 
 整个控制框架采用分层控制结构。高层使用扩散策略网络，根据腕部相机图像和机器人状态预测未来一段时间的目标动作轨迹；低层则使用全身控制器，以更高频率实时跟踪这些目标轨迹，并结合机器人当前的惯性信息、关节位置和速度，输出最终的关节控制指令。相比传统只关注机械臂末端控制的方法，该框架能够实现手臂、躯干和双腿之间的全身协同，从而完成下蹲抓取、动态操作以及移动中的复杂操作任务。
 
-![Humanoid Manipulation Interface数据采集系统](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260512101643044.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201105657.png)

@@ -44,6 +44,6 @@ Gate 网络会根据当前场景动态决定各 Expert 的贡献比例。例如�
 
 最终所有 Expert 的输出经过加权融合，生成统一的动作输出：$a \in \mathbb{R}^{29}$即机器人 29 个自由度的关节控制信号，并直接发送给机器人执行。
 
-![Agentic deployment pipeline](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260624093640813.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200949568.png)
 
-![HANDOFF模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260623231357874.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201014296.png)

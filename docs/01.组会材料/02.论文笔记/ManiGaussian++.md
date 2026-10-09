@@ -16,4 +16,4 @@ tags:
 
 ## 模型架构图
 
-![image-20260326145104459](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326145104552.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201354425.png)

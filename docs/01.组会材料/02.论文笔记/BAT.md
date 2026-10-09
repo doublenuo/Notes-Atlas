@@ -9,7 +9,7 @@ tags:
   - 运动控制
   - 强化学习
 ---
-# BAT: Balancing Agility and Stability via Online Policy Switching for Long-Horizon Whole-Body Humanoid Control
+%%  %%# BAT: Balancing Agility and Stability via Online Policy Switching for Long-Horizon Whole-Body Humanoid Control
 
 - Paper Link：[https://arxiv.org/pdf/2604.01064](https://arxiv.org/pdf/2604.01064)
 
@@ -27,5 +27,5 @@ tags:
 
 最后，这两大核心能力在 **(4) Fusion Phase（融合阶段）** 汇合，通过决策融合模块（Decision Fusion Module）将 Option-Aware VQ-VAE 预测出的动作选项、离线构建的数据分布特性以及高层切换策略的实时输出进行有机融合，从而实现人型机器人在长周期、复杂控制任务中敏捷与稳定状态的平滑、高效在线切换。
 
-![Bat模型框架](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260520161027385.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009195925256.png)
 

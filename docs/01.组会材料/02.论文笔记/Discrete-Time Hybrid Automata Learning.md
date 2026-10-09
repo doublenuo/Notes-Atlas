@@ -17,8 +17,8 @@ tags:
 
 如何让腿式机器人在接触模式频繁切换的系统中稳定学习控制策略？
 
-![image-20260326160555241](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326160555464.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200325303.png)
 
 ## 模型架构图
 
-![image-20260326143912322](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326143912418.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200349812.png)

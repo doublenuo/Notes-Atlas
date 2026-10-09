@@ -25,11 +25,11 @@ tags:
 
 为此，作者提出了一种名为通用运动重定向（GMR）的新技术，旨在提升动作转换的质量。通过在多样化数据集上的实验，该研究证明了高精度重定向对于实现流畅且真实的机器人动作至关重要。与现有的开源工具相比，GMR方法在模拟复杂动态序列时表现出更高的忠实度与成功率。这项工作强调了在不依赖过度奖励调优的情况下，优化基础数据质量对机器人学习的重要性。
 
-![Retargeting Matters论文介绍](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260428104436124.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201927461.png)
 
 ## 模型框架
 
-![Retargeting Matters模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260423114208069.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201933409.png)
 
 ### 人机关键身体匹配
 
@@ -90,10 +90,10 @@ $$
 
 ### 重定向方法对策略的影响
 
-![重定向方法成功率](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260428103701124.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201943247.png)
 
-![重定向方法跟踪误差](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260428103719883.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201948183.png)
 
 ### 失败案例
 
-![重定向失败案例](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260427170129350.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201954916.png)

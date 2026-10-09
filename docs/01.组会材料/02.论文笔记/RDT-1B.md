@@ -21,7 +21,7 @@ tags:
 
 双臂动作空间维数高，且专家演示数据天然存在多模态分布，不同机器人物理结构、动作空间定义差异巨大，直接混合训练易引发负迁移，作者设计一个 128 维的统一动作空间，明确定义每一维的物理含义，将各机器人的原始动作按物理意义映射填充到该空间，其余位置补零并附加有效性掩码。RDT模型的核心是一个基于扩散过程的语言条件视觉运动策略，其设计围绕异构多模态数据处理与机器人物理特性展开。
 
-![RDT-1B论文介绍图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260411154620618.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201751701.png)
 ## 模型框架
 
 RDT模型的输入包含两类信息：
@@ -44,4 +44,4 @@ RDT模型的输入包含两类信息：
 
 训练时，模型接收带噪动作块并预测干净动作块，通过最小化预测动作与真实动作的均方误差来优化参数；推理时，模型从一个纯高斯噪声的动作块出发，在语言与图像的条件下利用DPM-Solver++仅需5步扩散逆过程即可生成未来64步的连续动作序列，实现高效且时序连贯的双臂控制。
 
-![RDT-1B模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260411154749703.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201812860.png)

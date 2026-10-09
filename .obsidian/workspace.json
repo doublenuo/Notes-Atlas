@@ -4,31 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "11429e9183cb41d3",
+        "id": "28714ba69f63a5af",
         "type": "tabs",
         "children": [
           {
-            "id": "c80a57c901de458e",
+            "id": "aa0ea6996344d201",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "docs/@pages/riskLinkPage.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "riskLinkPage"
+              "title": "新标签页"
             }
           }
         ]
@@ -166,13 +152,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/@pages/riskLinkPage.md",
+                "file": "Pasted image 20261009195745.png",
                 "followCursor": true,
                 "showSearch": true,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "riskLinkPage 的大纲"
+              "title": "Pasted image 20261009195745 的大纲"
             }
           },
           {
@@ -205,8 +191,36 @@
       "remotely-save:Remotely Save": false
     }
   },
-  "active": "c80a57c901de458e",
+  "active": "155e46f9920de415",
   "lastOpenFiles": [
+    "docs/01.组会材料/02.论文笔记/RoboTwin.md",
+    "docs/01.组会材料/02.论文笔记/Rhythm.md",
+    "docs/01.组会材料/02.论文笔记/Retargeting Matters.md",
+    "docs/01.组会材料/02.论文笔记/ResMimic.md",
+    "docs/01.组会材料/02.论文笔记/RDT-1B.md",
+    "docs/01.组会材料/02.论文笔记/Pro-HOI.md",
+    "docs/01.组会材料/02.论文笔记/one-shot-demonstration-synthesis.md",
+    "docs/01.组会材料/02.论文笔记/Omni-Perception.md",
+    "Pasted image 20261009201548.png",
+    "docs/01.组会材料/02.论文笔记/Natural Humanoid Robot Locomotion with Generative Motion Prior.md",
+    "docs/01.组会材料/02.论文笔记/Multi-Loco.md",
+    "docs/01.组会材料/02.论文笔记/MLM.md",
+    "docs/01.组会材料/02.论文笔记/ManiGaussian++.md",
+    "docs/01.组会材料/02.论文笔记/ManiGaussian.md",
+    "docs/01.组会材料/02.论文笔记/ManiDP.md",
+    "docs/01.组会材料/02.论文笔记/LessMimic.md",
+    "docs/01.组会材料/02.论文笔记/learning-to-plan-schedule.md",
+    "docs/01.组会材料/02.论文笔记/Learn Weightlessness.md",
+    "docs/01.组会材料/02.论文笔记/HumanoidMimicGen.md",
+    "docs/01.组会材料/02.论文笔记/Humanoid Manipulation Interface.md",
+    "docs/01.组会材料/02.论文笔记/HOVER.md",
+    "docs/01.组会材料/02.论文笔记/HiPoser.md",
+    "docs/01.组会材料/02.论文笔记/HEFT.md",
+    "docs/01.组会材料/02.论文笔记/HANDOFF.md",
+    "docs/01.组会材料/02.论文笔记/HAIC.md",
+    "docs/01.组会材料/02.论文笔记/HAFO.md",
+    "docs/01.组会材料/02.论文笔记/GR-RL.md",
+    "Pasted image 20261009195745.png",
     "dbg4.ts",
     "dbg3.ts",
     "dbg-entry.ts",
@@ -214,36 +228,10 @@
     "dbg.ts",
     "docs/public/og-image.png",
     "scan-public.ts",
-    "docs/@pages/riskLinkPage.md",
     "sb-check.ts",
     "sb-probe4.ts",
     "sb-probe3.ts",
     "sb-probe2.ts",
-    "sb-probe.ts",
-    "docs/01.组会材料/01.组会内容/20261014.md",
-    "docs/02.学习笔记/02.Python/0010.异步编程.md",
-    "docs/02.学习笔记/02.Python/009.常用内置模块.md",
-    "docs/02.学习笔记/02.Python/008.正则表达式.md",
-    "docs/02.学习笔记/02.Python/007.进程与线程.md",
-    "docs/02.学习笔记/02.Python/006.IO编程.md",
-    "docs/02.学习笔记/02.Python/005.异常处理.md",
-    "docs/02.学习笔记/02.Python/004.面向对象编程.md",
-    "docs/02.学习笔记/02.Python/001.Python基础入门.md",
-    "docs/02.学习笔记/02.Python/003.函数式编程.md",
-    "docs/02.学习笔记/02.Python/002.Python数据类型.md",
-    "docs/02.学习笔记/06.强化学习/000.强化学习基础.md",
-    "docs/011.工具与资源/01.Linux相关教程/000.Windows 安装 Ubuntu 24.04 双系统教程.md",
-    "docs/01.组会材料/02.论文笔记/APREBot.md",
-    "docs/01.组会材料/02.论文笔记/AnyBimanual.md",
-    "docs/01.组会材料/02.论文笔记/ALORE.md",
-    "docs/01.组会材料/02.论文笔记/Agile But Safe.md",
-    "docs/01.组会材料/02.论文笔记/AdaptManip.md",
-    "docs/01.组会材料/02.论文笔记/ADAPT.md",
-    "docs/01.组会材料/index.md",
-    "docs/01.组会材料/0000.目录.md",
-    "docs/01.组会材料/03.论文复现/GMR.md",
-    "docs/01.组会材料/01.组会内容/20251020.md",
-    "docs/01.组会材料/01.组会内容/20251118.md",
     "Pasted image 20260923105623.png",
     "Pasted image 20260923105616.png",
     "Pasted image 20260915231709.png",

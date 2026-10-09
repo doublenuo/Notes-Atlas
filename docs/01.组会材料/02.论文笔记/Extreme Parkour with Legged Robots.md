@@ -18,8 +18,8 @@ tags:
 
 如何让腿式机器人在未知、极端、非结构化环境中完成类似 parkour 的高难度动态运动。这篇论文的核心思想是通过强化学习学动态可行性（dynamic feasibility），让机器人直接学会何时跳、跳多远、如何落地。
 
-![image-20260326143320945](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326143321143.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200427955.png)
 
 ## 模型架构图
 
-![image-20260326143328695](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326143328789.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200448100.png)

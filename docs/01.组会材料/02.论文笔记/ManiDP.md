@@ -11,8 +11,8 @@ categories:
 
 ## 论文介绍
 
-![ManiDP论文介绍图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260428134641196.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201244429.png)
 
 ## 模型框架
 
-![ManiDP模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260428134727372.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201255257.png)

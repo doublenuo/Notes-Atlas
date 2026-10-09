@@ -23,5 +23,5 @@ permalink: /materials/paper/adaptmanip
 
 此外，论文还设计了一个基于 LSTM 的在线循环状态估计器，用于实时估计未知物体的动力学状态。估计器输入包括视觉观测以及机器人本体感觉信息，例如身体振动、关节力矩和运动响应等，再通过 LSTM 建模历史时序信息，最终输出估计的物体状态，例如质量、重心和惯性。这个估计结果会实时输入残差策略 π_res，使机器人能够在搬运过程中动态调整动作。因此整个系统形成了“在线估计 + 自适应补偿”的闭环控制框架，实现了未知负载条件下的自适应全身搬运。
 
-![AdaptManip模型框架](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260520160052920.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009195611441.png)
 

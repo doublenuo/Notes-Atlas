@@ -32,4 +32,4 @@ tags:
     - 纹理代表微观几何
 - audio：听觉使用接触式麦克风进行采集，提供视觉看不到的事件
 
-![see,hear and feel 模型架构图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260323212500719.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009195529446.png)

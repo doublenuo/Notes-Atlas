@@ -15,5 +15,5 @@ tags:
 
 ## 模型框架
 
-![ResMimic模型框架](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260520164534144.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201859062.png)
 

@@ -23,4 +23,4 @@ tags:
 
 整个框架的核心思想可以概括为：作者先通过运动重定向获得机器人版本的人类动作数据，然后利用生成模型学习人类运动分布，构建能够根据控制指令在线生成未来参考轨迹的 Generative Motion Prior，最后使用这些参考轨迹引导强化学习训练机器人控制器。相比传统 AMP 只提供风格奖励的方式，GMP 直接生成未来运动目标，使强化学习获得更加密集、稳定且可解释的监督信号，从而实现更加自然的人形机器人步态控制。
 
-![模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260609185850383.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201530135.png)

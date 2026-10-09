@@ -17,7 +17,7 @@ tags:
 
 双臂机器人通过 skill primitives 具有强任务依赖性，而共享观测导致会双臂仅依赖当前观察无法形成真正协调，这篇论文提出了一个统一的基于扩散模型的框架，用于视频和动作预测的联合优化，同时引入单向注意力机制，视频预测以动作为条件，而动作预测仍然独立于视频预测，这样可以保证在推理时省略视频预测，显著提高效率。
 
-![image-20260329103110751](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260329103110778.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200258815.png)
 
 ## 创新点
 
@@ -37,7 +37,7 @@ tags:
 
 在推理阶段，得益于单向注意力机制，动作生成不再依赖视频 token，因此我们可以 **完全跳过视频预测分支**，只运行动作去噪过程，从而显著降低推理延迟，满足高频控制需求。
 
-![image-20260329103056549](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260329103056590.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200306602.png)
 
 ### 问题定义
 
@@ -66,7 +66,7 @@ $$
 1. 首先，在训练期间，允许未来帧标记关注过去动作标记使模型能够捕获动作和未来视觉状态之间的因果关系，促进了动态环境的学习。
 2. 其次，在推理期间，动作生成独立于未来的视觉令牌，消除了对视频预测的需要。这减少了计算开销，降低了推理延迟，并提高了控制频率，这对于实时机器人执行至关重要。
 
-![单向注意力机制](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260330172740106.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200314161.png)
 
 ### 推理与执行
 

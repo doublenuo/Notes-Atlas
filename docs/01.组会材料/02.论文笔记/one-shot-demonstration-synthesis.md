@@ -17,7 +17,7 @@ permalink: /materials/paper/one-shot-demonstration-synthesis
 
 ## 论文介绍
 
-![论文介绍图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260616164116577.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201654006.png)
 
 ## 模型框架
 
@@ -37,4 +37,4 @@ permalink: /materials/paper/one-shot-demonstration-synthesis
 
 通过遍历不同物体布局，系统自动生成对应的新轨迹，可以从一条示教扩展出大规模双臂数据集
 
-![模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260616164146059.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201647213.png)

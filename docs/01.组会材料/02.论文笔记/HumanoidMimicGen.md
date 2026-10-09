@@ -16,7 +16,7 @@ tags:
 
 ## 论文介绍
 
-![HumanoidMimicGen论文介绍图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260602134052588.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201120351.png)
 
 ## 模型框架
 
@@ -36,6 +36,6 @@ tags:
 
 从框架上看，这篇工作的关键贡献并不在于设计新的控制策略，而是在于构建了一套完整的数据生成流水线。它通过技能级表示、对象中心技能适配以及全身运动规划，将原本只能用于机械臂的 MimicGen 思想扩展到人形机器人移动操作场景，为后续训练视觉运动策略、模仿学习策略以及 VLA 模型提供了大规模、高质量的全身操作数据。
 
-![HumanoidMimicGen模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260602133110089.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201131480.png)
 
-![HumanoidMimicGen Skill planning](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260602133329047.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201141599.png)

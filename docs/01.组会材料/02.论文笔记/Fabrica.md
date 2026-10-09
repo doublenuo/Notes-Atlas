@@ -23,7 +23,7 @@ tags:
 此外，作者构建了一个包含 7 类多部件装配任务的基准套件。实验表明，该系统无需人工演示或领域知识，即可完成具有代表性的真实世界多部件装配任务（步骤成功率约 80%）。
 ## 论文介绍
 
-![Fabrica论文介绍图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260417190247945.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200512658.png)
 
 ### 问题介绍
 
@@ -45,7 +45,7 @@ tags:
 ## 模型框架
 
 
-![Fabrica模型架构图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260416203225542.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200518825.png)
 
 ### 问题定义
 
@@ -128,7 +128,7 @@ $$
 
 #### 零件优先级规划
 
-![零件优先级规划](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260417234052066.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200528362.png)
 
 论文通过**反向拆卸和优先级图构建**的方式实现零件优先级规划，具体分两步：
 
@@ -145,7 +145,7 @@ $$
 - 构建优先级图：该优先级图随后用于后续的序列‑抓取优化搜索，确保搜索空间仅包含物理可行的装配顺序。
 #### 双臂抓取过滤
 
-![双臂抓取过滤](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260417234133894.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200616242.png)
 
 双臂抓取过滤是一套**离线、分层递进的可复用碰撞信息生成机制**，其核心在于将双臂可行性检查从在线搜索中剥离，转为一次性预计算，并利用零件的拆卸路径建立抓取与子装配体之间的**全路径碰撞记录**。
 
@@ -155,7 +155,7 @@ $$
 - 最终进行抓取对过滤，利用上述元数据完成双臂耦合校验。
 #### 双臂序列抓取优化
 
-![双臂序列抓取优化](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260417234412627.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200622912.png)
 
 双臂序列抓取优化在已知优先级图和预过滤抓取集的基础上，通过状态空间搜索和动态规划求解最优的装配，夹持序列与对应抓取。
 

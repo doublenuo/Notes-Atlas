@@ -19,8 +19,8 @@ permalink: /materials/paper/agile-but-safe
 
 现代强化学习已经能让四足机器人实现高速奔跑、跳跃和敏捷运动，但存在一个问题**速度越快的情况下碰撞风险指数级上升**，因此这篇论文的核心目标是如何让四足机器人同时实现高速且无碰撞。
 
-![Agile But Safe 论文介绍图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326155110249.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009195625554.png)
 
 ## 模型架构
 
-![Agile But Safe模型架构图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260323212627415.png)
+![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009195634089.png)
