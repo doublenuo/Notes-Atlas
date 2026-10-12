@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createMarkdownRenderer, disposeMdItInstance } from "vitepress";
-import { obsidianEmbed } from "../admin/server/shared/obsidianEmbed.js";
+import { obsidianEmbed } from "../docs/.vitepress/plugins/obsidianEmbed.js";
 
 export const HERE = dirname(fileURLToPath(import.meta.url));
 export const VAULT = join(HERE, "fixtures", "vault");

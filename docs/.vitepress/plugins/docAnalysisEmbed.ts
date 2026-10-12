@@ -10,7 +10,7 @@
  */
 import { readFileSync } from "node:fs";
 import matter from "gray-matter";
-import { createResolver, readNote } from '../../../admin/server/shared/obsidianEmbed.js';
+import { createResolver, readNote } from './obsidianEmbed.js';
 // 带 .ts 扩展名：node --test 直接加载本插件时不做扩展名补全
 import { collectPages } from "../permalinks.ts";
 

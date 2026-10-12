@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 import { VAULT } from "./helpers.mjs";
-import { createResolver } from "../admin/server/shared/obsidianEmbed.js";
+import { createResolver } from "../docs/.vitepress/plugins/obsidianEmbed.js";
 import {
   countWords,
   formatReadingTime,

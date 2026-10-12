@@ -39,8 +39,20 @@ hub.lovetulin.cn {
 	reverse_proxy hub-frontend:80
 }
 
+# 后台管理系统：code-server（完整 VS Code 网页版），独立域名走根路径
+admin.lovetulin.cn {
+	reverse_proxy 172.18.0.1:8477 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
 blogs.lovetulin.cn {
-	# Admin 后台管理系统（优先匹配 /admin 路径）
+	# Admin 后台：code-server（完整 VS Code 网页版，优先匹配 /admin 路径）。
+	# code-server 以 --base-path /admin 启动，资源 URL 自带 /admin 前缀，
+	# 这里原样转发（不 strip），websocket 升级由 Caddy 自动处理。
 	handle /admin/* {
 		reverse_proxy 172.18.0.1:8477 {
 			header_up Host {host}

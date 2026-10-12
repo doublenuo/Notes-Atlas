@@ -1,28 +1,31 @@
-# 与生产环境(/data/stacks/admin)保持一致的版本。
+# code-server 部署：与原 admin 的 fastify 服务同一部署形态（network_mode: host）。
 #
-# 注意:本文件此前与生产版本分叉——旧版本含一个 caddy 服务并占用 80/443,
-# 且把 vault 挂载成 /srv/site。生产上 Caddy 跑在宿主机上(由宿主机 Caddyfile
-# 负责 handle /admin/* -> 172.18.0.1:8477),容器内那份 Caddyfile 是死文件;
-# vault 的真实路径是 /opt/notes-atlas。若把旧版本 rsync 到服务器会直接
-# 打断生产(admin 读不到 vault、caddy 端口与宿主机冲突)。
-#
-# 同步到服务器时务必排除本文件:
-#   rsync -av --delete --exclude node_modules --exclude .state \
-#         --exclude .env --exclude docker-compose.yml \
+# 同步到服务器时排除本文件（生产 compose 可能挂载路径/端口略有差异）：
+#   rsync -av --delete --exclude .env --exclude docker-compose.yml \
 #         admin/server/ web:/data/stacks/admin/
 services:
-  admin:
+  code-server:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      # code-server 密码认证（auth=password，见 entrypoint.sh）
+      - PASSWORD=${PASSWORD}
+      # git 提交身份
+      - GIT_USER_NAME=${GIT_USER_NAME:-}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
+      # 扩展市场：用微软官方 marketplace（国内有 CDN，比默认 Open VSX 稳定），
+      # 解决 open-vsx.org 偶发超时问题
+      - 'EXTENSIONS_GALLERY={"serviceUrl":"https://marketplace.visualstudio.com/_apis/public/gallery","cacheUrl":"https://vscode.blob.core.windows.net/gallery/index","itemUrl":"https://marketplace.visualstudio.com/items"}'
     volumes:
-      - /opt/notes-atlas:/opt/notes-atlas
-      - /opt/blogs:/opt/blogs
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./.state:/app/.state
-      # 容器内 git push origin(GitHub 部署 key):只挂私钥,known_hosts 已由镜像构建时预置(ssh-keyscan github.com)
+      # vault 工作目录（容器内 /workspace）
+      - /opt/notes-atlas:/workspace
+      # 部署私钥（git push GitHub 用）；known_hosts 已由镜像构建时预置
       - /root/.ssh/id_rsa:/root/.ssh/id_rsa:ro
+      # 持久化 code-server 用户数据（网页界面安装的插件 + settings/快捷键/登录态），
+      # 挂到宿主机目录，避免容器重建（重新 build）后丢失
+      - ./.code-server-data:/root/.local/share/code-server
     network_mode: host
