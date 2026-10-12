@@ -1,28 +1,28 @@
-FROM node:22-alpine
+# code-server：浏览器里的完整 VS Code，替代原 fastify 后台。
+# 全程 root 运行（与原 admin 一致，避免 /opt/notes-atlas 属主权限问题）。
+FROM codercom/code-server:latest
 
-# 面板文件操作(新建/保存/重命名/删除)依赖仓库内执行 git add/commit/push,镜像必须带 git 与 ssh 客户端
-RUN apk add --no-cache git openssh \
-  && mkdir -p /root/.ssh \
-  && ssh-keyscan github.com > /root/.ssh/known_hosts 2>/dev/null
+USER root
 
-WORKDIR /app
+# 工具：git（提交/推送）+ openssh-client（ssh-keyscan 与私钥）
+# 官方镜像基于 Debian（bookworm-slim），用 apt-get。
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends git openssh-client \
+  && rm -rf /var/lib/apt/lists/*
 
-# 安装依赖
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# 扩展不在镜像里安装：/root/.local/share/code-server 会被持久化卷挂载遮蔽，
+# 改为 entrypoint.sh 首次启动时装到持久化目录（见 entrypoint.sh）。
 
-# 复制源码
-# shared/ 是 obsidianEmbed.js 的落点:站点与 admin 预览共用的单一事实来源。
-# preview.js 以 ../shared/obsidianEmbed.js 引用,故必须打进镜像——不能指望从
-# /opt/notes-atlas 挂载引入,那里的 vault 是旧 commit,没有 docs/.vitepress/plugins/。
-COPY src ./src
-COPY shared ./shared
-COPY public ./public
-COPY Caddyfile ./Caddyfile
+# git 推送 GitHub 的 known_hosts（消除首次 push 的 host key 确认）
+RUN mkdir -p /root/.ssh && ssh-keyscan github.com >> /root/.ssh/known_hosts
 
-# 创建状态目录
-RUN mkdir -p .state
+# 工作目录：挂载 vault（/opt/notes-atlas）
+WORKDIR /workspace
+
+# 自定义 entrypoint：配置 git 身份 + 启动
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8477
 
-CMD ["node", "src/index.js"]
+ENTRYPOINT ["/entrypoint.sh"]
