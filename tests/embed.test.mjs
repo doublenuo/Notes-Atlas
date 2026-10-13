@@ -39,6 +39,28 @@ test("来源条：无 title 时回退文件名", async () => {
   assert.ok(html.includes("📎 论文笔记 · 无标题"));
 });
 
+test("嵌入：相对路径目标按宿主页源文件目录解析（../02.论文笔记/Alpha）", async () => {
+  const md = await makeMd(VAULT);
+  // 生产 env 提供 realPath（rewrite/permalink 前的源文件绝对路径），相对目标按它的目录解析：
+  // 宿主页位于 01.组会材料/01.组会内容/，../02.论文笔记/Alpha 应上跳一级进入 02.论文笔记
+  const html = md.render("![[../02.论文笔记/Alpha]]", {
+    realPath: join(VAULT, "01.组会材料", "01.组会内容", "组会样例.md"),
+    relativePath: "materials/meet/组会样例.md", // 生产中被 permalink/rewrite 改写，须不被用于相对解析
+  });
+  assert.match(html, /class="na-embed"/);
+  assert.match(html, /<h2[^>]*>Alpha 大标题/);
+  assert.ok(html.includes(`href="${encodeURI("/01.组会材料/02.论文笔记/Alpha")}"`), "回链应指向论文笔记源页");
+});
+
+test("嵌入：直接路径查询（含 / 相对 docs 根）不受宿主目录影响", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("![[01.组会材料/02.论文笔记/Alpha]]", {
+    realPath: join(VAULT, "01.组会材料", "01.组会内容", "组会样例.md"),
+  });
+  assert.match(html, /class="na-embed"/);
+  assert.match(html, /<h2[^>]*>Alpha 大标题/);
+});
+
 test("真实库集成：Multi-Loco 嵌入（组会页实际用法）", async () => {
   const md = await makeMd(DOCS);
   const html = md.render("![[Multi-Loco]]");

@@ -9,13 +9,13 @@
  * 后迁回此处，仅供站点构建与 tests/ 引用，勿复制副本以免表现漂移。
  */
 import { readdirSync, readFileSync, existsSync } from "node:fs";
-import { join, resolve as pathResolve, relative, basename, sep } from "node:path";
+import { join, resolve as pathResolve, relative, basename, dirname, sep } from "node:path";
 import matter from "gray-matter";
 
 export const PAPER_NOTES_DIR = "01.组会材料/02.论文笔记";
 const EXCLUDED_DIRS = new Set([".vitepress", "node_modules", "dist", "public", "@fragment"]);
 
-/** 创建带缓存的文件解析器：(target) => { absPath, relPath } | null。target 为纯路径——`#标题`/`|别名` 写法属规格非目标，按字面目标解析、未命中回退原文渲染 */
+/** 创建带缓存的文件解析器：(target, hostPath) => { absPath, relPath } | null。target 为纯路径——`#标题`/`|别名` 写法属规格非目标，按字面目标解析、未命中回退原文渲染；hostPath 为宿主页源文件路径（生产为 env.realPath 绝对路径，也可为相对 docs 根的路径），仅 ./ ../ 相对目标解析时取 dirname 作基准 */
 export function createResolver(docsRoot) {
   const cache = new Map();
 
@@ -45,9 +45,13 @@ export function createResolver(docsRoot) {
   // 性能备忘：裸目标 miss 时对全库清单线性 filter basename；文件数显著增长或 miss 频发时升级 Map<basename, absPath[]>
   const getIndex = () => (fileIndex ??= walk(docsRoot));
 
-  return function resolveNote(target) {
+  return function resolveNote(target, hostPath) {
     const key = target.replace(/\.md$/i, "");
-    if (cache.has(key)) return cache.get(key);
+    // 相对路径目标（./ 或 ../ 开头）按宿主页源文件所在目录解析，缓存键须并入宿主上下文，
+    // 否则不同目录下同名相对目标会互相污染；其余目标与宿主无关，沿用 key 缓存。
+    const isRelative = key.startsWith("./") || key.startsWith("../");
+    const cacheKey = isRelative ? `${hostPath ?? ""}\u0000${key}` : key;
+    if (cache.has(cacheKey)) return cache.get(cacheKey);
 
     let result = null;
     const toRel = (absPath) => {
@@ -56,7 +60,10 @@ export function createResolver(docsRoot) {
     };
 
     if (key.includes("/")) {
-      const abs = pathResolve(docsRoot, key + ".md");
+      // 直接查询（相对 docs 根）与相对路径查询（相对宿主页源文件目录）并存：仅 ./ ../ 前缀走宿主目录。
+      // hostPath 可为绝对（生产 env.realPath）或相对 docs 根；pathResolve 遇到绝对段会重置基准，两种均正确。
+      const base = isRelative ? (hostPath ? dirname(hostPath) : ".") : ".";
+      const abs = pathResolve(docsRoot, base, key + ".md");
       if (existsSync(abs)) result = toRel(abs);
     } else {
       const inPapers = pathResolve(docsRoot, PAPER_NOTES_DIR, key + ".md");
@@ -72,7 +79,7 @@ export function createResolver(docsRoot) {
         if (matches.length) result = toRel(matches[0]);
       }
     }
-    if (result) cache.set(key, result); // 正结果缓存；负结果不逐键缓存（论文目录/带路径目标实时；全库裸目标经文件清单索引，语义代价见上）
+    if (result) cache.set(cacheKey, result); // 正结果缓存；负结果不逐键缓存（论文目录/带路径目标实时；全库裸目标经文件清单索引，语义代价见上）
     return result;
   };
 }
@@ -160,7 +167,8 @@ function createEmbedRule(md, resolveNote) {
       return true;
     };
 
-    const found = resolveNote(target);
+    // realPath 为源文件绝对路径（rewrite/permalink 前），相对目标按它解析；缺失时回退 relativePath
+    const found = resolveNote(target, state.env.realPath ?? state.env.relativePath);
     if (!found) return warn(`⚠️ 未找到嵌入笔记：${target}`);
 
     const stack = state.env.naEmbedStack || [];
@@ -221,7 +229,7 @@ function createWikilinkRule(resolveNote) {
     if (!target || target.includes("\n")) return false;
     if (silent) return true;
 
-    const found = resolveNote(target);
+    const found = resolveNote(target, state.env.realPath ?? state.env.relativePath);
     if (found) {
       const note = readNote(found.absPath, state.env.relativePath);
       const linkOpen = state.push("link_open", "a", 1);

@@ -1,4 +1,4 @@
-import Teek, { giscusContext, teekConfigContext, TkMessage } from "vitepress-theme-teek";
+import Teek, { giscusContext, teekConfigContext, TkMessage, usePosts, useTeekConfig } from "vitepress-theme-teek";
 import type { TeekConfig } from "vitepress-theme-teek";
 import TeekLayoutProvider from "./components/TeekLayoutProvider.vue";
 import ThemeConfig, { type ChangeType } from "./components/ThemeConfig.vue";
@@ -27,6 +27,7 @@ import { useData, useRoute } from "vitepress";
 import "./styles/code-bg.scss";
 import "./styles/theme-color.scss"; // 主题色板区块：对齐 teek 官网观感（色块不带文字）
 import "./styles/homepage.scss";
+import "./styles/home-card.scss";
 import "./styles/iframe.scss";
 import "./styles/embed.scss";
 import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变换（须在主题 CSS 之后）
@@ -44,6 +45,19 @@ export default {
       // 右上角设置面板 →「主题配置」区块：通过 teekConfigContext 做运行时主题配置覆盖
       const teekConfig = ref<TeekConfig>({});
       provide(teekConfigContext, teekConfig);
+      const { getTeekConfig } = useTeekConfig();
+
+      // 首页卡片栏「精选文章」「友情链接」按有无数据自动显隐：
+      // 主题默认在无数据时渲染「暂无精选文章 / 暂无友情链接」占位，这里改为整张卡片不显示。
+      // 精选文章的数据源是文章 frontmatter 的 top 字段，友情链接的数据源是配置里的 friendLink.list。
+      // 注意只覆盖 enabled，其余字段（title / limit 等）仍取主题配置。
+      const posts = usePosts();
+      const hasTopArticle = computed(() =>
+        (posts.value?.sortPostsByDateAndSticky ?? []).some((post) => (post.frontmatter as { top?: boolean })?.top)
+      );
+      const hasFriendLink = Boolean(getTeekConfig("friendLink", { list: [] }).list?.length);
+      teekConfig.value.topArticle = { ...getTeekConfig("topArticle"), enabled: hasTopArticle.value };
+      teekConfig.value.friendLink = { ...getTeekConfig("friendLink"), enabled: hasFriendLink };
 
       // 「主题配置」→ 彩带背景开关（默认开启，仅在首页渲染）
       // 这里不用 useRibbon 的 immediate，改为自行控制，避免与下面的路由监听重复初始化

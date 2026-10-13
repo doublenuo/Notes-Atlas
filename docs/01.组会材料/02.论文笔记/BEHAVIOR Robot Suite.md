@@ -10,7 +10,7 @@ tags:
 # BEHAVIOR Robot Suite: Streamlining Real-World Whole-Body Manipulation for Everyday Household Activities
 
 - Project Link: [https://behavior-robot-suite.github.io/](https://behavior-robot-suite.github.io/)
-- Github Link: [https://github.com/behavior-robot-suite/brs-ctrl](<<https://github.com/behavior-robot-suite/brs-ctrl>)
+- Github Link: [https://github.com/behavior-robot-suite/brs-ctrl](https://github.com/behavior-robot-suite/brs-ctrl)
 - Data Link: [https://huggingface.co/datasets/behavior-robot-suite/data](https://huggingface.co/datasets/behavior-robot-suite/data)
 - Paper Link: [https://arxiv.org/abs/2503.05652](https://arxiv.org/abs/2503.05652)
 - Docs Link: [https://behavior-robot-suite.github.io/docs/](https://behavior-robot-suite.github.io/docs/)

@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { makeMd, VAULT } from "./helpers.mjs";
 
 test("嵌入目标不存在 → 告警块，不吞错", async () => {
@@ -7,6 +8,16 @@ test("嵌入目标不存在 → 告警块，不吞错", async () => {
   const html = md.render("![[压根没有]]");
   assert.match(html, /na-embed-warning/);
   assert.match(html, /未找到嵌入笔记：压根没有/);
+  assert.ok(!html.includes("na-embed-source"), "不应渲染正常卡片");
+});
+
+test("嵌入目标不存在（相对路径）→ 告警块，不吞错", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("![[../不存在目录/压根没有]]", {
+    realPath: join(VAULT, "01.组会材料", "01.组会内容", "组会样例.md"),
+  });
+  assert.match(html, /na-embed-warning/);
+  assert.match(html, /未找到嵌入笔记：\.\.\/不存在目录\/压根没有/);
   assert.ok(!html.includes("na-embed-source"), "不应渲染正常卡片");
 });
 

@@ -1,0 +1,7 @@
+// 首页卡片栏：主题 HomeCardList 对每张卡片都渲染了一层无样式的包裹 <div>，
+// 当卡片自身因 enabled=false 隐藏后该 div 仍留在 DOM 里，
+// 会在 flx-column 的 gap 上留下约 10px 的空档（卡片栏越靠后越明显）。
+// 包裹层只剩注释节点，正好命中 :empty，直接收起即可，不影响正常卡片。
+.tk-home-card-list > div:empty {
+  display: none;
+}
