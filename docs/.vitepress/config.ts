@@ -17,7 +17,7 @@ const PAGES = collectPages(DOCS_ROOT)
 export default withMermaid(defineConfig({
   extends: teekConfig,
   lang: 'zh-CN',
-  base: "/",
+  base: process.env.VITEPRESS_BASE ?? "/",
   title: SITE_NAME,
   titleTemplate: `:title | ${SITE_NAME}`,
   description: SITE_DESCRIPTION,
@@ -152,4 +152,3 @@ export default withMermaid(defineConfig({
     },
   },
 }))
-
