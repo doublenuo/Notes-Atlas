@@ -338,6 +338,7 @@ export const teekConfig = defineTeekConfig({
         { name: "学习笔记", link: "/study" },
         { name: "工具与资源", link: "/tools" },
         { name: "项目实践", link: "/projects" },
+        { name: "RSS订阅", link: "/feed.xml" },
       ],
     },
     {

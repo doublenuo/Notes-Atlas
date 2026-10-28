@@ -7,6 +7,7 @@ import { collectPages, buildRewrites, buildSidebar } from './permalinks'
 import { obsidianEmbed } from './plugins/obsidianEmbed.js'
 import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
 import { seo, buildHead } from './plugins/seo'
+import { rss } from './plugins/rss'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './site'
 
 const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
@@ -43,6 +44,7 @@ export default withMermaid(defineConfig({
     plugins: [
       docAnalysisEmbed(),
       seo({ siteUrl: SITE_URL }),
+      rss({ siteUrl: SITE_URL }),
       // vitepress-plugin-mermaid 会把 mermaid 的传递依赖硬编码进 optimizeDeps.include，
       // 其中 debug 是旧版 mermaid 的依赖，mermaid 11 已不再使用、依赖树里不存在，
       // 导致 dev 启动时反复报 "Failed to resolve dependency: debug"。这里从 include 中剔除。
@@ -131,6 +133,7 @@ export default withMermaid(defineConfig({
       { text: '工具和资源', link: '/tools' },
       { text: '项目实践', link: '/projects' },
       { text: 'CV', link: '/cv' },
+      { text: 'RSS订阅', link: '/feed.xml' },
       {
         text: '快速访问', items: [
           { text: "文章清单", link: "/articles" },
