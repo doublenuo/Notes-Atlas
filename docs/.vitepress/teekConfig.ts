@@ -378,6 +378,7 @@ export const teekConfig = defineTeekConfig({
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2.75A9.25 9.25 0 1 1 2.75 12 9.26 9.26 0 0 1 12 2.75Zm.22 5.81a1.59 1.59 0 0 0-1.59 1.59v.13a1.59 1.59 0 0 0 1.59 1.59h.13a1.59 1.59 0 0 0 1.59-1.59v-.13a1.59 1.59 0 0 0-1.59-1.59Zm-1.02 6.2h2.6v6.09h-2.6Z"/></svg>
           </a>
         </div>
+        <img src="/animals.png" alt="animals" style="display:block;width:120px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:6px auto 10px;" />
         <div style="display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#374151;letter-spacing:0.02em;">
           Theme By Teek@${version}
         </div>
