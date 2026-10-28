@@ -13,7 +13,7 @@ export const SITE_NAME = 'NotesAtlas'
 
 /** 全站兜底描述：多数文章 frontmatter 没写 desc 时使用。 */
 export const SITE_DESCRIPTION =
-  'NotesAtlas：一个围绕学习与知识沉淀的个人知识库，收录组会记录、论文笔记、学习笔记与工具资源。'
+  'NotesAtlas：记录学习、研究与生活的个人知识库，汇聚组会材料、学习笔记、工具资源与随笔沉淀。'
 
-/** 社交分享配图（1200×630），public/og-image.png 构建时直接透传到产物根。 */
-export const OG_IMAGE = '/og-image.png'
+/** 社交分享配图直接使用站点 favicon，兼容站点品牌视觉。 */
+export const OG_IMAGE = '/favicon.svg'
