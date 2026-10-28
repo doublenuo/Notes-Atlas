@@ -129,6 +129,8 @@ export default withMermaid(defineConfig({
       { text: '组会材料', link: '/materials' },
       { text: '学习笔记', link: '/study' },
       { text: '工具和资源', link: '/tools' },
+      { text: '项目实践', link: '/projects' },
+      { text: 'CV', link: '/cv' },
       {
         text: '快速访问', items: [
           { text: "文章清单", link: "/articles" },
