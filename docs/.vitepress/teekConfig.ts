@@ -322,48 +322,10 @@ export const teekConfig = defineTeekConfig({
       link: "mailto:zwn200401@gmail.com",
     },
   ],
-  footerGroup: [
-    {
-      title: "关于",
-      links: [
-        { name: "关于本站", link: "/about" },
-        { name: "RSS订阅", link: "/feed.xml" },
-        { name: "隐私政策", link: "/privacy" },
-        { name: "免责声明", link: "/disclaimer" },
-      ],
-    },
-    {
-      title: "内容",
-      links: [
-        { name: "组会材料", link: "/materials" },
-        { name: "学习笔记", link: "/study" },
-        { name: "工具与资源", link: "/tools" },
-        { name: "项目实践", link: "/projects" },
-      ],
-    },
-    {
-      title: "导航",
-      links: [
-        { name: "标签页", link: "/tags" },
-        { name: "文章清单", link: "/articles" },
-        { name: "归档资源", link: "/archives" },
-        { name: "文章分类", link: "/categories" }
-      ],
-    },
-    {
-      title: "联系",
-      links: [
-        { name: "GitHub", link: "https://github.com/doublenuo" },
-        { name: "知乎", link: "https://www.zhihu.com/people/pai-da-xiao-xing-xing-7" },
-        { name: "CNB.cool", link: "https://cnb.cool/u/cnb.bEVjkzoyQGA" },
-        { name: "邮箱", link: "mailto:zwn200401@gmail.com" },
-      ],
-    },
-  ],
   footerInfo: {
     topMessage: [
       `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
           <a href="https://github.com/doublenuo" target="_blank" rel="noopener" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 .5A12 12 0 0 0 8.21 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.39-1.33-1.76-1.33-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.23 1.84 1.23 1.07 1.83 2.8 1.3 3.48.99.11-.77.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.92 0-1.31.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.4 11.4 0 0 1 6.02 0c2.29-1.55 3.29-1.23 3.29-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.6-2.82 5.61-5.5 5.9.43.37.82 1.1.82 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/></svg>
@@ -378,22 +340,7 @@ export const teekConfig = defineTeekConfig({
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2.75A9.25 9.25 0 1 1 2.75 12 9.26 9.26 0 0 1 12 2.75Zm.22 5.81a1.59 1.59 0 0 0-1.59 1.59v.13a1.59 1.59 0 0 0 1.59 1.59h.13a1.59 1.59 0 0 0 1.59-1.59v-.13a1.59 1.59 0 0 0-1.59-1.59Zm-1.02 6.2h2.6v6.09h-2.6Z"/></svg>
           </a>
         </div>
-        <img src="/animals.png" alt="animals" style="display:block;width:120px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:6px auto 10px;" />
-        <div style="display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#374151;letter-spacing:0.02em;">
-          Theme By Teek@${version}
-        </div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:#4b5563;">
-          <span style="font-size:18px;line-height:1;">©</span>
-          <span>Copyright 2025-2026 Weno's Blog</span>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:#4b5563;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 12 2.5Zm1.2 14.6h-2.4v-7.5h2.4Zm0-9.4h-2.4V6h2.4Z"/></svg>
-          <span>赣ICP备2026011923号</span>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:#4b5563;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M17.03 1.99a2 2 0 0 1 1.97 2.14l-2.55 18.45a1.86 1.86 0 0 1-1.57 1.59L4.08 25.9A1.85 1.85 0 0 1 2.53 24.3L.04 4.7A1.85 1.85 0 0 1 1.7 2.63l12.74-1.82a2 2 0 0 1 2.59.18Zm-2.94 3.32L7.92 9.98a.14.14 0 0 0-.09.14l.32 3.87c.01.09.1.15.18.12l.99-.38a.14.14 0 0 1 .18.14l-.09 1.54c-.01.1.1.18.19.13l.61-.28c.09-.04.19.03.19.13l-.15 2.42c-.01.15.2.2.26.07l.04-.09 3.17-9.77c.03-.11-.07-.2-.17-.17l-1.02.35c-.1.03-.19-.04-.18-.15l.34-2.49a.14.14 0 0 0-.14-.15l-.04.01Z"/></svg>
-          <span>Powered by VitePress</span>
-        </div>
+        <img src="/animals.png" alt="animals" style="display:block;width:120px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
       </div>
       `,
     ],
