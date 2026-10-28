@@ -364,7 +364,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-        <img alt="Site banner" src="https://liuyuyang.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fanimals.65eaf6e3.webp&amp;w=750&amp;q=75" style="width: 750px; max-width: 100%; height: 80px; object-fit: cover; border-radius: 10px; display: block;">
+        <img alt="Site banner" src="/bg_compressed.jpg" style="width: 750px; max-width: 100%; height: 80px; object-fit: cover; border-radius: 10px; display: block;">
         <div style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;overflow-x:auto;white-space:nowrap;">
           <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="Framework VitePress" src="https://img.shields.io/badge/Framework-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
           <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
