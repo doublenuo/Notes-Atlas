@@ -5,9 +5,9 @@ titleTemplate: false
 permalink: /risk-link
 layout: false
 riskLinkPage: true
-logo: /favicon.svg
-name: NotesAtlas
-desc: 即将离开 NotesAtlas，请注意财产安全
+logo: /tx.jpg
+name: Weno's Blog
+desc: 即将离开 Weno's Blog，请注意财产安全
 linkIllegal: 链接安全性校验中，请稍后 ...
 article: false
 ---

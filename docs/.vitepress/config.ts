@@ -23,7 +23,7 @@ export default withMermaid(defineConfig({
   titleTemplate: `:title | ${SITE_NAME}`,
   description: SITE_DESCRIPTION,
   head: [
-    ['link', { rel: 'icon', href: '/favicon.svg' }],
+    ['link', { rel: 'icon', href: '/tx.jpg' }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
     // 预连接外部资源，减少 DNS/TLS 握手延迟
     ['link', { rel: 'preconnect', href: 'https://www.googletagmanager.com', crossorigin: 'anonymous' }],
@@ -93,7 +93,7 @@ export default withMermaid(defineConfig({
     },
   },
   themeConfig: {
-    logo: '/favicon.svg',
+    logo: '/tx.jpg',
     // teek 的 sidebar 插件按磁盘目录名生成键，开启 rewrites 后页面 URL 已是 permalink，
     // 两者对不上会让全站侧边栏变空白。故在 teekConfig 里关掉它，改用这里按 permalink 生成的。
     sidebar: buildSidebar(PAGES),

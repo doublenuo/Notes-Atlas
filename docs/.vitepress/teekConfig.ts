@@ -198,9 +198,9 @@ export const teekConfig = defineTeekConfig({
     hideMask: false,
   },
   blogger: {
-    name: "小诺同学",
+    name: "Weno's Blog",
     slogan: "斜杠青年 / 长期主义者 / 内向生长",
-    avatar: "/atavar.jpg",
+    avatar: "/tx.jpg",
     status: {
       icon: "😪",
       size: 24,
@@ -372,7 +372,7 @@ export const teekConfig = defineTeekConfig({
     copyright: {
       show: true,
       createYear: 2025,
-      suffix: "NotesAtlas",
+      suffix: "Weno's Blog",
     },
     icpRecord: {
       name: "赣ICP备2026011923号",

@@ -1,6 +1,6 @@
 ---
-title: NotesAtlas
-# 首页标题不需要再拼站点名，否则会变成「NotesAtlas | NotesAtlas」
+title: Weno's Blog
+# 首页标题不需要再拼站点名，否则会变成「Weno's Blog | Weno's Blog」
 titleTemplate: false
 layout: home
 
