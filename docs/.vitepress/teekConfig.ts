@@ -363,14 +363,12 @@ export const teekConfig = defineTeekConfig({
   footerInfo: {
     topMessage: [
       `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-        <img alt="VitePress" src="https://img.shields.io/badge/Frame-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height: 28px; border-radius: 6px; display: block;">
-        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
-          <img alt="Server Aliyun" src="https://img.shields.io/badge/Server-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height: 28px; border-radius: 6px; display: block;">
-          <img alt="Copyright" src="https://img.shields.io/badge/Copyright-©%20Weno's%20Blog-1F6FEB" style="height: 28px; border-radius: 6px; display: block;">
-          <img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height: 28px; border-radius: 6px; display: block;">
-          <img alt="Comments" src="https://img.shields.io/badge/Comments-Giscus-8A2BE2?logo=github&logoColor=fff" style="height: 28px; border-radius: 6px; display: block;">
-        </div>
+      <div style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;overflow-x:auto;white-space:nowrap;">
+        <img alt="VitePress" src="https://img.shields.io/badge/Frame-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
+        <img alt="Server Aliyun" src="https://img.shields.io/badge/Server-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
+        <img alt="Copyright" src="https://img.shields.io/badge/Copyright-©%20Weno's%20Blog-1F6FEB" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
+        <img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
+        <img alt="Comments" src="https://img.shields.io/badge/Comments-Giscus-8A2BE2?logo=github&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
       </div>
       `,
     ],
