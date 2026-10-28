@@ -362,7 +362,18 @@ export const teekConfig = defineTeekConfig({
   ],
   footerInfo: {
     topMessage: [
-      `<span><img alt="VitePress" src="https://liuyuyang.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fanimals.65eaf6e3.webp&amp;w=750&amp;q=75" style="width: 750px; height: 80px"><span></span></span>`,
+      `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <img alt="Site banner" src="https://liuyuyang.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fanimals.65eaf6e3.webp&amp;w=750&amp;q=75" style="width: 750px; max-width: 100%; height: 80px; object-fit: cover; border-radius: 14px; display: block;">
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
+          <span style="display:inline-flex;align-items:center;gap:6px; padding:4px 10px; border-radius:999px; font-size:12px; line-height:1.6; color:#1f2937; background:rgba(148,163,184,0.12); border:1px solid rgba(148,163,184,0.25);">frame | vitepress</span>
+          <span style="display:inline-flex;align-items:center;gap:6px; padding:4px 10px; border-radius:999px; font-size:12px; line-height:1.6; color:#1f2937; background:rgba(59,130,246,0.10); border:1px solid rgba(59,130,246,0.22);">server | aliyun</span>
+          <span style="display:inline-flex;align-items:center;gap:6px; padding:4px 10px; border-radius:999px; font-size:12px; line-height:1.6; color:#1f2937; background:rgba(16,185,129,0.10); border:1px solid rgba(16,185,129,0.22);">copyright</span>
+          <span style="display:inline-flex;align-items:center;gap:6px; padding:4px 10px; border-radius:999px; font-size:12px; line-height:1.6; color:#1f2937; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.24);">proxy | caddy</span>
+          <span style="display:inline-flex;align-items:center;gap:6px; padding:4px 10px; border-radius:999px; font-size:12px; line-height:1.6; color:#1f2937; background:rgba(168,85,247,0.10); border:1px solid rgba(168,85,247,0.22);">Comments</span>
+        </div>
+      </div>
+      `,
     ],
     theme: {
       show: true,
