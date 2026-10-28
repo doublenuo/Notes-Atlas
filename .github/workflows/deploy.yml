@@ -14,6 +14,8 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: documentation-deploy
@@ -44,6 +46,11 @@ jobs:
 
       - name: Build VitePress site
         run: pnpm docs:build
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
 
       # 用 rsync over SSH 增量发布(不用 scp-action):
       #   -c        内容校验,跳过未变文件(每次只传真正改动的页面/哈希资源)
@@ -78,3 +85,14 @@ jobs:
             echo "$path -> $code"
             [ "$code" = "200" ] || { echo "health check failed: $path"; exit 1; }
           done
+
+  deploy-pages:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
