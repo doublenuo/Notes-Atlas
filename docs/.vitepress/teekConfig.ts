@@ -324,38 +324,27 @@ export const teekConfig = defineTeekConfig({
   ],
   footerGroup: [
     {
-      title: "关于",
+      title: "组会材料",
       links: [
-        { name: "关于本站", link: "/about" },
-        { name: "隐私政策", link: "/privacy" },
-        { name: "免责声明", link: "/disclaimer" },
+        { name: "进入组会材料", link: "/materials" },
       ],
     },
     {
-      title: "内容",
+      title: "学习笔记",
       links: [
-        { name: "组会内容", link: "/materials" },
-        { name: "深度学习", link: "/study/dl" },
-        { name: "强化学习", link: "/study/rl" },
-        { name: "ROS", link: "/study/ros/install" },
+        { name: "进入学习笔记", link: "/study" },
       ],
     },
     {
-      title: "导航",
+      title: "工具与资源",
       links: [
-        { name: "标签页", link: "/tags" },
-        { name: "文章清单", link: "/articles" },
-        { name: "归档资源", link: "/archives" },
-        { name: "文章分类", link: "/categories" }
+        { name: "进入工具与资源", link: "/tools" },
       ],
     },
     {
-      title: "联系",
+      title: "项目实践",
       links: [
-        { name: "GitHub", link: "https://github.com/doublenuo" },
-        { name: "知乎", link: "https://www.zhihu.com/people/pai-da-xiao-xing-xing-7" },
-        { name: "CNB.cool", link: "https://cnb.cool/u/cnb.bEVjkzoyQGA" },
-        { name: "邮箱", link: "mailto:zwn200401@gmail.com" },
+        { name: "进入项目实践", link: "/projects" },
       ],
     },
   ],
