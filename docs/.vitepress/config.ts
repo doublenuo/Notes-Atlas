@@ -133,7 +133,15 @@ export default withMermaid(defineConfig({
       { text: '工具和资源', link: '/tools' },
       { text: '项目实践', link: '/projects' },
       { text: 'CV', link: '/cv' },
-      { text: 'RSS订阅', link: '/feed.xml' },
+      {
+        text: '关于', items: [
+          { text: '关于本站', link: '/about' },
+          { text: '关于作者', link: '/author' },
+          { text: '隐私政策', link: '/privacy' },
+          { text: '免责声明', link: '/disclaimer' },
+          { text: 'RSS订阅', link: '/feed.xml' }
+        ]
+      },
       {
         text: '快速访问', items: [
           { text: "文章清单", link: "/articles" },
