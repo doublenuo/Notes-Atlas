@@ -326,7 +326,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-        <img src="/animals.png" alt="animals" style="display:block;width:150px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
+        <img src="/animals.png" alt="animals" style="display:block;width:180px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
       </div>
       `,
     ],
