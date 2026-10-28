@@ -353,6 +353,8 @@ export const teekConfig = defineTeekConfig({
       title: "联系",
       links: [
         { name: "GitHub", link: "https://github.com/doublenuo" },
+        { name: "知乎", link: "https://www.zhihu.com/people/pai-da-xiao-xing-xing-7" },
+        { name: "CNB.cool", link: "https://cnb.cool/u/cnb.bEVjkzoyQGA" },
         { name: "邮箱", link: "mailto:zwn200401@gmail.com" },
       ],
     },
