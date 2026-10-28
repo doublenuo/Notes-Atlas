@@ -73,7 +73,7 @@ jobs:
 
       - name: Verify site is live
         run: |
-          for path in / /admin/; do
+          for path in / /sitemap.xml; do
             code=$(curl -s -o /dev/null -w '%{http_code}' "https://blogs.lovetulin.cn$path")
             echo "$path -> $code"
             [ "$code" = "200" ] || { echo "health check failed: $path"; exit 1; }
