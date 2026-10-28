@@ -363,16 +363,35 @@ export const teekConfig = defineTeekConfig({
   footerInfo: {
     topMessage: [
       `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-        <img alt="Site banner" src="/bg_compressed.jpg" style="width: 750px; max-width: 100%; height: 80px; object-fit: cover; border-radius: 10px; display: block;">
-        <div style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;overflow-x:auto;white-space:nowrap;">
-          <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="Framework VitePress" src="https://img.shields.io/badge/Framework-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
-          <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
-          <a href="https://edgeone.ai/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="CDN Tencent EdgeOne" src="https://img.shields.io/badge/CDN-Tencent%20EdgeOne-2DDE98?logo=tencent&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
-          <a href="https://caddyserver.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
-          <a href="https://giscus.app/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="Comments Giscus" src="https://img.shields.io/badge/Comments-Giscus-8A2BE2?logo=github&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
-          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="CC BY-NC-SA 4.0" src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-1F6FEB" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
-          <a href="https://github.com/Kele-Bingtang/vitepress-theme-teek" target="_blank" rel="noopener" style="display:inline-block;line-height:0;"><img alt="Built with Teek" src="https://img.shields.io/badge/Built%20with-Teek-FFB703?logo=vue.js&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;"></a>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
+          <a href="https://github.com/doublenuo" target="_blank" rel="noopener" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 .5A12 12 0 0 0 8.21 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.39-1.33-1.76-1.33-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.23 1.84 1.23 1.07 1.83 2.8 1.3 3.48.99.11-.77.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.92 0-1.31.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.4 11.4 0 0 1 6.02 0c2.29-1.55 3.29-1.23 3.29-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.6-2.82 5.61-5.5 5.9.43.37.82 1.1.82 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/></svg>
+          </a>
+          <a href="/feed.xml" aria-label="RSS" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M6.18 15.65A2.18 2.18 0 1 1 6.18 19a2.18 2.18 0 0 1 0-3.35Zm-3.34-7.85c.74 0 1.47.1 2.17.3A12.73 12.73 0 0 1 19.8 17.82c.2.7.3 1.43.3 2.18h-3.39a9.28 9.28 0 0 0-9.19-9.18V8.05c-.23 0-.47 0-.71.02a15.03 15.03 0 0 0-.14-1.16c.36-.08.72-.12 1.07-.12Zm0-5.1c2.86 0 5.61.57 8.1 1.68a19.06 19.06 0 0 1 12.06 12.08c1.1 2.47 1.67 5.22 1.67 8.08H20.98c0-1.94-.4-3.83-1.18-5.56A15.63 15.63 0 0 0 8.5 6.65 16 16 0 0 0 2.84 2.7V2.7Z"/></svg>
+          </a>
+          <a href="mailto:zwn200401@gmail.com" aria-label="Email" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M3 6.75A2.75 2.75 0 0 1 5.75 4h12.5A2.75 2.75 0 0 1 21 6.75v10.5A2.75 2.75 0 0 1 18.25 20H5.75A2.75 2.75 0 0 1 3 17.25V6.75Zm2.08-.25 6.92 5.14 6.92-5.14H5.08Zm13.17 1.5-6.06 4.5a1 1 0 0 1-1.18 0L5.75 8l-.75.75v8.5c0 .41.34.75.75.75h12.5c.41 0 .75-.34.75-.75v-8.5l-.75-.75Z"/></svg>
+          </a>
+          <a href="/about" aria-label="About" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2.75A9.25 9.25 0 1 1 2.75 12 9.26 9.26 0 0 1 12 2.75Zm.22 5.81a1.59 1.59 0 0 0-1.59 1.59v.13a1.59 1.59 0 0 0 1.59 1.59h.13a1.59 1.59 0 0 0 1.59-1.59v-.13a1.59 1.59 0 0 0-1.59-1.59Zm-1.02 6.2h2.6v6.09h-2.6Z"/></svg>
+          </a>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#374151;letter-spacing:0.02em;">
+          Theme By Teek@${version}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:#4b5563;">
+          <span style="font-size:18px;line-height:1;">©</span>
+          <span>Copyright 2025-2026 Weno's Blog</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:#4b5563;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 12 2.5Zm1.2 14.6h-2.4v-7.5h2.4Zm0-9.4h-2.4V6h2.4Z"/></svg>
+          <span>赣ICP备2026011923号</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:#4b5563;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M17.03 1.99a2 2 0 0 1 1.97 2.14l-2.55 18.45a1.86 1.86 0 0 1-1.57 1.59L4.08 25.9A1.85 1.85 0 0 1 2.53 24.3L.04 4.7A1.85 1.85 0 0 1 1.7 2.63l12.74-1.82a2 2 0 0 1 2.59.18Zm-2.94 3.32L7.92 9.98a.14.14 0 0 0-.09.14l.32 3.87c.01.09.1.15.18.12l.99-.38a.14.14 0 0 1 .18.14l-.09 1.54c-.01.1.1.18.19.13l.61-.28c.09-.04.19.03.19.13l-.15 2.42c-.01.15.2.2.26.07l.04-.09 3.17-9.77c.03-.11-.07-.2-.17-.17l-1.02.35c-.1.03-.19-.04-.18-.15l.34-2.49a.14.14 0 0 0-.14-.15l-.04.01Z"/></svg>
+          <span>Powered by VitePress</span>
         </div>
       </div>
       `,
