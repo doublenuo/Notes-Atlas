@@ -363,12 +363,15 @@ export const teekConfig = defineTeekConfig({
   footerInfo: {
     topMessage: [
       `
-      <div style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;overflow-x:auto;white-space:nowrap;">
-        <img alt="VitePress" src="https://img.shields.io/badge/Frame-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
-        <img alt="Server Aliyun" src="https://img.shields.io/badge/Server-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
-        <img alt="Copyright" src="https://img.shields.io/badge/Copyright-©%20Weno's%20Blog-1F6FEB" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
-        <img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
-        <img alt="Comments" src="https://img.shields.io/badge/Comments-Giscus-8A2BE2?logo=github&logoColor=fff" style="height: 28px; border-radius: 6px; display: block; flex: 0 0 auto;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <img alt="Site banner" src="https://liuyuyang.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fanimals.65eaf6e3.webp&amp;w=750&amp;q=75" style="width: 750px; max-width: 100%; height: 80px; object-fit: cover; border-radius: 10px; display: block;">
+        <div style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;overflow-x:auto;white-space:nowrap;">
+          <img alt="VitePress" src="https://img.shields.io/badge/Frame-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;">
+          <img alt="Server Aliyun" src="https://img.shields.io/badge/Server-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;">
+          <img alt="Copyright" src="https://img.shields.io/badge/Copyright-©%20Weno's%20Blog-1F6FEB" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;">
+          <img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;">
+          <img alt="Comments" src="https://img.shields.io/badge/Comments-Giscus-8A2BE2?logo=github&logoColor=fff" style="height: 20px; border-radius: 4px; display: block; flex: 0 0 auto;">
+        </div>
       </div>
       `,
     ],
