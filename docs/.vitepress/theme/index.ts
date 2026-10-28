@@ -20,6 +20,7 @@ import "vitepress-theme-teek/theme-chalk/tk-home-card-hover.css"; // 首页卡�
 import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加载的动画效果
 import ContributeChart from "./components/ContributeChart.vue";
 import ArticleExportPdf from "./components/ArticleExportPdf.vue";
+import ArticleSponsor from "./components/ArticleSponsor.vue";
 
 import Giscus from "@giscus/vue";
 import { useData, useRoute } from "vitepress";
@@ -59,10 +60,10 @@ export default {
       teekConfig.value.topArticle = { ...getTeekConfig("topArticle"), enabled: hasTopArticle.value };
       teekConfig.value.friendLink = { ...getTeekConfig("friendLink"), enabled: hasFriendLink };
 
-      // 「主题配置」→ 彩带背景开关（默认开启，仅在首页渲染）
+      // 「主题配置」→ 彩带背景开关（默认关闭，仅在首页渲染）
       // 这里不用 useRibbon 的 immediate，改为自行控制，避免与下面的路由监听重复初始化
       const { start: startRibbon, stop: stopRibbon } = useRibbon({ immediate: false, clickReRender: true });
-      const ribbonEnabled = ref(true);
+      const ribbonEnabled = ref(false);
       // 顶层 index.md 即站点首页，判断方式与 permalinks.ts 保持一致
       const isHomePage = computed(() => page.value.relativePath === "index.md");
       let ribbonActive = false;
@@ -125,6 +126,8 @@ export default {
         "teek-archives-top-before": () => h(ContributeChart),
         // 右上角设置弹层底部注入「主题配置」区块
         "teek-theme-enhance-bottom": () => h(ThemeConfig, { onChange: handleThemeConfigChange }),
+        // 放在「在 GitHub 上编辑此页面」和「最后更新于」之前
+        "doc-footer-before": () => h(ArticleSponsor),
         // 「分享此页面」右侧的「导出 PDF」按钮
         "teek-article-share-after": () => h(ArticleExportPdf),
       });

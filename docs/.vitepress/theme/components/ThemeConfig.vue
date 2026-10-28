@@ -309,9 +309,9 @@ const comment = withModelSync({
   },
 });
 
-// 彩带背景（默认开启，与 useRibbon 的 immediate 保持一致）
+// 彩带背景默认关闭，用户可在主题设置中手动开启
 const ribbon = withModelSync({
-  modelValue: true,
+  modelValue: false,
   title: "彩带背景",
   options: [
     { value: true, label: "ON" },

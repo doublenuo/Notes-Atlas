@@ -124,30 +124,32 @@ export default withMermaid(defineConfig({
       next: '下一页'
     },
     nav: [
-      { text: '首页', link: '/' },
-      // 全站已统一走 permalink（见 ./permalinks.ts），这些前缀都由真实页面提供。
-      // 组会材料分区下三类内容：/materials/meet/* 组会记录、
-      // /materials/paper/* 论文笔记、/materials/reproduction/* 论文复现。
-      { text: '组会材料', link: '/materials' },
-      { text: '学习笔记', link: '/study' },
-      { text: '工具和资源', link: '/tools' },
-      { text: '项目实践', link: '/projects' },
-      { text: 'CV', link: '/cv' },
+      { text: '🏠 首页', link: '/' },
       {
-        text: '关于', items: [
-          { text: '关于本站', link: '/about' },
-          { text: '关于作者', link: '/author' },
-          { text: '隐私政策', link: '/privacy' },
-          { text: '免责声明', link: '/disclaimer' },
-          { text: 'RSS订阅', link: '/feed.xml' }
+        text: '📚 文档', items: [
+          { text: '👥 组会材料', link: '/materials' },
+          { text: '📝 学习笔记', link: '/study' },
+          { text: '🛠️ 工具与资源', link: '/tools' }
+        ]
+      },
+      { text: '✒️ 随笔', link: '/essays' },
+      { text: '🚀 项目实践', link: '/projects' },
+      { text: '📄 CV', link: '/cv' },
+      {
+        text: 'ℹ️ 关于', items: [
+          { text: '🏛️ 关于本站', link: '/about' },
+          { text: '👤 关于作者', link: '/author' },
+          { text: '🔒 隐私政策', link: '/privacy' },
+          { text: '⚠️ 免责声明', link: '/disclaimer' },
+          { text: '📡 RSS订阅', link: '/feed.xml' }
         ]
       },
       {
-        text: '快速访问', items: [
-          { text: "文章清单", link: "/articles" },
-          { text: "归档资源", link: "/archives" },
-          { text: "文章分类", link: "/categories" },
-          { text: "标签云", link: "/tags" }
+        text: '⚡ 快速访问', items: [
+          { text: "📋 文章清单", link: "/articles" },
+          { text: "🗂️ 归档资源", link: "/archives" },
+          { text: "🗃️ 文章分类", link: "/categories" },
+          { text: "🏷️ 标签云", link: "/tags" }
         ]
       }
     ],
