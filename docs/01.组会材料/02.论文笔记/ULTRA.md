@@ -10,7 +10,7 @@ tags:
 ---
 # ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation
 
-- Project Link: [https://ultra-humanoid.github.io/](https://ultra-humanoid.github.io/)
+- Project Link: [https://ultrahumanoid.github.io/](https://ultrahumanoid.github.io/)
 - Paper Link: [https://arxiv.org/abs/2603.03279](https://arxiv.org/abs/2603.03279)
 
 ## 模型框架图
