@@ -38,7 +38,6 @@ export const teekConfig = defineTeekConfig({
       defaultPageMaxWidth: 94,
     },
     themeColor: {
-      disabled: true,
       // 默认主题色：扩展主题色板的第一个「紫罗兰」（#7166f0）
       defaultColorName: "violet",
       defaultSpread: false,
