@@ -326,21 +326,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
-          <a href="https://github.com/doublenuo" target="_blank" rel="noopener" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 .5A12 12 0 0 0 8.21 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.39-1.33-1.76-1.33-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.23 1.84 1.23 1.07 1.83 2.8 1.3 3.48.99.11-.77.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.92 0-1.31.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.4 11.4 0 0 1 6.02 0c2.29-1.55 3.29-1.23 3.29-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.6-2.82 5.61-5.5 5.9.43.37.82 1.1.82 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/></svg>
-          </a>
-          <a href="/feed.xml" aria-label="RSS" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M6.18 15.65A2.18 2.18 0 1 1 6.18 19a2.18 2.18 0 0 1 0-3.35Zm-3.34-7.85c.74 0 1.47.1 2.17.3A12.73 12.73 0 0 1 19.8 17.82c.2.7.3 1.43.3 2.18h-3.39a9.28 9.28 0 0 0-9.19-9.18V8.05c-.23 0-.47 0-.71.02a15.03 15.03 0 0 0-.14-1.16c.36-.08.72-.12 1.07-.12Zm0-5.1c2.86 0 5.61.57 8.1 1.68a19.06 19.06 0 0 1 12.06 12.08c1.1 2.47 1.67 5.22 1.67 8.08H20.98c0-1.94-.4-3.83-1.18-5.56A15.63 15.63 0 0 0 8.5 6.65 16 16 0 0 0 2.84 2.7V2.7Z"/></svg>
-          </a>
-          <a href="mailto:zwn200401@gmail.com" aria-label="Email" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M3 6.75A2.75 2.75 0 0 1 5.75 4h12.5A2.75 2.75 0 0 1 21 6.75v10.5A2.75 2.75 0 0 1 18.25 20H5.75A2.75 2.75 0 0 1 3 17.25V6.75Zm2.08-.25 6.92 5.14 6.92-5.14H5.08Zm13.17 1.5-6.06 4.5a1 1 0 0 1-1.18 0L5.75 8l-.75.75v8.5c0 .41.34.75.75.75h12.5c.41 0 .75-.34.75-.75v-8.5l-.75-.75Z"/></svg>
-          </a>
-          <a href="/about" aria-label="About" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f3f4f6;color:#1f2937;box-shadow:0 2px 6px rgba(15,23,42,0.08);text-decoration:none;">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2.75A9.25 9.25 0 1 1 2.75 12 9.26 9.26 0 0 1 12 2.75Zm.22 5.81a1.59 1.59 0 0 0-1.59 1.59v.13a1.59 1.59 0 0 0 1.59 1.59h.13a1.59 1.59 0 0 0 1.59-1.59v-.13a1.59 1.59 0 0 0-1.59-1.59Zm-1.02 6.2h2.6v6.09h-2.6Z"/></svg>
-          </a>
-        </div>
-        <img src="/animals.png" alt="animals" style="display:block;width:120px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
+        <img src="/animals.png" alt="animals" style="display:block;width:150px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
       </div>
       `,
     ],
