@@ -329,6 +329,7 @@ export const teekConfig = defineTeekConfig({
         { name: "关于本站", link: "/about" },
         { name: "隐私政策", link: "/privacy" },
         { name: "免责声明", link: "/disclaimer" },
+        { name: "RSS订阅", link: "/feed.xml" },
       ],
     },
     {
@@ -363,7 +364,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-        <img src="/animals.png" alt="animals" style="display:block;width:180px;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
+        <img src="/animals.png" alt="animals" style="display:block;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
       </div>
       `,
     ],
