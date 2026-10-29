@@ -147,8 +147,46 @@ export const teekConfig = defineTeekConfig({
     enabled: true,
     // 白名单：命中的链接直接跳转，不做提示。
     // 判定是 href 前缀匹配（支持正则），站内邮箱、GitHub 这类高频可信来源放行。
-    whitelist: ["mailto:", "https://github.com/doublenuo", "https://cnb.cool"],
-    // 未设 blacklist：默认拦截所有跨域链接
+    whitelist: [
+      "mailto:",
+      "https://github.com/doublenuo",
+      "https://github.com/",
+      "https://cnb.cool/",
+      "https://gitlab.com/",
+      "https://gitee.com/",
+      "https://codeberg.org/",
+      "https://vitepress.dev/",
+      "https://vuejs.org/",
+      "https://developer.mozilla.org/",
+      "https://docs.python.org/",
+      "https://pytorch.org/",
+      "https://pytorch.org/docs/",
+      "https://huggingface.co/",
+      "https://docs.ros.org/",
+      "https://mujoco.org/",
+      "https://isaac-sim.github.io/",
+      "https://nvidia-isaac-ros.github.io/",
+      "https://arxiv.org/",
+      "https://paperswithcode.com/",
+      "https://openreview.net/",
+      "https://proceedings.neurips.cc/",
+      "https://ieeexplore.ieee.org/",
+      "https://dl.acm.org/",
+      "https://www.sciencedirect.com/",
+      "https://link.springer.com/",
+      "https://github.com/InternRobotics/",
+      "https://stackoverflow.com/",
+      "https://stackoverflow.com/questions/",
+      "https://www.zhihu.com/",
+      "https://juejin.cn/",
+      "https://dev.to/",
+      "https://www.npmjs.com/",
+      "https://pypi.org/",
+      "https://hub.docker.com/",
+      "https://docs.docker.com/",
+      "https://vercel.com/",
+      "https://www.netlify.com/"
+    ],    
   },
   author: {
     name: "doublenuo",
@@ -251,7 +289,6 @@ export const teekConfig = defineTeekConfig({
     limit: 24,
   },
   friendLink: {
-    // https://vp.teek.top/reference/card-config.html#friendlink
     enabled: true,
     emptyLabel: "暂无友情链接",
     limit: 5,
@@ -364,7 +401,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-        <img src="/animals.png" alt="animals" style="display:block;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
+        <img src="/animals.png" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
       </div>
       `,
     ],
