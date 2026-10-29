@@ -18,7 +18,7 @@ const expanded = ref(false)
     >
       <img
         class="article-sponsor__image"
-        src="https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261029123338921.png"
+        src="/coffee.png"
         alt="请作者喝杯咖啡"
       >
       <span class="article-sponsor__text">
