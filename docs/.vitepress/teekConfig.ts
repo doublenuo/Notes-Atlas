@@ -322,6 +322,43 @@ export const teekConfig = defineTeekConfig({
       link: "mailto:zwn200401@gmail.com",
     },
   ],
+  footerGroup: [
+    {
+      title: "关于",
+      links: [
+        { name: "关于本站", link: "/about" },
+        { name: "隐私政策", link: "/privacy" },
+        { name: "免责声明", link: "/disclaimer" },
+      ],
+    },
+    {
+      title: "内容",
+      links: [
+        { name: "组会材料", link: "/materials" },
+        { name: "学习笔记", link: "/study" },
+        { name: "工具与资源", link: "/tools" },
+        { name: "项目实践", link: "/projects" },
+      ],
+    },
+    {
+      title: "导航",
+      links: [
+        { name: "标签页", link: "/tags" },
+        { name: "文章清单", link: "/articles" },
+        { name: "归档资源", link: "/archives" },
+        { name: "文章分类", link: "/categories" },
+      ],
+    },
+    {
+      title: "联系",
+      links: [
+        { name: "GitHub", link: "https://github.com/doublenuo" },
+        { name: "知乎", link: "https://www.zhihu.com/people/pai-da-xiao-xing-xing-7" },
+        { name: "CNB.cool", link: "https://cnb.cool/u/cnb.bEVjkzoyQGA" },
+        { name: "邮箱", link: "mailto:zwn200401@gmail.com" },
+      ],
+    },
+  ],
   footerInfo: {
     topMessage: [
       `
