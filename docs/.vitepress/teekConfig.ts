@@ -400,7 +400,18 @@ export const teekConfig = defineTeekConfig({
   footerInfo: {
     topMessage: [
       `
-      <img src="/animals.png" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
+      <span style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+        <img src="/animals.png" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
+        <span style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;max-width:100%;overflow-x:auto;white-space:nowrap;">
+          <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Framework VitePress" src="https://img.shields.io/badge/Framework-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://edgeone.ai/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CDN Tencent EdgeOne" src="https://img.shields.io/badge/CDN-Tencent%20EdgeOne-2DDE98?logo=tencent&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://caddyserver.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://giscus.app/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Comments Giscus" src="https://img.shields.io/badge/Comments-Giscus-8A2BE2?logo=github&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CC BY-NC-SA 4.0" src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-1F6FEB" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://github.com/Kele-Bingtang/vitepress-theme-teek" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Built with Teek" src="https://img.shields.io/badge/Built%20with-Teek-FFB703?logo=vue.js&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+        </span>
+      </span>
       `,
     ],
     theme: {
