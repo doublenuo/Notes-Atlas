@@ -8,7 +8,7 @@ tags:
   - 机器人操作
 ---
 
-# WEAVE：从人-物交互中学习全身灵巧移动操作
+# WEAVE：Learning Whole-Body Dexterous Loco-Manipulation from Human–Object Interactions
 
 - Project Link: [https://xiaohu-art.github.io/Weave/](https://xiaohu-art.github.io/Weave/)
 - Github Link: [https://github.com/xiaohu-art/Weave](https://github.com/xiaohu-art/Weave)
