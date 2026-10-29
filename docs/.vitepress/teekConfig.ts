@@ -400,7 +400,7 @@ export const teekConfig = defineTeekConfig({
   footerInfo: {
     topMessage: [
       `
-      <img src="/animals.png" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,0.08);margin:0 auto;" />
+      <img src="/animals.png" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
       `,
     ],
     theme: {
