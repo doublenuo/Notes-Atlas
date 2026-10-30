@@ -1,0 +1,74 @@
+
+# 媒体文件：存放到 VitePress public 目录
+media:
+  input: docs/public/uploads
+  output: /uploads
+  rename: safe
+
+# 内容管理
+content:
+  - name: articles
+    label: 知识库文章
+    type: collection
+    path: docs
+    format: yaml-frontmatter
+
+    # 允许管理 docs 下的多级目录
+    subfolders: true
+
+    # 新文章默认使用标题作为文件名
+    filename: "{primary}.md"
+
+    # 文章列表显示字段
+    view:
+      layout: tree
+      fields:
+        - title
+        - date
+        - categories
+      primary: title
+      sort:
+        - date
+        - title
+      default:
+        sort: date
+        order: desc
+
+    # Markdown Frontmatter 字段
+    fields:
+      - name: title
+        label: 文章标题
+        type: string
+        required: true
+
+      - name: date
+        label: 创建时间
+        type: date
+
+      - name: permalink
+        label: 永久链接
+        type: string
+
+      - name: categories
+        label: 分类
+        type: string
+        list: true
+
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+
+      - name: body
+        label: 正文
+        type: rich-text
+
+    # 避免误删、误改已有文章路径
+    operations:
+      rename: false
+      delete: false
+
+# 全局设置
+settings:
+  content:
+    merge: true
