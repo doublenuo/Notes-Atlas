@@ -132,16 +132,22 @@ export default withMermaid(defineConfig({
           { text: '🛠️ 工具与资源', link: '/tools' }
         ]
       },
-      { text: '✒️ 随笔', link: '/essays' },
       { text: '🚀 项目实践', link: '/projects' },
-      { text: '📄 CV', link: '/cv' },
+      { text: '✒️ 随笔', link: '/essays' },
       {
-        text: 'ℹ️ 关于', items: [
+        text: 'ℹ️ 站点信息', items: [
           { text: '🏛️ 关于本站', link: '/about' },
           { text: '👤 关于作者', link: '/author' },
           { text: '🔒 隐私政策', link: '/privacy' },
           { text: '⚠️ 免责声明', link: '/disclaimer' },
-          { text: '📡 RSS订阅', link: '/feed.xml' }
+        ]
+      },
+      {
+        text: '🔗 互动与订阅', items: [
+          { text: '📡 RSS订阅', link: '/feed.xml' },
+          { text: '💬 留言板', link: '/guestbook' },
+          { text: '🤝 友链', link: '/contact' },
+          { text: '☕ 欢迎打赏', link: '/donate' },
         ]
       },
       {

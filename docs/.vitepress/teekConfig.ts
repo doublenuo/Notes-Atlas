@@ -361,12 +361,12 @@ export const teekConfig = defineTeekConfig({
   ],
   footerGroup: [
     {
-      title: "关于",
+      title: "站点信息",
       links: [
         { name: "关于本站", link: "/about" },
         { name: "隐私政策", link: "/privacy" },
         { name: "免责声明", link: "/disclaimer" },
-        { name: "RSS订阅", link: "/feed.xml" },
+        { name: "关于作者", link: "/author" },
       ],
     },
     {

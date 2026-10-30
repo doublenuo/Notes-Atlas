@@ -8,6 +8,11 @@
  * 色块收紧为 18px + 2px 内边距 + 4px 圆角。此处按 1.6.2 的规则覆盖，无需升级主题版本。
  */
 
+/* 保留右上角设置面板中的主题色切换，仅隐藏右下角悬浮入口 */
+.tk-right-bottom-button > .tk-right-bottom-button__button[aria-label="主题色"] {
+  display: none;
+}
+
 /* 隐藏色块下方的文字（1.6.2 已移除该节点，1.5.6 仍渲染） */
 .tk-theme-enhance__theme-color .color-list li > span {
   display: none;
