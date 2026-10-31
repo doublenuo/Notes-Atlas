@@ -37,7 +37,10 @@ export default withMermaid(defineConfig({
   transformHead: ({ pageData }) => buildHead(pageData, SITE_URL, DOCS_ROOT),
   cleanUrls: true,
   rewrites: buildRewrites(PAGES),
-  srcExclude: ["superpowers/**"],
+  // 朋友圈碎片只作为时间线条目被 MomentsTimeline.vue 聚合（?raw 读取），不生成独立页面；
+  // 朋友圈页面本体在 @pages/momentsPage.md，02.moments/ 是纯数据目录。
+  // 与 permalinks.ts 的 collectPages、teekConfig.ts 的 fileContentLoaderIgnore 三处口径一致
+  srcExclude: ["superpowers/**", "04.随笔/02.moments/**"],
   // 打包构建优化
   vite: {
     // 文档分析(字数/阅读时长)按嵌入展开后重算,覆盖 doc-analysis 的原始源码口径
@@ -133,7 +136,14 @@ export default withMermaid(defineConfig({
         ]
       },
       { text: '🚀 项目实践', link: '/projects' },
-      { text: '✒️ 随笔', link: '/essays' },
+      {
+        text: '✒️ 随笔',
+        items: [
+          { text: '💭 朋友圈', link: '/moments' },
+          { text: '📖 读书笔记', link: '/reading-notes' },
+          { text: '🗓️ 年终总结', link: '/year-review' },
+        ]
+      },
       {
         text: 'ℹ️ 站点信息', items: [
           { text: '🏛️ 关于本站', link: '/about' },

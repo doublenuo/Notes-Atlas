@@ -21,6 +21,7 @@ import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加
 import ContributeChart from "./components/ContributeChart.vue";
 import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
+import MomentsTimeline from "./components/MomentsTimeline.vue";
 
 import Giscus from "@giscus/vue";
 import { useData, useRoute } from "vitepress";
@@ -66,6 +67,12 @@ export default {
       const ribbonEnabled = ref(false);
       // 顶层 index.md 即站点首页，判断方式与 permalinks.ts 保持一致
       const isHomePage = computed(() => page.value.relativePath === "index.md");
+      // frontmatter.moments === true 的页面（朋友圈 /moments）在 page-top 挂载时间线，
+      // 页面 md 因此可以只保留 frontmatter，不含任何 script/组件标签
+      // （数据源是 04.随笔/02.moments/ 下的碎片，用法见该目录 README.md）
+      const isMomentsPage = computed(
+        () => (page.value.frontmatter as { moments?: boolean } | undefined)?.moments === true,
+      );
       let ribbonActive = false;
       // 记录当前是否已渲染，防止 start 重复调用：initRibbon 在 canvas 已存在时会返回空清理函数，
       // 会覆盖掉真正的清理函数，导致后续 stop 无法移除 canvas
@@ -130,6 +137,8 @@ export default {
         "doc-footer-before": () => h(ArticleSponsor),
         // 「分享此页面」右侧的「导出 PDF」按钮
         "teek-article-share-after": () => h(ArticleExportPdf),
+        // 朋友圈时间线（frontmatter.moments === true 时生效）
+        "page-top": () => (isMomentsPage.value ? h(MomentsTimeline) : null),
       });
     },
   })

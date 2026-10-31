@@ -12,6 +12,44 @@ const formatNumericTitle = (value: unknown) => {
   return text;
 };
 
+/** 目录页条目（catalogueItemResolved 的入参/返回值结构） */
+interface CatalogueItem {
+  title: string;
+  url?: string;
+  children?: CatalogueItem[];
+}
+
+/**
+ * 朋友圈碎片所在目录（02.moments 下除 index 外的文件）的条目 URL 前缀。
+ * 这些碎片由 MomentsTimeline.vue 构建时聚合，不生成独立页面，
+ * 不能作为 /essays 目录页的条目出现（点进去是 404）。
+ * 与 config.ts 的 srcExclude、permalinks.ts 的 collectPages 三处口径一致。
+ */
+const MOMENT_FRAGMENT_URL_PREFIX = "/04.随笔/02.moments/";
+
+/**
+ * 目录页条目修正，作用于全站所有 catalogue 页，每一层目录都会调用（需幂等）：
+ *  1. 剥掉结尾的 /index（.html）：vitepress-plugin-catalogue 生成条目 URL 时只去
+ *     .md 后缀，而本站 index 页经 rewrites 落成 <url>/index.md，实际 URL 是 /xxx，
+ *     不修正会产出 /xxx/index 死链（如 /moments/index、/essays/index）。
+ *  2. 剔除朋友圈碎片条目。
+ *  3. 碎片剔除后若某分组空了（如没有朋友圈入口时的内层目录），整组移除。
+ */
+const pruneCatalogue = (items: CatalogueItem[]): CatalogueItem[] => {
+  const result: CatalogueItem[] = [];
+  for (const item of items) {
+    if (item.children) {
+      const children = pruneCatalogue(item.children);
+      if (!children.length) continue;
+      result.push({ ...item, children });
+      continue;
+    }
+    if (item.url?.startsWith(MOMENT_FRAGMENT_URL_PREFIX)) continue;
+    result.push({ ...item, url: item.url?.replace(/\/index(\.html)?$/, "") });
+  }
+  return result;
+};
+
 export const teekConfig = defineTeekConfig({
   teekTheme: true,
   teekHome: true,
@@ -467,6 +505,11 @@ export const teekConfig = defineTeekConfig({
       categories: true,
       coverImg: false,
       permalink: true,
+      // 朋友圈碎片是元数据自洽的时间线条目，不要被自动补 title（文件名）/permalink 等
+      // 字段；否则每张卡片会顶着文件名当标题
+      globOptions: {
+        ignore: ["**/02.moments/**"],
+      },
       transform(frontmatter) {
         if (frontmatter.title !== undefined) {
           return {
@@ -483,8 +526,15 @@ export const teekConfig = defineTeekConfig({
       // 与 config.ts 的 srcExclude 配套：FileContentLoader 是独立 glob 扫描、不认 srcExclude，
       // 不加此条则 superpowers 页仍进归档/最近更新清单，而页面已不生成 → 死链
       "**/01.组会材料/03.pdfs/**",
-      "**/superpowers/**"
+      "**/superpowers/**",
+      // 朋友圈碎片只在 /moments 时间线里聚合展示，不进文章清单/归档/分类标签
+      // （02.moments/ 是纯数据目录，页面本体在 @pages/momentsPage.md）
+      "**/02.moments/**"
     ],
+    // 目录页条目修正：剥 /index 死链后缀 + 剔除朋友圈碎片，见 pruneCatalogue 注释
+    catalogueOption: {
+      catalogueItemResolved: pruneCatalogue,
+    },
     // teek 的 sidebar 插件（vitepress-plugin-sidebar-resolve）按**磁盘目录名**生成
     // sidebar 键。config.ts 已改用 VitePress 原生 rewrites 把页面 URL 换成 permalink，
     // 两者对不上会让全站侧边栏变空白，故关掉，改由 config.ts 的 buildSidebar 生成。

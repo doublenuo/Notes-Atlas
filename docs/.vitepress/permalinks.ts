@@ -128,6 +128,11 @@ export function collectPages(srcDir: string): PageInfo[] {
 
       const rel = path.relative(srcDir, abs).split(path.sep).join('/')
       if (rel.startsWith('superpowers/')) continue
+      // 朋友圈碎片（02.moments/ 是纯数据目录，页面本体在 @pages/momentsPage.md）由
+      // MomentsTimeline.vue 在构建时聚合成时间线，不生成独立页面：
+      // 不进 rewrites / 侧边栏 / RSS / sitemap。
+      // 与 config.ts 的 srcExclude、teekConfig.ts 的 fileContentLoaderIgnore 三处口径一致
+      if (rel.startsWith('04.随笔/02.moments/')) continue
 
       let data: Record<string, unknown> = {}
       let content = ''
