@@ -1,6 +1,7 @@
 ---
 date: 2026-09-22 16:16:40
 title: Ubuntu
+permalink: /tools/resources/ubuntu
 categories:
   - 开发工具与环境搭建
 tags:

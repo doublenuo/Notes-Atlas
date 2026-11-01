@@ -22,11 +22,15 @@ import matter from 'gray-matter'
  * 改为按目录树自行生成，链接指向 permalink。
  */
 
-/** 磁盘顶层目录 → URL 顶层段。@pages 下都是单段 permalink，不需要前缀。 */
+/**
+ * 磁盘顶层目录 → URL 顶层段。@pages 下都是单段 permalink，不需要前缀。
+ * 注意：键必须是磁盘真实目录名（含序号前缀）。写错（如把 03.工具与资源 写成
+ * 011.工具与资源）会让该区没有 permalink 的页面匹配不到前缀，URL 掉到根目录。
+ */
 const SECTION_PREFIX: Record<string, string> = {
   '01.组会材料': 'meet',
   '02.学习笔记': 'study',
-  '011.工具与资源': 'tools',
+  '03.工具与资源': 'tools',
 }
 
 
@@ -62,9 +66,9 @@ const SUBSECTION: Record<string, string> = {
   '02.学习笔记/09.具身智能': 'study/embody',
   '02.学习笔记/10.开发工具': 'study/tools',
   '02.学习笔记/12.ROS': 'study/ros',
-  '011.工具与资源/01.Linux相关教程': 'tools/linux',
-  '011.工具与资源/02.面试相关': 'tools/interview',
-  '011.工具与资源/03.其他资源': 'tools/resources',
+  '03.工具与资源/01.Linux相关教程': 'tools/linux',
+  '03.工具与资源/02.面试相关': 'tools/interview',
+  '03.工具与资源/03.其他资源': 'tools/resources',
   '01.组会材料/01.组会内容': 'materials/meet',
   '01.组会材料/02.论文笔记': 'materials/paper',
   '01.组会材料/03.论文复现': 'materials/reproduction',
@@ -287,8 +291,8 @@ function commonDir(dirs: string[][]): string {
  * 生成 themeConfig.sidebar。
  *
  * 键必须是页面**实际 URL** 的前缀，而不能是磁盘目录名：getSidebar 只做
- * `path.startsWith(dir)` 匹配，论文笔记的 URL 是 /papers/* 而磁盘上仍在
- * 01.组会材料/02.论文笔记/ 下，按磁盘分组会漏掉 /papers/ 这个键，
+ * `path.startsWith(dir)` 匹配，论文笔记的 URL 是 /materials/paper/* 而磁盘上仍在
+ * 01.组会材料/02.论文笔记/ 下，按磁盘分组会漏掉 /materials/paper/ 这个键，
  * 结果该区所有页面侧边栏为空。
  *
  * 做法是从每页的最终 URL 反推分区段（URL 第一段），据此聚合。
