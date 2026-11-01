@@ -434,6 +434,15 @@ export const teekConfig = defineTeekConfig({
         { name: "邮箱", link: "mailto:zwn200401@gmail.com" },
       ],
     },
+    {
+      title: "互动与订阅",
+      links: [
+        { name: "RSS订阅", link: "/feed.xml" },
+        { name: "留言板", link: "/guestbook" },
+        { name: "友链", link: "/contact" },
+        { name: "欢迎打赏", link: "/donate" },
+      ],
+    },
   ],
   footerInfo: {
     topMessage: [
