@@ -13,6 +13,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import matter from 'gray-matter';
 import { fileURLToPath } from 'node:url';
 import { buildRewrites, collectPages } from '../permalinks.ts';
@@ -69,15 +70,70 @@ function readPage(docsRoot, rel) {
   }
 }
 
-/** 取页面最后修改时间，作为 sitemap 的 lastmod。 */
-function lastmod(docsRoot, rel) {
+/**
+ * 一次遍历 git 历史，建立「文件 → 最近一次提交日期」映射。
+ * CI 环境 checkout 后所有文件 mtime 都是构建时间，lastmod 必须以 git 为准；
+ * 非 git 环境（源码直接拷贝）整体退回 mtime。
+ * 输出行形如「日期行 + 空行 + 文件列表」，自新到旧，每文件取首次出现的日期。
+ */
+let gitTimesCache = null;
+function gitModTimes(docsRoot) {
+  if (gitTimesCache) return gitTimesCache;
+  const times = new Map();
+  try {
+    const toplevel = execFileSync('git', ['-C', docsRoot, 'rev-parse', '--show-toplevel'], {
+      encoding: 'utf8',
+    }).trim();
+    // git 输出的路径相对仓库根，rel 相对 srcDir（docs），换算需剥掉中间前缀
+    const prefix = path.relative(toplevel, docsRoot).split(path.sep).join('/');
+    const out = execFileSync(
+      'git',
+      ['-C', docsRoot, '-c', 'core.quotepath=false', 'log', '--format=%cs', '--name-only'],
+      { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
+    );
+    let date = null;
+    for (const line of out.split('\n')) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(line)) {
+        date = line;
+      } else if (line && date) {
+        const rel = prefix && line.startsWith(prefix + '/') ? line.slice(prefix.length + 1) : line;
+        if (!times.has(rel)) times.set(rel, date);
+      }
+    }
+  } catch {
+    // 无 git / 非仓库目录：保持空映射，调用方退回 frontmatter date 或 mtime
+  }
+  gitTimesCache = times;
+  return times;
+}
+
+/**
+ * 取页面最后修改时间，作为 sitemap 的 lastmod。优先级：
+ *   1. frontmatter.updated —— 作者显式声明的最后修改时间
+ *   2. git 最近一次提交日期 —— CI checkout 后 mtime 失真，git 才是真实修改时间；
+ *      排在 date 之前：date 是发布日期，文章后期修改过则它就是错的
+ *   3. frontmatter.date / created —— 发布日期（未提交的新文件在 git 里查不到时兜底）
+ *   4. 文件 mtime —— 最后手段
+ */
+function lastmod(docsRoot, rel, data = {}) {
+  if (data.updated) {
+    const d = new Date(data.updated);
+    if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  }
+  const gitDate = gitModTimes(docsRoot).get(rel);
+  if (gitDate) return gitDate;
+  const fallback = data.date ?? data.created;
+  if (fallback) {
+    const d = new Date(fallback);
+    if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  }
   try {
     const file = path.join(docsRoot, rel);
-    if (!fs.existsSync(file)) return null;
-    return fs.statSync(file).mtime.toISOString().slice(0, 10);
+    if (fs.existsSync(file)) return fs.statSync(file).mtime.toISOString().slice(0, 10);
   } catch {
-    return null;
+    // 读不到就跳过 lastmod
   }
+  return null;
 }
 
 /**
@@ -88,7 +144,7 @@ function buildSitemap(docsRoot, outDir) {
   const pages = collectPages(docsRoot).filter((p) => p.url !== 'risk-link');
   const urls = pages.map((p) => {
     const loc = `${SITE_URL}/${p.url === 'index' ? '' : p.url}`.replace(/\/+$/, '') + '/';
-    const mod = lastmod(docsRoot, p.rel);
+    const mod = lastmod(docsRoot, p.rel, readPage(docsRoot, p.rel).data);
     return `  <url>\n    <loc>${escapeXml(loc)}</loc>${mod ? `\n    <lastmod>${mod}</lastmod>` : ''}\n  </url>`;
   });
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
@@ -103,12 +159,13 @@ function buildSitemap(docsRoot, outDir) {
  */
 function patchRobots(outDir) {
   const file = path.join(outDir, 'robots.txt');
-  const base = fs.existsSync(file)
-    ? fs.readFileSync(file, 'utf8')
-    : 'User-agent: *\nAllow: /\n';
-  const cleaned = base.replace(/\n*Sitemap:.*\n?/gi, '\n');
-  const withSitemap = cleaned.replace(/\n*$/, '\n') + `Sitemap: ${SITE_URL}/sitemap.xml\n`;
-  fs.writeFileSync(file, withSitemap);
+  const base = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  const cleaned = base.replace(/\n*Sitemap:.*\n?/gi, '\n').replace(/\n+$/, '');
+  // 显式声明抓取规则：不写规则虽等同「全允许」，但显式的 User-agent 组
+  // 对爬虫与运维审计更清晰。public/ 里通常只有 Algolia 校验注释，这里补齐。
+  const hasAgent = /^User-agent:/im.test(cleaned);
+  const body = hasAgent ? cleaned : `User-agent: *\nAllow: /\n${cleaned}`;
+  fs.writeFileSync(file, `${body}\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 }
 
 /**

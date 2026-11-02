@@ -26,8 +26,30 @@ function toPlainText(markdown: string) {
     .trim();
 }
 
+/**
+ * 非文章页不进订阅源。判定口径（满足其一即排除）：
+ * - frontmatter 显式 article: false —— 作者标记的功能页（@pages 下各页、朋友圈等）
+ * - frontmatter 带 layout —— 自定义页面壳（快速导航 layout: page、首页 layout: home 等），
+ *   默认文档页不含该字段
+ * - catalogue: true —— 目录/导航聚合页
+ * - 分区落地页（目录下的 index.md，如 /materials /study /projects /notes）—— 仅入口，非文章
+ * - 正文（去 frontmatter、去代码块/图片后）无文字 —— 空页
+ */
 function readArticle(docsRoot: string, rel: string) {
   const parsed = matter(fs.readFileSync(path.join(docsRoot, rel), 'utf8'));
+  const { data, content } = parsed;
+  const isSectionIndex = rel.split('/').pop() === 'index.md';
+  const isEmptyBody = toPlainText(content).length === 0;
+  if (
+    data.article === false ||
+    typeof data.layout === 'string' ||
+    data.layout === false ||
+    data.catalogue === true ||
+    isSectionIndex ||
+    isEmptyBody
+  ) {
+    return null;
+  }
   const description =
     (typeof parsed.data.description === 'string' && parsed.data.description.trim()) ||
     (typeof parsed.data.desc === 'string' && parsed.data.desc.trim()) ||
@@ -47,6 +69,7 @@ function buildRss(docsRoot: string) {
     .filter(({ rel }) => rel !== 'index.md' && !rel.startsWith('@pages/'))
     .map((page) => {
       const article = readArticle(docsRoot, page.rel);
+      if (!article) return null;
       const link = `${SITE_URL}/${page.url.replace(/^\/+|\/+$/g, '')}/`;
       return {
         date: article.date,
@@ -59,6 +82,7 @@ function buildRss(docsRoot: string) {
     </item>`,
       };
     })
+    .filter((item): item is { date: Date; xml: string } => item !== null)
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .map(({ xml }) => xml);
 
