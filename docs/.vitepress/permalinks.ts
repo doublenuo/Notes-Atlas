@@ -88,6 +88,15 @@ export interface PageInfo {
   dir: string
 }
 
+/**
+ * 分组显示名去掉磁盘目录的序号前缀：00.数学基础 → 数学基础、001.Docker基础教程 → Docker基础教程。
+ * 必须带分隔符才剥（第3章 / 3D打印 这类非序号开头的名字不受影响）；
+ * 剥完为空（理论上不存在「01.」这种目录）时回退原名。
+ */
+function stripOrdinal(name: string) {
+  return name.replace(/^\d+\s*[.．、_-]+\s*/, '') || name;
+}
+
 /** 标题 → URL slug：保留 Unicode 字母数字，其余转连字符 */
 function slugify(title: string) {
   return title
@@ -269,7 +278,7 @@ function buildGroups(pages: PageInfo[], dir?: string): SidebarItem[] {
 
   for (const c of children) {
     const nested = buildGroups(pages, c.dir)
-    if (nested.length) items.push({ text: c.name, collapsed: true, items: nested })
+    if (nested.length) items.push({ text: stripOrdinal(c.name), collapsed: true, items: nested })
   }
 
   return items
@@ -328,7 +337,7 @@ export function buildSidebar(pages: PageInfo[]) {
     for (const s of subs) {
       const content = all.filter((p) => p.url.startsWith(`${seg}/${s}/`))
       if (!content.length) continue
-      // 同样按磁盘目录分组，让分组名保持为 001.Agent核心概念 这类可读名称
+      // 同样按磁盘目录分组，分组显示名经 stripOrdinal 去掉序号前缀
       const start = commonDir(content.map((p) => p.rel.split('/').slice(0, -1)))
       const items = buildGroups(content, start || undefined)
       if (items.length) sidebar[`${seg}/${s}/`] = items
