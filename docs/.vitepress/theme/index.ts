@@ -4,7 +4,7 @@ import ThemeConfig, { type ChangeType } from "./components/ThemeConfig.vue";
 import NotFound from "./components/404.vue";
 import { useRibbon } from "./composables/useRibbon";
 
-import { defineComponent, provide, h, ref, computed, watch, onMounted } from 'vue'
+import { defineComponent, defineAsyncComponent, provide, h, ref, computed, watch, onMounted } from 'vue'
 import "vitepress-theme-teek/index.css";
 import "vitepress-theme-teek/theme-chalk/tk-code-block-mobile.css"; // 移动端代码块样式优化
 import "vitepress-theme-teek/theme-chalk/tk-sidebar.css"; // 侧边栏优化
@@ -18,13 +18,15 @@ import "vitepress-theme-teek/theme-chalk/tk-index-rainbow.css"; // 首页图片�
 import "vitepress-theme-teek/theme-chalk/tk-banner-desc-gradient.css"; // 博客风格 Banner 描述渐变样式
 import "vitepress-theme-teek/theme-chalk/tk-home-card-hover.css"; // 首页卡片悬停效果
 import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加载的动画效果
-import ContributeChart from "./components/ContributeChart.vue";
 import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
+import LazyGiscus from "./components/LazyGiscus.vue";
 
-import Giscus from "@giscus/vue";
 import { useData, useRoute } from "vitepress";
+
+// 贡献图（含 echarts）只在归档页的 slot 渲染时才拉取对应 chunk，避免全站预加载 ~365KB gzip
+const ContributeChart = defineAsyncComponent(() => import("./components/ContributeChart.vue"));
 
 import "./styles/code-bg.scss";
 import "./styles/theme-color.scss"; // 主题色板区块：对齐 teek 官网观感（色块不带文字）
@@ -37,12 +39,17 @@ import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（
 
 export default {
   extends: Teek,
+  enhanceApp({ app }) {
+    // mermaid 只在真正出现图表时加载，避免全站每页预加载 2.8MB
+    app.component("Mermaid", defineAsyncComponent(() => import("./components/Mermaid.vue")));
+  },
   Layout: defineComponent({
     name: "LayoutProvider",
     setup() {
       const { isDark, page } = useData();
       const route = useRoute();
-      provide(giscusContext, () => Giscus);
+      // 评论组件：LazyGiscus 进入视口后才动态加载 @giscus/vue（~52KB gzip），避免每页预加载
+      provide(giscusContext, () => LazyGiscus);
 
       // 右上角设置面板 →「主题配置」区块：通过 teekConfigContext 做运行时主题配置覆盖
       const teekConfig = ref<TeekConfig>({});

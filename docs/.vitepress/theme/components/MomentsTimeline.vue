@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
+import { withBase } from 'vitepress'
 import { computed, ref } from 'vue'
 
 type Moment = {
@@ -31,7 +32,7 @@ const props = withDefaults(
     /** 卡片昵称 */
     name?: string
   }>(),
-  { avatar: '/tx.jpg', name: 'weno' },
+  { avatar: '/logo.png', name: 'weno' },
 )
 
 // glob 以 Vite root（即 docs/）为根；?raw 拿原文，frontmatter 在此自行解析，
@@ -211,7 +212,7 @@ const lightbox = ref<string | null>(null)
       </div>
 
       <article v-for="moment in group.items" :key="moment.source" class="moment">
-        <img class="moment-avatar" :src="props.avatar" alt="" loading="lazy" />
+        <img class="moment-avatar" :src="withBase(props.avatar)" alt="" loading="lazy" />
         <div class="moment-card">
           <header class="moment-head">
             <span class="moment-name">{{ props.name }}</span>

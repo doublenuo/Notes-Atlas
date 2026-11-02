@@ -1,29 +1,37 @@
 import { defineConfig } from 'vitepress'
 
 import { teekConfig } from './teekConfig'
-import { withMermaid } from 'vitepress-plugin-mermaid'
 import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { collectPages, buildRewrites, buildSidebar } from './permalinks'
 import { obsidianEmbed } from './plugins/obsidianEmbed.js'
+import { imageSizePlugin } from './plugins/imageSize'
+import { footnotes } from './plugins/footnotes.js'
+import { siteDataOptimize } from './plugins/siteDataOptimize'
 import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
 import { seo, buildHead } from './plugins/seo'
 import { rss } from './plugins/rss'
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './site'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE } from './site'
 
 const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
 // 有 permalink 的用它；没有的用文档标题派生 slug。详见 ./permalinks.ts
 const PAGES = collectPages(DOCS_ROOT)
 
-export default withMermaid(defineConfig({
+export default defineConfig({
   extends: teekConfig,
   lang: 'zh-CN',
-  base: process.env.VITEPRESS_BASE ?? "/",
+  base: BASE,
   title: SITE_NAME,
   titleTemplate: `:title | ${SITE_NAME}`,
   description: SITE_DESCRIPTION,
   head: [
-    ['link', { rel: 'icon', href: '/tx.jpg' }],
+    // config.head 不会被 VitePress 自动加 base（site.ts 的 BASE 注释），必须显式拼接。
+    // favicon 用 ico(16/32/48) + png 双声明：个别浏览器对 PNG-in-ICO 支持不佳时自动改用 PNG；
+    // 均替代原 100KB 的 1080px JPEG；touch icon / logo 见 public/
+    ['link', { rel: 'icon', type: 'image/x-icon', sizes: '32x32', href: `${BASE}favicon.ico` }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}favicon-32.png` }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
     // 预连接外部资源，减少 DNS/TLS 握手延迟
     ['link', { rel: 'preconnect', href: 'https://www.googletagmanager.com', crossorigin: 'anonymous' }],
@@ -46,20 +54,9 @@ export default withMermaid(defineConfig({
     // 文档分析(字数/阅读时长)按嵌入展开后重算,覆盖 doc-analysis 的原始源码口径
     plugins: [
       docAnalysisEmbed(),
+      siteDataOptimize(),
       seo({ siteUrl: SITE_URL }),
       rss({ siteUrl: SITE_URL }),
-      // vitepress-plugin-mermaid 会把 mermaid 的传递依赖硬编码进 optimizeDeps.include，
-      // 其中 debug 是旧版 mermaid 的依赖，mermaid 11 已不再使用、依赖树里不存在，
-      // 导致 dev 启动时反复报 "Failed to resolve dependency: debug"。这里从 include 中剔除。
-      {
-        name: 'drop-stale-mermaid-dep',
-        config(config) {
-          const include = config.optimizeDeps?.include
-          if (Array.isArray(include)) {
-            config.optimizeDeps.include = include.filter((id) => id !== 'debug')
-          }
-        },
-      },
     ],
     build: {
       target: 'es2020',                    // 现代浏览器目标，减小 polyfill 体积
@@ -70,10 +67,11 @@ export default withMermaid(defineConfig({
           // 手动代码分割：将重依赖拆分为独立 chunk，按需加载
           manualChunks(id: string) {
             if (id.includes('node_modules/echarts')) return 'echarts'
-            if (id.includes('node_modules/mermaid')) return 'mermaid'
             if (id.includes('node_modules/mathjax')) return 'mathjax'
-            if (id.includes('node_modules/@giscus')) return 'giscus'
             if (id.includes('node_modules/monaco')) return 'monaco'
+            // 注意：不要给 @giscus 单独设 manualChunks。@giscus/vue 只经动态导入使用，
+            // 让 Rollup 默认分块即可；手动指定会把它和全站共享的 Vue runtime 合并进同一个
+            // chunk，导致 app 入口静态导入该 chunk（~54KB gzip）每页都加载。
           },
           // 资源文件命名
           chunkFileNames: 'assets/js/[name]-[hash].js',
@@ -82,7 +80,7 @@ export default withMermaid(defineConfig({
       },
       // 内联小资源，减少 HTTP 请求
       assetsInlineLimit: 4096,             // 4KB 以下资源内联为 base64
-      chunkSizeWarningLimit: 3000,         // mermaid/mathjax 等大依赖已手动分割，无需警告
+      chunkSizeWarningLimit: 3000,         // mathjax 等大依赖已手动分割，mermaid 按需加载
     },
     // 开发服务器优化
     server: {
@@ -96,7 +94,7 @@ export default withMermaid(defineConfig({
     },
   },
   themeConfig: {
-    logo: '/tx.jpg',
+    logo: '/logo.png',
     // teek 的 sidebar 插件按磁盘目录名生成键，开启 rewrites 后页面 URL 已是 permalink，
     // 两者对不上会让全站侧边栏变空白。故在 teekConfig 里关掉它，改用这里按 permalink 生成的。
     sidebar: buildSidebar(PAGES),
@@ -176,10 +174,31 @@ export default withMermaid(defineConfig({
   },
   markdown: {
     math: true,
+    // 全站约 300 张图片，开启原生懒加载（img loading="lazy"），避免首屏拉取全部图片
+    image: { lazyLoading: true },
     config(md) {
       // Obsidian 式 ! [[]] 嵌入与 [[]] 站内链接
       // 规格：docs/superpowers/specs/2026-09-23-obsidian-embed-design.md
       obsidianEmbed(md, DOCS_ROOT)
+
+      // 本地图片注入 width/height（构建期解析文件头），消除 CLS
+      imageSizePlugin(md, join(DOCS_ROOT, 'public'))
+
+      // 脚注：[^1] 引用 + 文末定义，生成脚注区并注入「参考资料」二级标题
+      md.use(footnotes)
+
+      // 只输出占位组件，mermaid 本体由 Mermaid.vue 在挂载时动态加载。
+      // 不要改回 withMermaid：它会在 app 入口全局注册组件并静态引入 mermaid，
+      // 导致每个页面都预加载约 2.8MB 的 mermaid chunk。
+      const fence = md.renderer.rules.fence
+      md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+        const token = tokens[idx]
+        const info = token.info.trim()
+        if (info === 'mermaid' || info === 'mmd') {
+          return `<ClientOnly><Mermaid id="mermaid-${idx}" class="mermaid" graph="${encodeURIComponent(token.content)}" /></ClientOnly>`
+        }
+        return fence(tokens, idx, options, env, self)
+      }
     },
   },
-}))
+})
