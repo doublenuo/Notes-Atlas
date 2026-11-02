@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createMarkdownRenderer, disposeMdItInstance } from "vitepress";
 import { obsidianEmbed } from "../docs/.vitepress/plugins/obsidianEmbed.js";
+import { footnotes } from "../docs/.vitepress/plugins/footnotes.js";
 
 export const HERE = dirname(fileURLToPath(import.meta.url));
 export const VAULT = join(HERE, "fixtures", "vault");
@@ -14,6 +15,7 @@ export async function makeMd(root) {
     math: true,
     config(md) {
       obsidianEmbed(md, root);
+      md.use(footnotes); // 与 config.ts 的 markdown.config 保持一致
     },
   });
 }

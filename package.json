@@ -20,5 +20,8 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "test": "node --test \"tests/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "markdown-it-footnote": "^4.0.0"
   }
 }
