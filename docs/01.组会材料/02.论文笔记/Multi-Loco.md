@@ -14,6 +14,6 @@ tags:
 
 ## 模型架构图
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201507745.png)
+![20261009201507745](/images/cos/20261009201507745.png)
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201516318.png)
+![20261009201516318](/images/cos/20261009201516318.png)

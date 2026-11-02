@@ -18,8 +18,8 @@ tags:
 
 如何让人形机器人在复杂三维受限环境中同时完成能走 + 能规划 + 不碰撞的局部导航与运动控制，这篇论文的核心思想是使用 3D voxel grid 统一表示环境，让强化学习策略直接从三维占据空间学习可通行性和locomotion 控制。
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200645621.png)
+![20261009200645621](/images/cos/20261009200645621.png)
 
 ## 模型架构图
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009200704355.png)
+![20261009200704355](/images/cos/20261009200704355.png)

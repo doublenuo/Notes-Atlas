@@ -18,7 +18,7 @@ tags:
 
 ## 模型框架图
 
-![](https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261028145713781.png)
+![20261028145713781](/images/cos/20261028145713781.png)
 
 ## 1. 要解决的问题
 

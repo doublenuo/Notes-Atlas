@@ -16,4 +16,4 @@ tags:
 
 ## 模型框架图
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009203954264.png)
+![20261009203954264](/images/cos/20261009203954264.png)

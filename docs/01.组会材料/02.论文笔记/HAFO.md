@@ -12,5 +12,5 @@ categories:
 
 ## 模型框架图
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260915231658159.png)
+![20260915231658159](/images/cos/20260915231658159.png)
 

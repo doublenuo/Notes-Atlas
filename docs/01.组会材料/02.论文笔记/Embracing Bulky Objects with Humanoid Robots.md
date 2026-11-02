@@ -33,4 +33,4 @@ $$ z_t = \mu_t^p + z_t^s $$
 
 最终整个流程就是 “人体动作 → 清洗 → Retarget 到机器人 → Teacher 学习动作跟踪 → VAE 蒸馏成低维 Motion Prior → 冻结 Prior + Decoder → PPO 学习 Embracing Policy → 输出 latent residual → 与 Motion Prior 相加 → Decoder 生成关节动作 → 完成环抱、抬升和搬运”。所以这篇论文真正的核心不是单纯用 PPO 搬箱子，而是把问题拆成了两个层次：Motion Prior 负责解决“机器人怎么自然地动”，Embracing Policy 负责解决“为了搬这个物体应该怎么改动作”，再利用 NSDF 提供物体—身体之间的几何关系，使策略最终形成全身、多接触点的环抱搬运行为。
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260906101815551.png)
+![20260906101815551](/images/cos/20260906101815551.png)

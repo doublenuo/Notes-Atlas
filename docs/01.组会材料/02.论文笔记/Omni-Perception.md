@@ -18,8 +18,8 @@ tags:
 
 腿式机器人在动态环境中高速运动时，由于感知视野有限，无法及时避免来自任意方向的碰撞问题，这篇论文就是为了解决这个问题的。
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201542659.png)
+![20261009201542659](/images/cos/20261009201542659.png)
 
 ## 模型架构图
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201630407.png)
+![20261009201630407](/images/cos/20261009201630407.png)

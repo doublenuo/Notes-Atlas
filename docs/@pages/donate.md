@@ -17,11 +17,11 @@ comment: false
 
 <div style="display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin:28px 0;">
   <figure style="margin:0;text-align:center;">
-    <img src="https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261029123144108.png" alt="支付宝收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
+    <img src="/images/cos/20261029123144108.png" alt="支付宝收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
     <figcaption style="margin-top:8px;font-size:14px;color:var(--vp-c-text-2);">支付宝</figcaption>
   </figure>
   <figure style="margin:0;text-align:center;">
-    <img src="https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261029123230345.png" alt="微信收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
+    <img src="/images/cos/20261029123230345.png" alt="微信收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
     <figcaption style="margin-top:8px;font-size:14px;color:var(--vp-c-text-2);">微信</figcaption>
   </figure>
 </div>

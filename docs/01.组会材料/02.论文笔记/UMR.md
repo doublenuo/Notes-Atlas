@@ -19,7 +19,7 @@ tags:
 
 ## 模型框架图
 
-![](https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261028104934176.png)
+![20261028104934176](/images/cos/20261028104934176.png)
 
 ## 一句话总结
 

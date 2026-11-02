@@ -22,5 +22,5 @@ MoCap Dataset包含原始全身动捕数据，经过运动重定向和解耦处�
 
 教师策略接收特权信息（完整状态、本体感知、完整上肢参考），通过 PPO Loss 训练。学生策略只接收本体感知和简化命令（双手关键点 pose），通过 PPO Loss + BC Loss联合训练。图中红色箭头表示 BC Loss 让学生模仿教师的动作输出。
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715105613018.png)
+![20260715105613018](/images/cos/20260715105613018.png)
 

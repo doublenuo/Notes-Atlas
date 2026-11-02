@@ -13,11 +13,11 @@ tags:
 
 ## 整体预览
 
-![桌面预览](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715190941610.png)
+![桌面预览](/images/cos/20260715190941610.png)
 
-![Terminal](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715191038745.png)
+![Terminal](/images/cos/20260715191038745.png)
 
-![Workspace](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715191118830.png)
+![Workspace](/images/cos/20260715191118830.png)
 
 ## 系统工具
 
@@ -38,25 +38,25 @@ tags:
 - Timeshift: 系统备份工具
 - PeaZip：压缩工具
 
-![Google浏览器](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193142633.png)
+![Google浏览器](/images/cos/20260715193142633.png)
 
-![Firefox浏览器](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193218227.png)
+![Firefox浏览器](/images/cos/20260715193218227.png)
 
-![Nautils文件系统](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193247230.png)
+![Nautils文件系统](/images/cos/20260715193247230.png)
 
-![Motrix](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193345023.png)
+![Motrix](/images/cos/20260715193345023.png)
 
-![fsearch](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193409845.png)
+![fsearch](/images/cos/20260715193409845.png)
 
-![copyq](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193436868.png)
+![copyq](/images/cos/20260715193436868.png)
 
-![utools](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193515404.png)
+![utools](/images/cos/20260715193515404.png)
 
-![Gear Lever](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193833285.png)
+![Gear Lever](/images/cos/20260715193833285.png)
 
-![Timeshift](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194435473.png)
+![Timeshift](/images/cos/20260715194435473.png)
 
-![PeaZip](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194843306.png)
+![PeaZip](/images/cos/20260715194843306.png)
 
 ## 办公软件
 
@@ -82,35 +82,35 @@ tags:
   - Shotwell：照片管理器
   - PicGo：图片上传工具
 
-![WPS office](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193631486.png)
+![WPS office](/images/cos/20260715193631486.png)
 
-![Okular](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193706285.png)
+![Okular](/images/cos/20260715193706285.png)
 
-![Typora](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193747251.png)   
+![Typora](/images/cos/20260715193747251.png)   
 
-![腾讯会议](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715193945690.png)
+![腾讯会议](/images/cos/20260715193945690.png)
 
-![Zotero](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194053202.png)
+![Zotero](/images/cos/20260715194053202.png)
 
-![Xmind](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194132677.png)
+![Xmind](/images/cos/20260715194132677.png)
 
-![QQ](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194301848.png)
+![QQ](/images/cos/20260715194301848.png)
 
-![飞书](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195042893.png)
+![飞书](/images/cos/20260715195042893.png)
 
-![Thunderbird](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194359820.png)
+![Thunderbird](/images/cos/20260715194359820.png)
 
-![百度网盘](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194531708.png)
+![百度网盘](/images/cos/20260715194531708.png)
 
-![GIMP](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194647914.png)
+![GIMP](/images/cos/20260715194647914.png)
 
-![Shotwell](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194724600.png)
+![Shotwell](/images/cos/20260715194724600.png)
 
-![VLC](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194755887.png)
+![VLC](/images/cos/20260715194755887.png)
 
-![PicGo](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715194934568.png)
+![PicGo](/images/cos/20260715194934568.png)
 
-![SimpleTex](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195333208.png)
+![SimpleTex](/images/cos/20260715195333208.png)
 
 ## 开发工具
 
@@ -124,23 +124,23 @@ tags:
 - Filezilla
 - OpenCode
 
-![VSCode](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195414424.png)
+![VSCode](/images/cos/20260715195414424.png)
 
-![Pycharm](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195441506.png)
+![Pycharm](/images/cos/20260715195441506.png)
 
-![Cursor](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195555594.png)
+![Cursor](/images/cos/20260715195555594.png)
 
-![Termius](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195640017.png)
+![Termius](/images/cos/20260715195640017.png)
 
-![Postman](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195703985.png)
+![Postman](/images/cos/20260715195703985.png)
 
-![Oracle VirtualBox](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195723971.png)
+![Oracle VirtualBox](/images/cos/20260715195723971.png)
 
-![CCSwitch](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195746145.png)
+![CCSwitch](/images/cos/20260715195746145.png)
 
-![Filezilla](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715200217071.png)
+![Filezilla](/images/cos/20260715200217071.png)
 
-![OpenCode](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715200358952.png)
+![OpenCode](/images/cos/20260715200358952.png)
 
 ## 其他软件
 
@@ -154,25 +154,25 @@ tags:
   - QQ音乐
   - bilibili
 
-![向日葵](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195851130.png)
+![向日葵](/images/cos/20260715195851130.png)
 
-![Todesk](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195929544.png)
+![Todesk](/images/cos/20260715195929544.png)
 
-![Localsend](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715195951071.png)
+![Localsend](/images/cos/20260715195951071.png)
 
-![Transmission](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715200024023.png)
+![Transmission](/images/cos/20260715200024023.png)
 
-![小红书](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715200116429.png)
+![小红书](/images/cos/20260715200116429.png)
 
-![Bilibili](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715200237969.png)
+![Bilibili](/images/cos/20260715200237969.png)
 
 
 ## gnome插件
 
 我目前使用的gnome插件可以查看下图
 
-![gnome插件](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715200527396.png)
+![gnome插件](/images/cos/20260715200527396.png)
 
 所使用的主题、图标、字体可以见下图
 
-![gnome主题图标字体](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260715200624272.png)
+![gnome主题图标字体](/images/cos/20260715200624272.png)

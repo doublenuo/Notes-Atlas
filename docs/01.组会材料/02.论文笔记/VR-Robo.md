@@ -18,10 +18,10 @@ tags:
 
 这篇论文的核心思想是先用真实世界数据建立视觉真实感，再在仿真中进行大规模强化学习，最后无缝迁回真实机器人。
 
-![VR-Robo论文介绍图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326155455413.png)
+![VR-Robo论文介绍图](/images/github/20260326155455413.png)
 
 ## 模型架构图
 
-![image-20260326142738343](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326142738480.png)
+![image-20260326142738343](/images/github/20260326142738480.png)
 
-![image-20260326142747899](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260326142747966.png)
+![image-20260326142747899](/images/github/20260326142747966.png)

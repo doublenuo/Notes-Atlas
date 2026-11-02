@@ -15,5 +15,5 @@ tags:
 
 ## 模型框架
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261009201859062.png)
+![20261009201859062](/images/cos/20261009201859062.png)
 

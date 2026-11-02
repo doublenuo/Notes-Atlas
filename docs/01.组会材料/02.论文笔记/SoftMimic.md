@@ -14,7 +14,7 @@ categories:
 
 ## 模型框架图
 
-![](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261012221621117.png)
+![20261012221621117](/images/cos/20261012221621117.png)
 
 ## 核心思想
 

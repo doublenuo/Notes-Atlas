@@ -12,4 +12,4 @@ categories:
 
 ## 模型框架图
 
-![SplitAdapter模型框架图](https://ubuntu-picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20260728230735879.png)
+![SplitAdapter模型框架图](/images/cos/20260728230735879.png)

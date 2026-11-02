@@ -17,5 +17,5 @@ tags:
 
 ## 模型框架
 
-![RoTri-Diff模型框架图](https://raw.githubusercontent.com/doublenuo/ubuntu-image/main/image/20260515121025585.png)
+![RoTri-Diff模型框架图](/images/github/20260515121025585.png)
 
