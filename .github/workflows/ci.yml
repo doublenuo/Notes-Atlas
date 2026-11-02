@@ -1,0 +1,47 @@
+name: CI
+
+# 内容/测试/构建脚本的改动都过一遍：单测 + 构建 + 构建产物死链检查。
+# 与 deploy.yml（推 main 才发布）互补：PR 阶段先拦住坏链接和挂掉的用例。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build site
+        run: pnpm docs:build
+
+      - name: Check dead links
+        run: pnpm check:links
