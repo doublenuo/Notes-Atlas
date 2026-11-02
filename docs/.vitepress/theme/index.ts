@@ -1,7 +1,7 @@
 import Teek, { giscusContext, teekConfigContext, TkMessage, usePosts, useTeekConfig } from "vitepress-theme-teek";
 import type { TeekConfig } from "vitepress-theme-teek";
-import TeekLayoutProvider from "./components/TeekLayoutProvider.vue";
 import ThemeConfig, { type ChangeType } from "./components/ThemeConfig.vue";
+import NotFound from "./components/404.vue";
 import { useRibbon } from "./composables/useRibbon";
 
 import { defineComponent, provide, h, ref, computed, watch, onMounted } from 'vue'
@@ -139,6 +139,7 @@ export default {
         "teek-article-share-after": () => h(ArticleExportPdf),
         // 朋友圈时间线（frontmatter.moments === true 时生效）
         "page-top": () => (isMomentsPage.value ? h(MomentsTimeline) : null),
+        "not-found": () => h(NotFound),
       });
     },
   })

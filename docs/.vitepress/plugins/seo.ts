@@ -85,7 +85,7 @@ function lastmod(docsRoot, rel) {
  * 没有独立内容，收进索引只会稀释权重（且它自己会带 noindex）。
  */
 function buildSitemap(docsRoot, outDir) {
-  const pages = collectPages(docsRoot);
+  const pages = collectPages(docsRoot).filter((p) => p.url !== 'risk-link');
   const urls = pages.map((p) => {
     const loc = `${SITE_URL}/${p.url === 'index' ? '' : p.url}`.replace(/\/+$/, '') + '/';
     const mod = lastmod(docsRoot, p.rel);

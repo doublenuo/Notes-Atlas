@@ -8,7 +8,7 @@ const ns = "error-page";
 
 <template>
   <div :class="[ns, 'flx-center']">
-    <img :src="withBase('/404.png')" :class="`${ns}__img`" alt="404" />
+    <img :src="withBase('/404.svg')" :class="`${ns}__img`" alt="404" />
     <div :class="[`${ns}__detail`, 'flx-column']">
       <h2>404</h2>
       <h4>抱歉，您访问的页面不存在~🤷‍♂️🤷‍♀️</h4>
@@ -24,6 +24,11 @@ $namespace: error-page;
   width: 100%;
   height: calc(100vh - var(--vp-nav-height));
   gap: 120px;
+
+  &__img {
+    width: min(360px, 70vw);
+    height: auto;
+  }
 
   &__detail {
     h2 {
