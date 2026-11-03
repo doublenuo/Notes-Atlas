@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { createResolver } from '../docs/.vitepress/plugins/obsidianEmbed.js';
+import { createResolver, noteHref } from '../docs/.vitepress/plugins/obsidianEmbed.js';
 
 const VAULT = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'vault');
 const resolveNote = createResolver(VAULT);
@@ -68,4 +68,17 @@ test('多个同名文件取字典序第一个并告警', () => {
   } finally {
     console.warn = origWarn;
   }
+});
+
+test('noteHref：permalink 优先，畸形或缺失回退源路径', () => {
+  // 正常 permalink：直接采用。rewrites 后生产 URL 就是 permalink，链过去可达；
+  // 磁盘源路径在 dist 里不存在，做回退只是兜底
+  assert.equal(noteHref('a/b.md', '/study/tools/docker-ch1'), '/study/tools/docker-ch1');
+  // 协议相对 // 开头视为畸形（防外跳），回退源路径
+  assert.equal(noteHref('a/b.md', '//evil.com/x'), '/a/b');
+  // 缺首斜杠同样不算显式站内路径
+  assert.equal(noteHref('a/b.md', 'study/x'), '/a/b');
+  // 空值与缺失回退
+  assert.equal(noteHref('a/b.md', ''), '/a/b');
+  assert.equal(noteHref('a/b.md', undefined), '/a/b');
 });

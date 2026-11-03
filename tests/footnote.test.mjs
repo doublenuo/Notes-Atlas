@@ -1,6 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import matter from "gray-matter";
 import { makeMd, DOCS } from "./helpers.mjs";
+
+/** 目标页的现 permalink：解析器契约为 permalink 优先，期望值动态读取防挂死 */
+const dockerCh3Permalink = () =>
+  matter(
+    readFileSync(join(DOCS, "02.学习笔记/10.开发工具/001.Docker基础教程/3. 第三章：Docker安装与基础配置.md"), "utf8")
+  ).data.permalink;
 
 test("脚注：[^n] 引用渲染为上标，文末生成脚注区", async () => {
   const md = await makeMd(DOCS);
@@ -26,7 +35,10 @@ test("脚注与 obsidianEmbed 共存：脚注定义不被吃成 wikilink", async
   assert.ok(html.includes('class="footnotes"'), "脚注区应正常生成：" + html);
   // 定义内容里的 [[ ]] 仍按 obsidianEmbed 规则转站内链接，而不是死链
   assert.ok(!html.includes("[[3. 第三章"), "wikilink 应被解析而非保留原文：" + html);
-  assert.ok(html.includes('href="/02.学习笔记/10.开发工具/001.Docker基础教程/3. 第三章：Docker安装与基础配置"'), "wikilink 应解析为站内链接");
+  // 目标页有 permalink，解析器用它（生产 URL 经 rewrites 落地）；磁盘源路径不在 dist 中
+  const permalink = dockerCh3Permalink();
+  assert.ok(permalink, "目标页应有 permalink（全站已回填）");
+  assert.ok(html.includes(`href="${encodeURI(permalink)}"`), "wikilink 应解析为站内链接（目标页 permalink）");
 });
 
 test("脚注：定义缺失时不炸、保留原文", async () => {

@@ -4,6 +4,8 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
+patchedDependencies:
+  vitepress-theme-teek@1.5.6: patches/vitepress-theme-teek@1.5.6.patch
 
 # vitepress-plugin-mermaid 会把 mermaid 的传递依赖硬编码进 vite optimizeDeps.include，
 # 但 pnpm 严格模式下这些依赖不会提升到根 node_modules，导致 Vite 预构建时报

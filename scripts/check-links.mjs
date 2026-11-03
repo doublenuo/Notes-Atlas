@@ -16,6 +16,12 @@ if (!fs.existsSync(dist)) {
   process.exit(1);
 }
 
+// VitePress 部署 base（与 config.ts / site.ts 保持一致）：默认 '/'，
+// GitHub Pages 部署时由 VITEPRESS_BASE=/Notes-Atlas/ 注入。链接在 HTML 里会带该前缀，
+// 但产物文件直接落在 dist 根下，所以解析前必须先剥掉 base，否则会把
+// /Notes-Atlas/assets/... 误判成 dist/Notes-Atlas/assets/... 而大量误报死链。
+const BASE = (process.env.VITEPRESS_BASE ?? '/').replace(/\/?$/, '');
+
 function walk(dir, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const f = path.join(dir, e.name);
@@ -47,9 +53,9 @@ for (const file of htmlFiles) {
     // 去掉查询串与锚点
     href = href.replace(/[?#].*$/, '');
     if (!href) continue;
-    // 站内绝对路径直接用；相对路径按所在页面目录解析
+    // 站内绝对路径：剥掉 base 前缀后解析；相对路径按所在页面目录解析
     const target = href.startsWith('/')
-      ? href.slice(1)
+      ? (BASE && href.startsWith(BASE) ? href.slice(BASE.length) : href).replace(/^\//, '')
       : path.posix.normalize(path.posix.join(path.posix.dirname(relFile), href));
     checked++;
     let decoded = target;

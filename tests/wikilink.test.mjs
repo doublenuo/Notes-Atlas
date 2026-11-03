@@ -1,16 +1,25 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import matter from "gray-matter";
 import { makeMd, VAULT, DOCS } from "./helpers.mjs";
 
 test("[[ ]] 行内引用 → 站内链接（真实库）", async () => {
   const md = await makeMd(DOCS);
   // 与生产渲染一致：站点 cleanUrls:true；vitepress linkPlugin 对内部 link_open 必做
-  // 「非 cleanUrls 时加 .html + 末尾 decodeURI」，故断言生产终态（原文中文、无 .html）
+  // 「非 cleanUrls 时加 .html + 末尾 decodeURI」，故断言生产终态（无 .html）
   const html = md.render("请先阅读[[3. 第三章：Docker安装与基础配置]]再操作。", {
     cleanUrls: true,
   });
-  const expected = "/02.学习笔记/10.开发工具/001.Docker基础教程/3. 第三章：Docker安装与基础配置";
-  assert.ok(html.includes(`href="${expected}"`), `链接应指向笔记源页，实际：${html}`);
+  // 解析器契约：目标页有 permalink 时用 permalink —— rewrites 后生产 URL 就是它，
+  // 磁盘源路径在 dist 里不存在，链过去反而 404。期望值从目标文件动态读取，
+  // permalink 再变更（如中文转英文）也不会把测试挂死。
+  const target = join(DOCS, "02.学习笔记/10.开发工具/001.Docker基础教程/3. 第三章：Docker安装与基础配置.md");
+  const { permalink } = matter(readFileSync(target, "utf8")).data;
+  assert.ok(permalink, "目标页应有 permalink（全站已回填）");
+  assert.ok(html.includes(`href="${encodeURI(permalink)}"`), `链接应指向目标页 permalink，实际：${html}`);
+  assert.ok(!html.includes('href="/02.学习笔记/'), "不应回退磁盘源路径：" + html);
   assert.ok(html.includes(">3. 第三章：Docker安装与基础配置</a>"));
   assert.ok(html.indexOf("请先阅读") < html.indexOf("<a "), "正文应在链接之前");
 });

@@ -20,7 +20,11 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "test": "node --test \"tests/**/*.test.mjs\"",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "convert:images": "node scripts/convert-images.mjs",
+    "find:orphan": "node scripts/find-orphan-media.mjs",
+    "audit:permalink": "node scripts/audit-permalinks.mjs",
+    "backfill:permalink": "node scripts/backfill-permalinks.mjs"
   },
   "dependencies": {
     "markdown-it-footnote": "^4.0.0"
