@@ -1,0 +1,79 @@
+/**
+ * 字体与中文排版优化。
+ *
+ * 现状：VitePress 1.6.4 自带两套零成本字体机制 —— Inter（本地子集化 woff2，
+ * 负责拉丁文）和 Punctuation SC（local() 本地字体 + unicode-range 只覆盖中文
+ * 标点，不下载任何文件）。汉字原本只跟在 ui-sans-serif 后走隐式回退。
+ *
+ * 本文件的策略：
+ *   1. 汉字首选 MiSans（小米免费商用，Apache-2.0）：从 npm misans@5.0.0 提取
+ *      cn-font-split 预分片 woff2（每字重 56 片 + unicode-range），自托管在
+ *      theme/fonts/misans/，经 Vite 管线产出（自动 hash、自动适配部署 base），
+ *      浏览器按页面实际用字只下载需要的分片（chunk 0 仅 21.7KB）
+ *   2. MiSans 之后保留系统 CJK 回退链：分片未覆盖的字符（emoji、上下标、
+ *      罕用字）落到各平台 native 字体，不会出现豆腐块
+ *   3. 标题字距修正：VitePress 默认 -0.02em 负字距是为拉丁文设计的，汉字用
+ *      负字距会糊在一起，改微正
+ *   4. 等宽栈补 CJK 回退：代码注释常含中文，否则中文注释会掉出等宽上下文
+ *
+ * 注意：自定义属性的值内部不能写 Sass // 注释 —— Sass 不处理属性值内的注释，
+ * 会原样输出进 CSS，把 font-family 栈变成非法值。注释一律写在声明块之外。
+ *
+ * 依赖：本文件必须在主题 CSS 之后加载（见 theme/index.ts 的 import 顺序），
+ * 靠后加载取胜 :root 变量覆盖（特异性相同）。
+ */
+
+:root {
+  // 拉丁文与标点保持 Punctuation SC + Inter 不变；汉字首选自托管 MiSans，
+  // 其后按平台显式回退：苹方(macOS/iOS) → 鸿蒙(华为) → 思源黑体(Linux/Android)
+  // → 雅黑 UI(Win11) → 雅黑(旧 Windows)
+  --vp-font-family-base:
+    "Punctuation SC",
+    "Inter",
+    "MiSans",
+    ui-sans-serif,
+    system-ui,
+    "PingFang SC",
+    "HarmonyOS Sans SC",
+    "MiSans VF",
+    "Noto Sans CJK SC",
+    "Source Han Sans SC",
+    "Microsoft YaHei UI",
+    "Microsoft YaHei",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+
+  // 等宽字体：优先本地现代等宽字体（SF Mono / Cascadia Code / JetBrains Mono），
+  // 尾部补 CJK 回退，保证代码注释里的中文不掉出等宽上下文
+  --vp-font-family-mono:
+    ui-monospace,
+    "SF Mono",
+    "Cascadia Code",
+    "JetBrains Mono",
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    "PingFang SC",
+    "Microsoft YaHei",
+    monospace;
+}
+
+// 标题：-0.02em → +0.01em。负字距让拉丁文更紧致，但汉字笔画密度高，
+// 负字距下笔画粘连；微正字距对中英混排的标题都更稳
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4 {
+  letter-spacing: 0.01em;
+}
+
+// 正文与列表：16px 屏显下汉字加 0.01em 微字距，长文阅读略疏、减少笔画粘连
+.vp-doc p,
+.vp-doc li {
+  letter-spacing: 0.01em;
+}
