@@ -12,7 +12,7 @@ title: 可选标题
 date: 2026-10-30 22:08
 location: 杭州
 images:
-  - /coffee.png
+  - /coffee.webp
   - /tx.jpg
 video: /video.mp4
 visible: true
@@ -34,6 +34,6 @@ visible: true
 
 ## 约定
 
-- 图片、视频放到 `docs/public/` 下，用 `/` 开头的绝对路径引用（如 `/coffee.png`）。
+- 图片、视频放到 `docs/public/` 下，用 `/` 开头的绝对路径引用（如 `/coffee.webp`）。
 - 正文、图片、视频全空的文件会被忽略。
 - 新增或修改文件后重新构建即自动聚合，开发模式下热更新直接可见。

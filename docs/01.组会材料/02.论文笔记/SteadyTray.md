@@ -15,4 +15,4 @@ tags:
 
 ## 模型框架图
 
-![SteadyTray模型框架图](/images/cos/20260722105049897.png)
+![SteadyTray模型框架图](/images/cos/20260722105049897.webp)

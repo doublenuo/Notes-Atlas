@@ -16,6 +16,6 @@ permalink: /materials/paper/amo
 ## 模型框架图
 
 
-![20261029125137626](/images/cos/20261029125137626.png)
+![20261029125137626](/images/cos/20261029125137626.webp)
 
 

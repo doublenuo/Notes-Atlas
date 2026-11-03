@@ -16,6 +16,6 @@ tags:
 -   Data Link: [https://huggingface.co/collections/jellyho/twinvla-datasets](https://huggingface.co/collections/jellyho/twinvla-datasets)
 ## 模型架构图
 
-![image-20260326144137793](/images/github/20260326144137847.png)
+![image-20260326144137793](/images/github/20260326144137847.webp)
 
-![image-20260326144157285](/images/github/20260326144157362.png)
+![image-20260326144157285](/images/github/20260326144157362.webp)

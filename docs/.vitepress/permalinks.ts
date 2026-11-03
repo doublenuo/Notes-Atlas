@@ -24,11 +24,12 @@ import matter from 'gray-matter'
 
 /**
  * 磁盘顶层目录 → URL 顶层段。@pages 下都是单段 permalink，不需要前缀。
- * 注意：键必须是磁盘真实目录名（含序号前缀）。写错（如把 03.工具与资源 写成
- * 011.工具与资源）会让该区没有 permalink 的页面匹配不到前缀，URL 掉到根目录。
+ * 注意：键必须是磁盘真实目录名（含序号前缀），值必须是该区现存 permalink 的
+ * 实际首段（01.组会材料 的页面用 /materials/...，不是 /meet/...）。
+ * 写错会让该区没有 permalink 的页面匹配不到前缀，URL 掉到错误命名空间。
  */
 const SECTION_PREFIX: Record<string, string> = {
-  '01.组会材料': 'meet',
+  '01.组会材料': 'materials',
   '02.学习笔记': 'study',
   '03.工具与资源': 'tools',
 }
@@ -52,17 +53,21 @@ const SECTION_SCOPE: Record<string, 'shared' | 'scoped'> = {
 /**
  * 磁盘二级目录 → URL 二级段。
  *
- * 顶层映射只能定位到 /study/ 这一层，但该分区的 URL 实为 /study/<二级段>/<slug>。
- * 缺 permalink 的页面若只落到 /study/<slug>，就会与 /study/python 这类分区并列，
- * 侧边栏也会被拆散（实测 04.agent 的 11 篇一度散到 5 个前缀下）。
- * 这份表把每个子目录的既有约定固定下来，未写 permalink 的页面据此派生。
+ * 本表是**兜底约定**：全站页面均已回填显式 permalink（scripts/backfill-permalinks.mjs），
+ * 正常构建不会走到派生分支；只有新页面忘写 permalink 时才按本表派生 URL。
+ * 键值均从现存显式 permalink 反推（如 02.Python基础 的 13 页全部用 /study/python/...），
+ * 改目录名或 URL 约定时要同步本表，否则新页面会落到 /study/<slug> 顶层。
+ *
+ * 曾因键名与磁盘目录不一致（02.Python / 04.agent / 06.强化学习 对不上
+ * 02.Python基础 / 04.Agent基础 / 06.强化学习基础）导致派生页散落顶层，已修正。
  */
 const SUBSECTION: Record<string, string> = {
-  '02.学习笔记/02.Python': 'study/python',
+  '02.学习笔记/00.数学基础': 'study/math',
+  '02.学习笔记/02.Python基础': 'study/python',
   '02.学习笔记/03.深度学习': 'study/dl',
-  '02.学习笔记/04.agent': 'study/agent',
-  '02.学习笔记/04.LLM': 'study/LLM',
-  '02.学习笔记/06.强化学习': 'study/rl',
+  '02.学习笔记/04.Agent基础': 'study/agent',
+  '02.学习笔记/06.强化学习基础': 'study/rl',
+  '02.学习笔记/07.RL运动控制核心': 'study/rl',
   '02.学习笔记/09.具身智能': 'study/embody',
   '02.学习笔记/10.开发工具': 'study/tools',
   '02.学习笔记/12.ROS': 'study/ros',

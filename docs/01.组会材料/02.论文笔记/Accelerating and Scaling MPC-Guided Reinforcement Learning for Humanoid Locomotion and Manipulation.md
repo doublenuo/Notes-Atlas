@@ -21,7 +21,7 @@ permalink: /materials/paper/mpc-rl
 
 ## 模型框架图
 
-![20261026151129912](/images/cos/20261026151129912.png)
+![20261026151129912](/images/cos/20261026151129912.webp)
 
 ## 一句话总结
 

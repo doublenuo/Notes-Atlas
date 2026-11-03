@@ -15,7 +15,7 @@ permalink: /materials/paper/learning-to-plan-schedule
 
 ## 模型框架图
 
-![20261009201209076](/images/cos/20261009201209076.png)
+![20261009201209076](/images/cos/20261009201209076.webp)
 
 ## 核心方法
 
