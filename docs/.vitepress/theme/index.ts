@@ -22,6 +22,7 @@ import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
 import LazyGiscus from "./components/LazyGiscus.vue";
+import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 
 import { useData, useRoute } from "vitepress";
 
@@ -32,9 +33,14 @@ import "./styles/code-bg.scss";
 import "./styles/theme-color.scss"; // 主题色板区块：对齐 teek 官网观感（色块不带文字）
 import "./styles/homepage.scss";
 import "./styles/home-card.scss";
+import "./styles/fonts.scss"; // 字体栈显式化与中文排版（须在主题 CSS 之后）
+// MiSans 自托管分片（npm misans@5.0.0，cn-font-split 预分片 + unicode-range 按需加载）
+import "./fonts/misans/MiSans-Regular.min.css";
+import "./fonts/misans/MiSans-Semibold.min.css";
 import "./styles/iframe.scss";
 import "./styles/embed.scss";
 import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变换（须在主题 CSS 之后）
+import "./styles/banner-feature-card.scss"; // 首页 Banner 特性区卡片化（须在主题 CSS 之后）
 import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（须在主题 CSS 之后）
 
 export default {
@@ -144,6 +150,8 @@ export default {
         "doc-footer-before": () => h(ArticleSponsor),
         // 「分享此页面」右侧的「导出 PDF」按钮
         "teek-article-share-after": () => h(ArticleExportPdf),
+        // 首页 Banner 特性区下方的「向下滚动」箭头（点击平滑滚动到内容区）
+        "teek-home-banner-feature-after": () => h(ScrollDownArrow),
         // 朋友圈时间线（frontmatter.moments === true 时生效）
         "page-top": () => (isMomentsPage.value ? h(MomentsTimeline) : null),
         "not-found": () => h(NotFound),

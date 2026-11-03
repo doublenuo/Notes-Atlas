@@ -18,7 +18,7 @@ const expanded = ref(false)
     >
       <img
         class="article-sponsor__image"
-        src="/coffee.png"
+        src="/coffee.webp"
         alt="请作者喝杯咖啡"
       >
       <span class="article-sponsor__text">

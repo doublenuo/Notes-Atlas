@@ -30,11 +30,20 @@
   }
 
   /* 4) 内容区回落 part 排版（height:100vh→auto；底部留白 15vh→10vh）。
-   *    .no-feature 选择器与主题特异性持平（4 类），靠本文件后加载取胜 */
+   *    .no-feature 选择器与主题特异性持平（4 类），靠本文件后加载取胜。
+   *    底部留白取 14vh：除原排版呼吸意外，还需容纳贴底箭头（绝对定位 bottom:28px，
+   *    含图标总高约 52px，10vh 在矮屏上会被卡片底边咬住）。 */
   .tk-banner.is-full-img .tk-banner__content,
   .tk-banner.is-full-img .tk-banner__content.no-feature {
     height: auto;
-    padding-bottom: 10vh;
+    padding-bottom: 14vh;
+  }
+
+  /* 6) 标题/描述字号缩放：字号由主题 JS 按配置写成元素内联 style（3.4rem/1.1rem），
+   *    375px 屏上 54px 标题会溢出，需 !important 压过内联值。 */
+  .tk-banner.is-full-img {
+    --tk-banner-title-text: 2.4rem !important;
+    --tk-banner-desc-text: 1rem !important;
   }
 
   /* 5) 导航：主题 JS 只看配置，手机端仍会加 full-img-nav-bar（透明底+白字），

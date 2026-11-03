@@ -12,6 +12,7 @@ import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
 import { seo, buildHead } from './plugins/seo'
 import { rss } from './plugins/rss'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE } from './site'
+import { zhihuIcon, cnbIcon, emailIcon } from './socialIcons'
 
 const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
@@ -168,8 +169,13 @@ export default defineConfig({
       }
     ],
 
+    // 导航栏社交图标：GitHub 用 VitePress 内置 mask 图标，其余为内联 SVG
+    // （数据见 socialIcons.ts，由 scripts/gen-social-icons.mjs 生成）
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/doublenuo/Notes-Atlas' }
+      { icon: 'github', link: 'https://github.com/doublenuo/Notes-Atlas' },
+      { icon: { svg: zhihuIcon }, link: 'https://www.zhihu.com/people/pai-da-xiao-xing-xing-7', ariaLabel: '知乎' },
+      { icon: { svg: cnbIcon }, link: 'https://cnb.cool/u/cnb.bEVjkzoyQGA', ariaLabel: 'CNB.cool' },
+      { icon: { svg: emailIcon }, link: 'mailto:zwn200401@gmail.com', ariaLabel: '邮箱' },
     ],
   },
   markdown: {

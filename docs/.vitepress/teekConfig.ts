@@ -248,23 +248,24 @@ export const teekConfig = defineTeekConfig({
     typesInTime: 100,
     typesOutTime: 50,
     typesNextTime: 1200,
-    // features: [
-    //   {
-    //     title: "结构化入口",
-    //     details: "通过分区首页、目录、分类和侧边栏快速定位内容",
-    //     link: "/study/",
-    //   },
-    //   {
-    //     title: "持续沉淀",
-    //     details: "围绕论文、课程和工具链持续建立可回顾的知识脉络",
-    //     link: "/materials",
-    //   },
-    //   {
-    //     title: "工程复用",
-    //     details: "把零散记录沉淀为后续检索、复习和分享都能复用的资产",
-    //     link: "/tools/",
-    //   },
-    // ],
+    // 首页横幅功能特性：三个内容分区的快捷入口（参考 jokerbai.com 的布局）
+    features: [
+      {
+        title: "文档",
+        details: "组会材料、学习笔记与工具资源的系统性沉淀",
+        link: "/study",
+      },
+      {
+        title: "随笔",
+        details: "朋友圈、读书笔记与年终总结，记录日常与思考",
+        link: "/essays",
+      },
+      {
+        title: "项目实践",
+        details: "实验项目与踩坑日志，把想法变成现实",
+        link: "/projects",
+      },
+    ],
   },
   wallpaper: {
     enabled: true,
@@ -446,7 +447,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <span style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
-        <img src="/animals.png" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
+        <img src="/animals.webp" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
         <span style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;max-width:100%;overflow-x:auto;white-space:nowrap;">
           <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Framework VitePress" src="https://img.shields.io/badge/Framework-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
           <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>

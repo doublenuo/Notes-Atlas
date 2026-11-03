@@ -1,0 +1,66 @@
+// 首页 Banner 特性区卡片化（参考 jokerbai.com 的毛玻璃卡片观感）。
+// 特性区渲染在 Banner 背景图 + 深色遮罩之上，因此用白色半透明玻璃质感，
+// 不随站点明暗模式切换（ Banner 内文字恒为白色）。
+// 注意：特性区由 teek 主题组件渲染，scoped 样式够不着，必须写全局样式。
+
+.tk-banner-feature {
+  .tk-banner-feature__feature__item {
+    padding: 28px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+
+    // 链接撑满卡片，整卡可点
+    > a {
+      width: 100%;
+      height: 100%;
+    }
+
+    .feature-title {
+      margin-top: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .feature-details {
+      margin: 12px 0 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  }
+}
+
+// hover 效果与过渡仅限支持 hover 的指针设备且非轮播态（≥719px）：
+// 主题轮播过渡 .tk-slide-next-enter-active 特异性 (0,1,0)，若把 transition 写在
+// 上面的基础规则（特异性 0,2,0）会压过主题的 0.5s 过渡、且丢掉 opacity，
+// 导致移动端轮播动画劣化（淡入变瞬移）。
+@media (hover: hover) and (min-width: 719px) {
+  .tk-banner-feature .tk-banner-feature__feature__item {
+    transition:
+      transform 0.25s ease,
+      background 0.25s ease,
+      border-color 0.25s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+// 移动端特性轮播（主题在 ≤719px 时改为单卡 width:100% 轮播）：压缩内边距与字号
+@media (max-width: 719px) {
+  .tk-banner-feature .tk-banner-feature__feature__item {
+    padding: 20px 16px;
+
+    .feature-title {
+      font-size: 20px;
+    }
+
+    .feature-details {
+      font-size: 13px;
+    }
+  }
+}
