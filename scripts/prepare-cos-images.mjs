@@ -56,7 +56,7 @@ if (upload) {
     }
   }
   collectWebp(root);
-  for (const webp of webpFiles) {
+  const uploadOne = async (webp) => {
     const body = readFileSync(webp);
     const sha256 = createHash('sha256').update(body).digest('hex');
     const key = relative(root, webp).split('\\').join('/');
@@ -69,7 +69,7 @@ if (upload) {
     }
     if (remoteHash === sha256) {
       unchanged++;
-      continue;
+      return;
     }
     await cosCall('putObject', {
       Bucket: bucket, Region: region, Key: key, Body: body,
@@ -78,6 +78,10 @@ if (upload) {
     });
     uploaded++;
     console.log(`[COS] uploaded ${key}`);
+  };
+  const batchSize = 8;
+  for (let index = 0; index < webpFiles.length; index += batchSize) {
+    await Promise.all(webpFiles.slice(index, index + batchSize).map(uploadOne));
   }
 }
 console.log(`[images] converted=${converted}, uploaded=${uploaded}, unchanged=${unchanged}, mode=${localOnly ? 'local-fallback' : upload ? 'cos' : 'local-no-credentials'}`);
