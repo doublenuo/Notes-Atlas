@@ -80,6 +80,20 @@ jobs:
           done
           $SSH "$DEPLOY_USER@$DEPLOY_HOST" 'chown -R admin:admin /opt/blogs || true'
 
+      - name: Sync images to Tencent COS with Rclone
+        if: ${{ vars.COS_BUCKET != '' }}
+        env:
+          COS_BUCKET: ${{ vars.COS_BUCKET }}
+          RCLONE_CONFIG_COS_ENDPOINT: ${{ secrets.COS_ENDPOINT }}
+          RCLONE_CONFIG_COS_ACCESS_KEY_ID: ${{ secrets.COS_ACCESS_KEY_ID }}
+          RCLONE_CONFIG_COS_SECRET_ACCESS_KEY: ${{ secrets.COS_SECRET_ACCESS_KEY }}
+          RCLONE_CONFIG_COS_TYPE: s3
+          RCLONE_CONFIG_COS_PROVIDER: Other
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rclone
+          bash scripts/sync-images-rclone.sh
+
       - name: Build site for GitHub Pages
         env:
           VITE_TWIKOO_ENV_ID: ${{ secrets.TWIKOO_ENV_ID }}

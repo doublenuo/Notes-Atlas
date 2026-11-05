@@ -60,6 +60,10 @@ export default defineConfig({
   srcExclude: ["superpowers/**", "04.随笔/02.moments/**"],
   // 打包构建优化
   vite: {
+    define: {
+      "import.meta.env.VITE_USE_LOCAL_IMAGES": JSON.stringify(process.env.USE_LOCAL_IMAGES ?? "false"),
+      "import.meta.env.VITE_COS_IMAGE_BASE_URL": JSON.stringify(process.env.COS_IMAGE_BASE_URL ?? ""),
+    },
     // 文档分析(字数/阅读时长)按嵌入展开后重算,覆盖 doc-analysis 的原始源码口径
     plugins: [
       docAnalysisEmbed(),

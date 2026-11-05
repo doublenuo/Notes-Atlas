@@ -7,6 +7,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { MarkdownRenderer } from "vitepress";
+import { imageUrl } from "./imageSource";
 
 type Dim = { width: number; height: number };
 
@@ -70,14 +71,26 @@ export function imageSizePlugin(md: MarkdownRenderer, publicDir: string) {
   };
 
   const raw = md.renderer.rules.image;
+  const rawHtml = md.renderer.rules.html_block;
+  const rewriteHtml = (html: string) =>
+    html.replace(/(\bsrc\s*=\s*["'])((?:\/images\/)[^"']+)(["'])/g, (_match, prefix, src, suffix) => {
+      return `${prefix}${imageUrl(src)}${suffix}`;
+    });
+
   md.renderer.rules.image = (tokens, idx, options, env, self) => {
     const token = tokens[idx];
     const src = token.attrGet("src") ?? "";
     const dim = dimsFor(src);
+    token.attrSet("src", imageUrl(src));
     if (dim && token.attrGet("width") === null && token.attrGet("height") === null) {
       token.attrSet("width", String(dim.width));
       token.attrSet("height", String(dim.height));
     }
     return raw ? raw(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    token.content = rewriteHtml(token.content);
+    return rawHtml ? rawHtml(tokens, idx, options, env, self) : token.content;
   };
 }

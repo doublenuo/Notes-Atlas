@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useData } from 'vitepress'
+import { imageUrl } from '../../plugins/imageSource'
 
 const { frontmatter } = useData()
 const visible = computed(() => frontmatter.value.article !== false)
@@ -55,13 +56,13 @@ const expanded = ref(false)
             <div class="article-sponsor__methods">
               <div class="article-sponsor__method">
                 <div class="article-sponsor__qrcode-wrap">
-                  <img class="article-sponsor__qrcode" src="https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261029123144108.png" alt="支付宝收款二维码">
+                  <img class="article-sponsor__qrcode" :src="imageUrl('/images/20261029123144108.png')" alt="支付宝收款二维码">
                 </div>
                 <span>支付宝</span>
               </div>
               <div class="article-sponsor__method">
                 <div class="article-sponsor__qrcode-wrap">
-                  <img class="article-sponsor__qrcode" src="https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com/images/20261029123230345.png" alt="微信收款二维码">
+                  <img class="article-sponsor__qrcode" :src="imageUrl('/images/20261029123230345.png')" alt="微信收款二维码">
                 </div>
                 <span>微信</span>
               </div>

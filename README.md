@@ -94,6 +94,30 @@
 
 评论系统使用 Twikoo。部署前请配置 `TWIKOO_ENV_ID` GitHub Actions Secret；它的值应为 Twikoo 云函数或自建服务的环境 ID。Vercel 部署则在项目的 Preview 和 Production 环境变量中配置 `VITE_TWIKOO_ENV_ID`。未配置时站点仍可构建，但评论区无法初始化。
 
+### 使用 Rclone 增量同步图片到腾讯云 COS
+
+Rclone 配置一次即可复用：
+
+```bash
+rclone config
+```
+
+选择 S3 兼容协议，填写腾讯云 COS 的 Endpoint、SecretId 和 SecretKey。配置完成后，在仓库根目录执行：
+
+```bash
+COS_BUCKET=my-blog-bucket pnpm sync:images
+```
+
+该命令等价于：
+
+```bash
+rclone sync ./docs/public/images/ cos:my-blog-bucket/images/ --progress --checksum
+```
+
+它会只同步发生变化的文件，并删除 COS 中本地已删除的对应文件，保持两端一致。GitHub Actions 中可选启用自动同步：设置仓库变量 `COS_BUCKET`，以及 Secrets `COS_ENDPOINT`、`COS_ACCESS_KEY_ID`、`COS_SECRET_ACCESS_KEY`；未设置时会跳过该步骤。
+
+生产构建默认使用 COS 图片地址。可配置 `COS_IMAGE_BASE_URL` Secret/环境变量为图片桶的公开访问前缀，例如 `https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com`。图床异常时设置 `USE_LOCAL_IMAGES=true` 后重新构建即可一键回滚到本地图片；未设置时会使用 COS。
+
 ---
 
 ## ☕ 如果你读到了这里

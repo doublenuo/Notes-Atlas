@@ -6,6 +6,7 @@ import { loadEnv } from "vite";
 // VitePress does not reliably populate process.env from .env before evaluating
 // this imported theme config, so load the local env file explicitly.
 const localEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
+import { imageUrl } from "./plugins/imageSource";
 
 const formatNumericTitle = (value: unknown) => {
   const text = String(value ?? "").trim();
@@ -244,7 +245,7 @@ export const teekConfig = defineTeekConfig({
     enabled: true,
     name: "Hi, I'm weno 👋",
     bgStyle: "fullImg",
-    imgSrc: ["/images/cos/20261029123245750.webp"],
+    imgSrc: [imageUrl("/images/cos/20261029123245750.webp")],
     imgWaves: true,
     mask: true,
     maskBg: "rgba(15, 23, 42, 0.55)",
@@ -295,7 +296,7 @@ export const teekConfig = defineTeekConfig({
     },
     shape: "circle-rotate",
     circleSize: 96,
-    circleBgImg: "/images/cos/20261029123308963.webp",
+    circleBgImg: imageUrl("/images/cos/20261029123308963.webp"),
     circleBgMask: true,
     color: "#ffffff",
   },
