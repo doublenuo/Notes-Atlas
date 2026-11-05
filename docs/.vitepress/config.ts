@@ -39,6 +39,7 @@ export default defineConfig({
     ['link', { rel: 'preconnect', href: 'https://www.googletagmanager.com', crossorigin: 'anonymous' }],
     ['link', { rel: 'preconnect', href: 'https://www.google-analytics.com', crossorigin: 'anonymous' }],
     ['link', { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: 'anonymous' }],
+    ['script', { defer: '', src: 'https://stats.lovetulin.cn/recorder.js', 'data-website-id': '0406218e-b83d-4b3c-ad2f-2253eecaeb03' }],
     // 内联 @page 规则：直接写入 HTML <head>，避免外部 CSS 打包顺序导致 Chrome headless 忽略
     ['style', { type: 'text/css' }, '@page { size: A4; margin: 15mm; }'],
   ],

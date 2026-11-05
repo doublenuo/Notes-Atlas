@@ -572,9 +572,10 @@ export const teekConfig = defineTeekConfig({
   },
   siteAnalytics: [
     {
-      provider: "google",
+      provider: "umami",
       options: {
-        id: "G-PZ87T8HLZJ"
+        id: "0406218e-b83d-4b3c-ad2f-2253eecaeb03",
+        src: "https://stats.lovetulin.cn/script.js",
       }
     }
   ]
