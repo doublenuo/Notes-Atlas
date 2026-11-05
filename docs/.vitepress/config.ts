@@ -13,7 +13,7 @@ import { seo, buildHead } from './plugins/seo'
 import { rss } from './plugins/rss'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE } from './site'
 import { zhihuIcon, cnbIcon, emailIcon } from './socialIcons'
-import { chineseSearchOptimize, pagefindPlugin } from 'vitepress-plugin-pagefind'
+import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 
 const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
@@ -64,7 +64,6 @@ export default defineConfig({
         loadingText: '搜索中…',
         heading: '共 {{searchResult}} 条结果',
         forceLanguage: 'zh-cn',
-        customSearchQuery: chineseSearchOptimize,
       }),
       seo({ siteUrl: SITE_URL }),
       rss({ siteUrl: SITE_URL }),

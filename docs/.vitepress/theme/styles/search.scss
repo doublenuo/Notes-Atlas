@@ -21,7 +21,6 @@
   // border: 1px solid var(--vp-c-divider);
   // border-radius: 8px;
   background-color: transparent;
-  color: white;
   font: inherit;
   text-align: left;
   opacity: 1;
@@ -37,7 +36,6 @@
 .VPNavBar .blog-search .nav-search-btn-wait .search-tip {
   padding-left: 8px;
   font-size: 13px;
-  color: white;
 }
 
 .VPNavBar .blog-search .nav-search-btn-wait .metaKey {
@@ -45,7 +43,6 @@
   padding: 0 5px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 5px;
-  color: white;
   font-size: 10px;
   line-height: 16px;
 }
@@ -57,6 +54,11 @@
     min-width: 48px;
     height: 100%;
     margin-right: 0;
+    order: -1;
+    display: flex;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
   }
 
   .VPNavBar .blog-search > .nav-search-btn-wait {
@@ -68,7 +70,17 @@
     border: 0;
     border-radius: 0;
     background-color: transparent;
-    color: white  ;
     box-shadow: none;
+  }
+
+  .VPNavBar .blog-search .nav-search-btn-wait svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+  }
+
+  .VPNavBar .blog-search .search-tip,
+  .VPNavBar .blog-search .metaKey {
+    display: none;
   }
 }
