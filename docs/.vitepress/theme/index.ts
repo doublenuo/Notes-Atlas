@@ -1,4 +1,4 @@
-import Teek, { giscusContext, teekConfigContext, TkMessage, usePosts, useTeekConfig } from "vitepress-theme-teek";
+import Teek, { teekConfigContext, TkMessage, usePosts, useTeekConfig } from "vitepress-theme-teek";
 import type { TeekConfig } from "vitepress-theme-teek";
 import ThemeConfig, { type ChangeType } from "./components/ThemeConfig.vue";
 import NotFound from "./components/404.vue";
@@ -21,7 +21,6 @@ import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加
 import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
-import LazyGiscus from "./components/LazyGiscus.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 
 import { useData, useRoute } from "vitepress";
@@ -55,9 +54,6 @@ export default {
     setup() {
       const { isDark, page } = useData();
       const route = useRoute();
-      // 评论组件：LazyGiscus 进入视口后才动态加载 @giscus/vue（~52KB gzip），避免每页预加载
-      provide(giscusContext, () => LazyGiscus);
-
       // 右上角设置面板 →「主题配置」区块：通过 teekConfigContext 做运行时主题配置覆盖
       const teekConfig = ref<TeekConfig>({});
       provide(teekConfigContext, teekConfig);
@@ -132,7 +128,7 @@ export default {
         else if (type === "themeSize") teekConfig.value.themeSize = config.themeSize;
         // 路由加载动画
         else if (type === "loading") teekConfig.value.loading = config.loading;
-        // Giscus 评论区
+        // Twikoo 评论区
         else if (type === "comment") teekConfig.value.comment = config.comment;
         // 彩带背景（仅首页渲染，非首页切换只记录开关状态）
         else if (type === "ribbon") {

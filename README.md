@@ -92,6 +92,8 @@
 
 首次使用时，需要在 Vercel 中导入 `doublenuo/Notes-Atlas` 仓库，并将 Production Branch 设置为 `main`。构建配置已由根目录 `vercel.json` 提供。
 
+评论系统使用 Twikoo。部署前请配置 `TWIKOO_ENV_ID` GitHub Actions Secret；它的值应为 Twikoo 云函数或自建服务的环境 ID。Vercel 部署则在项目的 Preview 和 Production 环境变量中配置 `VITE_TWIKOO_ENV_ID`。未配置时站点仍可构建，但评论区无法初始化。
+
 ---
 
 ## ☕ 如果你读到了这里

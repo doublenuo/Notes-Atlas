@@ -160,12 +160,9 @@ export const teekConfig = defineTeekConfig({
     },
   },
   comment: {
-    provider: "giscus",
+    provider: "twikoo",
     options: {
-      repo: "doublenuo/Notes-Atlas",
-      repoId: "R_kgDOR25XhQ",
-      category: "General",
-      categoryId: "DIC_kwDOR25Xhc4C7Vch",
+      envId: process.env.VITE_TWIKOO_ENV_ID ?? process.env.TWIKOO_ENV_ID ?? "",
       lang: "zh-CN",
     }
   },
@@ -453,7 +450,7 @@ export const teekConfig = defineTeekConfig({
           <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
           <a href="https://edgeone.ai/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CDN Tencent EdgeOne" src="https://img.shields.io/badge/CDN-Tencent%20EdgeOne-2DDE98?logo=tencent&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
           <a href="https://caddyserver.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
-          <a href="https://giscus.app/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Comments Giscus" src="https://img.shields.io/badge/Comments-Giscus-8A2BE2?logo=github&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://twikoo.js.org/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Comments Twikoo" src="https://img.shields.io/badge/Comments-Twikoo-42b883?logo=vue.js&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
           <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CC BY-NC-SA 4.0" src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-1F6FEB" style="height:20px;border-radius:4px;display:block;" /></a>
           <a href="https://github.com/Kele-Bingtang/vitepress-theme-teek" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Built with Teek" src="https://img.shields.io/badge/Built%20with-Teek-FFB703?logo=vue.js&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
         </span>

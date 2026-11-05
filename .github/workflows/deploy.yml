@@ -43,6 +43,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build VitePress site
+        env:
+          VITE_TWIKOO_ENV_ID: ${{ secrets.TWIKOO_ENV_ID }}
         run: pnpm docs:build
 
       # 用 rsync over SSH 增量发布(不用 scp-action):
@@ -72,6 +74,8 @@ jobs:
           $SSH "$DEPLOY_USER@$DEPLOY_HOST" 'chown -R admin:admin /opt/blogs || true'
 
       - name: Build site for GitHub Pages
+        env:
+          VITE_TWIKOO_ENV_ID: ${{ secrets.TWIKOO_ENV_ID }}
         run: |
           rm -rf docs/.vitepress/dist
           VITEPRESS_BASE=/Notes-Atlas/ pnpm docs:build

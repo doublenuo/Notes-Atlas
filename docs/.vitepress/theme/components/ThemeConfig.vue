@@ -294,16 +294,16 @@ const loading = withModelSync({
   },
 });
 
-// Giscus 评论区
+// Twikoo 评论区
 const comment = withModelSync({
   modelValue: Boolean(theme.value.comment),
-  title: "Giscus 评论区",
+  title: "Twikoo 评论区",
   options: [
     { value: true, label: "ON" },
     { value: false, label: "OFF" },
   ],
   change(value: boolean) {
-    // 关闭后再次开启恢复本站 giscus 配置
+    // 关闭后再次开启恢复本站 Twikoo 配置
     teekConfig.value.comment = value ? originalComment ?? false : false;
     change("comment");
   },

@@ -79,9 +79,7 @@ export default defineConfig({
             if (id.includes('node_modules/echarts')) return 'echarts'
             if (id.includes('node_modules/mathjax')) return 'mathjax'
             if (id.includes('node_modules/monaco')) return 'monaco'
-            // 注意：不要给 @giscus 单独设 manualChunks。@giscus/vue 只经动态导入使用，
-            // 让 Rollup 默认分块即可；手动指定会把它和全站共享的 Vue runtime 合并进同一个
-            // chunk，导致 app 入口静态导入该 chunk（~54KB gzip）每页都加载。
+            // 评论系统由 Teek 内置的 Twikoo 适配器按需加载，不需要单独拆分评论依赖。
           },
           // 资源文件命名
           chunkFileNames: 'assets/js/[name]-[hash].js',
