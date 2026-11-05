@@ -16,6 +16,7 @@ tags:
 
 ## 模型框架图
 
+<<<<<<< Updated upstream
 SAMP（Spatial Anchor-based Motion Policy）的目标是让机械臂在复杂障碍环境中生成**安全、无碰撞的运动轨迹**。从图中看，整个方法首先把环境和机器人都转换为空间几何表示，然后将两者在统一的空间位置上进行对齐，最后结合当前状态和目标状态预测下一步关节动作。它不是传统的 RRT 那样每次进行显式路径搜索，而是训练一个神经运动策略，输入当前机器人、环境和目标信息，直接预测下一步应该怎么运动。
 
 首先看环境分支，系统把周围环境表示成一个 $160^3$ 的 Environment SDF，其中每个空间位置保存该位置到障碍物的距离，然后通过 3D CNN 对这个 SDF 进行编码，得到环境的空间特征。与此同时，根据机器人当前的关节配置 $q_t$，得到机器人当前姿态，并在机器人表面及其附近采样 1024 个三维点，形成图中的 Robot Points [3,1024]。这里的 Robot Points 可以理解为机器人当前身体在三维空间中的几何采样，它会随着机器人姿态 $q_t$ 的变化而变化。
@@ -29,3 +30,6 @@ SAMP（Spatial Anchor-based Motion Policy）的目标是让机械臂在复杂障
 训练阶段则通过右下角的 Collision Loss、Point Matching Loss 和 Configuration Loss 对策略进行约束。Configuration Loss 让预测的关节运动符合目标或专家轨迹，Point Matching Loss 约束机器人实际空间中的几何运动轨迹，而 Collision Loss 则利用环境与机器人之间的距离关系惩罚碰撞，使策略学会避开障碍物。所以从整张图来看，SAMP真正的核心并不是单纯“使用 SDF 做避障”，而是以机器人空间采样点为桥梁，把 Environment Feature、Robot SDF 和 Robot Point Feature 对齐到同一个空间位置，再结合 $q_t$ 和 $q_g$，学习一个能够直接输出下一步关节运动的碰撞感知策略。
 
 ![20260909093744708](/images/cos/20260909093744708.webp)
+=======
+![20260909093744708](/images/cos/20260909093744708.png)
+>>>>>>> Stashed changes

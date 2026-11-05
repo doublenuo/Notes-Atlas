@@ -13,8 +13,10 @@ tags:
 
 - Github Link: [https://github.com/Chunx1nZHENG/Embracing-Bulky-Objects-with-Humanoid-Robots](https://github.com/Chunx1nZHENG/Embracing-Bulky-Objects-with-Humanoid-Robots)
 - Paper Link: [https://arxiv.org/pdf/2509.13534v1](https://arxiv.org/pdf/2509.13534v1)
+
 ## 模型框架图
 
+<<<<<<< Updated upstream
 这篇论文主要解决的是人形机器人如何利用全身多个身体部位去抱持和搬运大型物体。整个方法的核心思想是，作者并不是直接让强化学习去控制机器人所有关节，而是先利用人体动作数据学习一个低维的机器人运动先验，也就是 Motion Prior，然后再在这个运动先验的基础上训练真正的 Whole-Body Embracing Policy。这样可以把原本非常复杂的高维关节控制问题转换成在低维运动空间中进行任务决策。
 
 这篇论文的整体方法可以概括为：先利用人体 Mocap 数据学习一个“人形机器人自然运动的先验”，再在这个运动先验的基础上训练一个专门负责“大物体环抱搬运”的强化学习策略。具体来说，首先从 AMASS 等 Mocap Dataset 中获取大量人体动作，然后进行 Data Cleaning，去除存在脚滑、碰撞、姿态异常等问题的动作；接着通过 Motion Retargeting 将人体动作映射到目标人形机器人 H1 的运动学结构上，得到机器人能够执行的参考运动轨迹。这里得到的数据主要解决的是“机器人应该怎样自然地运动”，还没有涉及具体的搬箱任务。
@@ -34,3 +36,6 @@ $$ z_t = \mu_t^p + z_t^s $$
 最终整个流程就是 “人体动作 → 清洗 → Retarget 到机器人 → Teacher 学习动作跟踪 → VAE 蒸馏成低维 Motion Prior → 冻结 Prior + Decoder → PPO 学习 Embracing Policy → 输出 latent residual → 与 Motion Prior 相加 → Decoder 生成关节动作 → 完成环抱、抬升和搬运”。所以这篇论文真正的核心不是单纯用 PPO 搬箱子，而是把问题拆成了两个层次：Motion Prior 负责解决“机器人怎么自然地动”，Embracing Policy 负责解决“为了搬这个物体应该怎么改动作”，再利用 NSDF 提供物体—身体之间的几何关系，使策略最终形成全身、多接触点的环抱搬运行为。
 
 ![20260906101815551](/images/cos/20260906101815551.webp)
+=======
+![20260906101815551](/images/cos/20260906101815551.png)
+>>>>>>> Stashed changes
