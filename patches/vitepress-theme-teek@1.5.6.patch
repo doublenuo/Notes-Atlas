@@ -1,116 +1,23 @@
-diff --git a/es/components/theme/ConfigProvider/index.mjs b/es/components/theme/ConfigProvider/index.mjs
-index 9d4c11e1a20bcab45687fea343fcbeffcd3843e7..0229467436843ff70753c7f46db7ad98fdc25e99 100644
---- a/es/components/theme/ConfigProvider/index.mjs
-+++ b/es/components/theme/ConfigProvider/index.mjs
-@@ -6,7 +6,7 @@ import 'vitepress-theme-teek/theme-chalk/tk-copy-banner.css';
- import { useMediaQuery } from '../../../composables/useMediaQuery.mjs';
- import { useViewTransition } from '../../../composables/useViewTransition.mjs';
- import '../../../composables/useZIndex.mjs';
--import { emptyPost } from '../../../config/post/helper.mjs';
-+import { emptyPost, filterPosts, getGroupCards, getGroupPosts, getSortPostsByDate, getSortPostsByDateAndSticky, groupByYear, groupByYearMonth } from '../../../config/post/helper.mjs';
- 
- const postsContext = Symbol("posts");
- const teekConfigContext = Symbol("teekConfig");
-@@ -122,10 +122,30 @@ const useAllPosts = () => {
-   const posts = theme.value.posts;
-   return posts || emptyPost;
- };
-+// 体积优化补丁：构建端（config/post/index.mjs 的 transformRaw）只下发 allPosts，
-+// 其余派生列表在这里按需计算，保持 PostData 对消费组件的字段面不变。
-+const resolvePostsOnClient = (data) => {
-+  if (data.originPosts) return data;
-+  const allPosts = data.allPosts || [];
-+  const originPosts = filterPosts(allPosts);
-+  const sortPostsByDateAndSticky = getSortPostsByDateAndSticky(originPosts);
-+  const sortPostsByDate = getSortPostsByDate(originPosts);
-+  const groupPosts = getGroupPosts(sortPostsByDateAndSticky);
-+  return {
-+    allPosts,
-+    originPosts,
-+    sortPostsByDateAndSticky,
-+    sortPostsByDate,
-+    groupPostsByYear: groupByYear(sortPostsByDate),
-+    groupPostsByYearMonth: groupByYearMonth(sortPostsByDate),
-+    groupPosts,
-+    groupCards: getGroupCards(groupPosts)
-+  };
-+};
- const usePosts = () => {
-   const { localeIndex } = useData();
-   const posts = useAllPosts();
--  return computed(() => posts.locales?.[localeIndex.value] || posts);
-+  return computed(() => resolvePostsOnClient(posts.locales?.[localeIndex.value] || posts));
- };
- const useTagColor = () => {
-   const { getTeekConfigRef } = useTeekConfig();
-diff --git a/es/config/post/index.mjs b/es/config/post/index.mjs
-index 1d356c60f11ac81e6b9aec05b50ee142b66f8de1..d165f3c1b11c03bb033516f3bfbc77d461842017 100644
---- a/es/config/post/index.mjs
-+++ b/es/config/post/index.mjs
-@@ -2,7 +2,6 @@ import { getTitleFromMarkdown } from 'vitepress-plugin-sidebar-resolve';
- import { join, basename } from 'node:path';
- import { statSync } from 'node:fs';
- import { formatDate } from '../../helper/dist/index.mjs';
--import { filterPosts, getSortPostsByDateAndSticky, getSortPostsByDate, groupByYear, groupByYearMonth, getGroupPosts, getGroupCards } from './helper.mjs';
- import matter from 'gray-matter';
- 
- const transformData = (data) => {
-@@ -22,41 +21,26 @@ const transformData = (data) => {
-   };
- };
- const transformRaw = (posts) => {
-+  // 体积优化补丁：构建时只下发 allPosts（每篇文章一条完整记录），不再预生成
-+  // originPosts / sortPosts / groupPosts / groupCards 等 7 个派生列表 —— 它们
-+  // 携带与 allPosts 相同的记录对象，序列化进全站 site data 会使数据体积放大约
-+  // 8 倍（每页加载的 metadata chunk 因此达 2.7MB）。派生列表改由客户端
-+  // ConfigProvider 的 usePosts 借助 helper.mjs 按需计算。
-   const siteConfig = globalThis.VITEPRESS_CONFIG;
-   const { locales = {} } = siteConfig.userConfig;
--  const postsData = resolvePosts(posts);
-+  const postsData = { allPosts: posts };
-   const localesKeys = Object.keys(locales);
-   if (!localesKeys.length) return postsData;
-   const postsLocale = {};
-   localesKeys.filter((localesKey) => localesKey !== "root").forEach((localesKey) => {
--    const localePosts = posts.filter((post) => post.relativePath.startsWith(`/${localesKey}`));
--    postsLocale[localesKey] = resolvePosts(localePosts);
-+    postsLocale[localesKey] = { allPosts: posts.filter((post) => post.relativePath.startsWith(`/${localesKey}`)) };
-   });
-   const rootPosts = posts.filter(
-     (post) => !localesKeys.some((localesKey) => post.relativePath.startsWith(`/${localesKey}`))
-   );
--  postsLocale["root"] = resolvePosts(rootPosts);
-+  postsLocale["root"] = { allPosts: rootPosts };
-   return { ...postsData, locales: postsLocale };
- };
--const resolvePosts = (posts) => {
--  const originPosts = filterPosts(posts);
--  const sortPostsByDateAndSticky = getSortPostsByDateAndSticky(originPosts);
--  const sortPostsByDate = getSortPostsByDate(originPosts);
--  const groupPostsByYear = groupByYear(sortPostsByDate);
--  const groupPostsByYearMonth = groupByYearMonth(sortPostsByDate);
--  const groupPosts = getGroupPosts(sortPostsByDateAndSticky);
--  const groupCards = getGroupCards(groupPosts);
--  return {
--    allPosts: posts,
--    originPosts,
--    sortPostsByDateAndSticky,
--    sortPostsByDate,
--    groupPostsByYear,
--    groupPostsByYearMonth,
--    groupPosts,
--    groupCards
--  };
--};
- function getTitle(post) {
-   if (post.frontmatter.title) return post.frontmatter.title;
-   const { content = "" } = matter(post.src || "", {});
-@@ -74,7 +58,7 @@ function getDate(post, srcDir) {
-   const stat = statSync(filePath);
-   return formatDate(stat.birthtime || stat.atime);
- }
--const getCaptureText = (post, count = 300) => {
-+const getCaptureText = (post, count = 120) => {
-   const { content = "" } = matter(post.src || "", {});
-   return content?.replace(/^#+\s+.*/, "")?.replace(/#/g, "")?.replace(/!\[.*?\]\(.*?\)/g, "")?.replace(/\[(.*?)\]\(.*?\)/g, "$1")?.replace(/\*\*(.*?)\*\*/g, "$1")?.replace(/\[\[TOC\]\]/g, "")?.replace(/:::.*?(\n|$)/g, "")?.replace(/<!-- more -->/g, "")?.split("\n")?.filter((v) => !!v)?.join("\n")?.replace(/>(.*)/, "")?.replace(/</g, "&lt;").replace(/>/g, "&gt;")?.trim()?.slice(0, count);
- };
+diff --git a/es/components/theme/CommentTwikoo/src/index.vue2.mjs b/es/components/theme/CommentTwikoo/src/index.vue2.mjs
+index aedfb68f0c7a975fc3870046d771a14583d5baa0..bc9f564e4bbe04366aaa231abffb597ca05c24bd 100644
+--- a/es/components/theme/CommentTwikoo/src/index.vue2.mjs
++++ b/es/components/theme/CommentTwikoo/src/index.vue2.mjs
+@@ -30,6 +30,7 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+     const initTwikoo = () => {
+       if (!isClient) return console.error("[Teek Error] Not in a client");
+       if (!envId) return console.error("[Teek Error] Twikoo initialization failed. Please configure the 'envId'");
++      if (!document.querySelector("#twikoo")) return;
+       const getTwikooInstance = inject(twikooContext, () => null);
+       const twikooOption = { ...options, envId };
+       if (getTwikooInstance) getTwikooInstance("#twikoo", twikooOption);
+@@ -38,7 +39,9 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+     const twikooJs = ref(null);
+     const initJs = () => {
+       const t = twikooJs.value;
+-      if (t) t.onload = initTwikoo;
++      if (!t) return;
++      t.onload = initTwikoo;
++      if (window.twikoo) initTwikoo();
+     };
+     const reloadTwikoo = (to) => {
+       if (to) setTimeout(initTwikoo, timeout);
