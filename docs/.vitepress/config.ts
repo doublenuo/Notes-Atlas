@@ -39,6 +39,9 @@ export default defineConfig({
     ['link', { rel: 'preconnect', href: 'https://www.googletagmanager.com', crossorigin: 'anonymous' }],
     ['link', { rel: 'preconnect', href: 'https://www.google-analytics.com', crossorigin: 'anonymous' }],
     ['link', { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: 'anonymous' }],
+    ['link', { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css', integrity: 'sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X', crossorigin: 'anonymous' }],
+    ['script', { defer: '', src: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js', integrity: 'sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4', crossorigin: 'anonymous' }],
+    ['script', { defer: '', src: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js', integrity: 'sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa', crossorigin: 'anonymous' }],
     ['script', { defer: '', src: 'https://stats.lovetulin.cn/recorder.js', 'data-website-id': '0406218e-b83d-4b3c-ad2f-2253eecaeb03' }],
     // 内联 @page 规则：直接写入 HTML <head>，避免外部 CSS 打包顺序导致 Chrome headless 忽略
     ['style', { type: 'text/css' }, '@page { size: A4; margin: 15mm; }'],

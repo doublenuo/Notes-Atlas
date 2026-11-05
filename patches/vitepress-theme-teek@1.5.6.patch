@@ -1,16 +1,45 @@
 diff --git a/es/components/theme/CommentTwikoo/src/index.vue2.mjs b/es/components/theme/CommentTwikoo/src/index.vue2.mjs
-index aedfb68f0c7a975fc3870046d771a14583d5baa0..bc9f564e4bbe04366aaa231abffb597ca05c24bd 100644
+index aedfb68f0c7a975fc3870046d771a14583d5baa0..d1c54f5308ba86ca75105af99e2a0ef469958577 100644
 --- a/es/components/theme/CommentTwikoo/src/index.vue2.mjs
 +++ b/es/components/theme/CommentTwikoo/src/index.vue2.mjs
-@@ -30,6 +30,7 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+@@ -27,18 +27,44 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+       timeout = 700,
+       ...options
+     } = twikooOptions;
++    let initAttempts = 0;
      const initTwikoo = () => {
        if (!isClient) return console.error("[Teek Error] Not in a client");
        if (!envId) return console.error("[Teek Error] Twikoo initialization failed. Please configure the 'envId'");
-+      if (!document.querySelector("#twikoo")) return;
-       const getTwikooInstance = inject(twikooContext, () => null);
-       const twikooOption = { ...options, envId };
+-      const getTwikooInstance = inject(twikooContext, () => null);
+-      const twikooOption = { ...options, envId };
++      if (katex && typeof window.renderMathInElement !== "function") {
++        if (initAttempts++ < 40) setTimeout(initTwikoo, 100);
++        return;
++      }
++      if (!document.querySelector("#twikoo")) {
++        if (initAttempts++ < 20) setTimeout(initTwikoo, 100);
++        return;
++      }
++      initAttempts = 0;
++      const getTwikooInstance = inject(twikooContext, null);
++      const twikooOption = {
++        ...options,
++        envId,
++        ...(katex ? {
++          katex: {
++            delimiters: [
++              { left: "$$", right: "$$", display: true },
++              { left: "$", right: "$", display: false },
++              { left: "\\(", right: "\\)", display: false },
++              { left: "\\[", right: "\\]", display: true },
++            ],
++            throwOnError: false,
++          },
++        } : {}),
++      };
        if (getTwikooInstance) getTwikooInstance("#twikoo", twikooOption);
-@@ -38,7 +39,9 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+       else if (window.twikoo) window.twikoo.init({ ...twikooOption, el: "#twikoo" });
+     };
      const twikooJs = ref(null);
      const initJs = () => {
        const t = twikooJs.value;

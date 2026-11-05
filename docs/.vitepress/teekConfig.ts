@@ -1,6 +1,11 @@
 import { defineTeekConfig } from "vitepress-theme-teek/config";
 import { version } from "vitepress-theme-teek/es/version";
 import { categoryIcon, tagIcon, topArticleIcon, rocketIcon } from "vitepress-theme-teek/icons";
+import { loadEnv } from "vite";
+
+// VitePress does not reliably populate process.env from .env before evaluating
+// this imported theme config, so load the local env file explicitly.
+const localEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
 
 const formatNumericTitle = (value: unknown) => {
   const text = String(value ?? "").trim();
@@ -162,7 +167,7 @@ export const teekConfig = defineTeekConfig({
   comment: {
     provider: "twikoo",
     options: {
-      envId: process.env.VITE_TWIKOO_ENV_ID ?? process.env.TWIKOO_ENV_ID ?? "",
+      envId: process.env.VITE_TWIKOO_ENV_ID ?? process.env.TWIKOO_ENV_ID ?? localEnv.VITE_TWIKOO_ENV_ID ?? localEnv.TWIKOO_ENV_ID ?? "",
       // 与云函数版本保持一致；Teek 默认仍使用 1.6.44。
       version: "2.0.17",
       lang: "zh-CN",
