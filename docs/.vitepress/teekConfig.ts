@@ -166,6 +166,14 @@ export const teekConfig = defineTeekConfig({
       // 与云函数版本保持一致；Teek 默认仍使用 1.6.44。
       version: "2.0.17",
       lang: "zh-CN",
+      katex: {
+        cssLink: "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css",
+        cssIntegrity: "sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X",
+        coreJsLink: "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js",
+        coreJsIntegrity: "sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4",
+        renderJsLink: "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js",
+        renderJsIntegrity: "sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa",
+      },
     }
   },
   // appreciation: {
