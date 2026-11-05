@@ -3,7 +3,13 @@ const ns = "scroll-down-arrow";
 
 /** 平滑滚动到 Banner 下方的内容区（首页卡片栏 / 文章列表） */
 const scrollToContent = () => {
-  // .tk-banner 为首页 Banner 根元素（is-full-img 时高度即一屏）；取不到时退回滚动一屏
+  const content = document.querySelector<HTMLElement>(".tk-home-post-list, .tk-home-card-list, .VPHomeFeatures");
+  if (content) {
+    const top = content.getBoundingClientRect().top + window.scrollY - 24;
+    window.scrollTo({ top, behavior: "smooth" });
+    return;
+  }
+  // .tk-banner 为首页 Banner 根元素；取不到时退回滚动一屏
   const banner = document.querySelector<HTMLElement>(".tk-banner");
   const top = banner ? banner.getBoundingClientRect().bottom + window.scrollY : window.innerHeight;
   window.scrollTo({ top, behavior: "smooth" });
@@ -35,11 +41,15 @@ $namespace: scroll-down-arrow;
 // 以其为定位上下文把箭头钉在底部（is-full-img 时即视口底部）
 .#{$namespace} {
   position: absolute;
+  z-index: 30;
   bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
+  pointer-events: auto;
 
   &__btn {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
