@@ -193,9 +193,9 @@ export default defineConfig({
     config(md) {
       // 保持 Markdown 源文件使用本地原图路径；构建时切换到 WebP，并按开关选择 COS 或本地。
       md.core.ruler.before('normalize', 'cos-webp-image-urls', (state) => {
-        state.src = state.src.replace(/(\/images\/[^\s)"'<>]+)\.(png|jpe?g|webp)(?=[?#)]|[\s"'<>]|$)/gi, (_match, path) => {
+        state.src = state.src.replace(/(^|[\s("'=])(\/images\/[^\s)"'<>]+)\.(png|jpe?g|webp)(?=[?#)]|[\s"'<>]|$)/gi, (_match, prefix, path) => {
           const webpPath = `${path}.webp`
-          return useLocalImages || !cosImageBase ? webpPath : `${cosImageBase}${webpPath}`
+          return `${prefix}${useLocalImages || !cosImageBase ? webpPath : `${cosImageBase}${webpPath}`}`
         })
       })
 
