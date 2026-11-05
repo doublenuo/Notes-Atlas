@@ -48,11 +48,11 @@ const MAX_EMBED_DEPTH = 3; // 与渲染管线一致:第 4 层不展开
  * 字符串级展开独立成行的 ![[目标]](仅用于计数,不产 HTML):
  * 围栏/≥4 缩进/非独立成行保持原样;未命中、循环、超深层保持原样(渲染处为告警块,字数近似)。
  */
-export function expandEmbeds(src, resolveNote) {
-  return expandCore(src, [], resolveNote);
+export function expandEmbeds(src, resolveNote, hostPath) {
+  return expandCore(src, [], resolveNote, hostPath);
 }
 
-function expandCore(src, stack, resolveNote) {
+function expandCore(src, stack, resolveNote, hostPath) {
   const lines = src.split("\n");
   let fence = null;
   const out = [];
@@ -79,13 +79,13 @@ function expandCore(src, stack, resolveNote) {
       out.push(line);
       continue;
     }
-    const found = resolveNote(m[2].trim());
+    const found = resolveNote(m[2].trim(), hostPath);
     if (!found || stack.includes(found.absPath) || stack.length >= MAX_EMBED_DEPTH) {
       out.push(line);
       continue;
     }
     const note = readNote(found.absPath, "docAnalysis");
-    out.push(expandCore(note.content, [...stack, found.absPath], resolveNote));
+    out.push(expandCore(note.content, [...stack, found.absPath], resolveNote, found.absPath));
   }
   return out.join("\n");
 }
@@ -115,7 +115,7 @@ export function patchDocAnalysisInfo(info, docsRoot) {
     try {
       const raw = readFileSync(entry.fileInfo?.filePath ?? "", "utf-8").replace(/\r\n?/g, "\n");
       const body = matter(raw).content;
-      const len = countWords(expandCore(body, [], resolveNote));
+      const len = countWords(expandCore(body, [], resolveNote, entry.fileInfo?.filePath));
       entry.wordCount = len[0] + len[1];
       entry.readingTime = formatReadingTime(len[0], len[1]);
     } catch {

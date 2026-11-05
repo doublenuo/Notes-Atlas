@@ -12,6 +12,7 @@ import {
   patchDocAnalysisInfo,
   docAnalysisEmbed,
 } from "../docs/.vitepress/plugins/docAnalysisEmbed.ts";
+import { patchPostCaptures } from "../docs/.vitepress/plugins/siteDataOptimize.ts";
 
 const STUB = join(VAULT, "01.组会材料", "01.组会内容", "组会样例.md");
 const DUP = join(VAULT, "02.学习笔记", "重复.md");
@@ -59,6 +60,15 @@ test("expandEmbeds 独立成行嵌入按全文展开且去 frontmatter", () => {
   assert.ok(!out.includes("![[Alpha]]"), "嵌入行应被替换");
 });
 
+test("expandEmbeds 相对路径按宿主文件目录解析", () => {
+  const resolveNote = createResolver(VAULT);
+  const host = join(VAULT, "01.组会材料", "组会样例.md");
+  const out = expandEmbeds("![[../02.学习笔记/嵌套目标]]", resolveNote, host);
+
+  assert.ok(out.includes("嵌套目标正文"), "相对路径目标应展开");
+  assert.ok(!out.includes("![[../02.学习笔记/嵌套目标]]"), "相对嵌入行应被替换");
+});
+
 test("expandEmbeds 代码围栏内不展开", () => {
   const resolveNote = createResolver(VAULT);
   const out = expandEmbeds("```md\n![[Alpha]]\n```", resolveNote);
@@ -98,6 +108,19 @@ test("expandEmbeds 第 4 层不展开、第 3 层正常", () => {
 test("expandEmbeds 未找到目标保留原文", () => {
   const resolveNote = createResolver(VAULT);
   assert.equal(expandEmbeds("![[压根没有]]", resolveNote), "![[压根没有]]");
+});
+
+test("patchPostCaptures 展开首页卡片中的嵌入内容", () => {
+  const post = {
+    relativePath: "01.组会材料/组会样例.md",
+    src: "# 组会样例\n\n![[../02.学习笔记/嵌套目标]]",
+    capture: "![[../02.学习笔记/嵌套目标]]",
+  };
+
+  patchPostCaptures([post], VAULT);
+
+  assert.ok(post.capture.includes("嵌套目标正文"), "首页摘要应包含嵌入正文");
+  assert.ok(!post.capture.includes("![[../02.学习笔记/嵌套目标]]"), "首页摘要不应残留嵌入语法");
 });
 
 // —— patchDocAnalysisInfo：覆盖 wordCount/readingTime/totalFileWords ——

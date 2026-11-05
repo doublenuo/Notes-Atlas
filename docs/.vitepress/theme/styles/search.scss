@@ -1,0 +1,74 @@
+/* Pagefind search trigger aligned with the VitePress/Teek navigation bar. */
+.VPNavBar .blog-search {
+  display: flex;
+  flex: 0 0 184px;
+  width: 184px;
+  min-width: 184px;
+  order: 0;
+  margin-right: auto;
+  padding: 20px;
+}
+
+.VPNavBar .blog-search > .nav-search-btn-wait {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  justify-content: flex-start;
+  gap: 0;
+  // border: 1px solid var(--vp-c-divider);
+  // border-radius: 8px;
+  background-color: transparent;
+  color: white;
+  font: inherit;
+  text-align: left;
+  opacity: 1;
+  visibility: visible;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.VPNavBar .blog-search > .nav-search-btn-wait:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: -4px;
+}
+
+.VPNavBar .blog-search .nav-search-btn-wait .search-tip {
+  padding-left: 8px;
+  font-size: 13px;
+  color: white;
+}
+
+.VPNavBar .blog-search .nav-search-btn-wait .metaKey {
+  margin-left: auto;
+  padding: 0 5px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 5px;
+  color: white;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+@media (max-width: 767px) {
+  .VPNavBar .blog-search {
+    flex: 0 0 48px;
+    width: 48px;
+    min-width: 48px;
+    height: 100%;
+    margin-right: 0;
+  }
+
+  .VPNavBar .blog-search > .nav-search-btn-wait {
+    min-width: 48px;
+    width: 48px;
+    height: 100%;
+    padding: 0;
+    justify-content: center;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    color: white  ;
+    box-shadow: none;
+  }
+}

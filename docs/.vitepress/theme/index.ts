@@ -34,6 +34,7 @@ import "./styles/theme-color.scss"; // 主题色板区块：对齐 teek 官网�
 import "./styles/homepage.scss";
 import "./styles/home-card.scss";
 import "./styles/fonts.scss"; // 字体栈显式化与中文排版（须在主题 CSS 之后）
+import "./styles/search.scss"; // Pagefind 搜索按钮与导航栏样式对齐
 // MiSans 自托管分片（npm misans@5.0.0，cn-font-split 预分片 + unicode-range 按需加载）
 import "./fonts/misans/MiSans-Regular.min.css";
 import "./fonts/misans/MiSans-Semibold.min.css";

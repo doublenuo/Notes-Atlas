@@ -13,6 +13,7 @@ import { seo, buildHead } from './plugins/seo'
 import { rss } from './plugins/rss'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE } from './site'
 import { zhihuIcon, cnbIcon, emailIcon } from './socialIcons'
+import { chineseSearchOptimize, pagefindPlugin } from 'vitepress-plugin-pagefind'
 
 const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
@@ -56,6 +57,15 @@ export default defineConfig({
     plugins: [
       docAnalysisEmbed(),
       siteDataOptimize(),
+      pagefindPlugin({
+        btnPlaceholder: '搜索',
+        placeholder: '搜索文档',
+        emptyText: '没有找到相关结果',
+        loadingText: '搜索中…',
+        heading: '共 {{searchResult}} 条结果',
+        forceLanguage: 'zh-cn',
+        customSearchQuery: chineseSearchOptimize,
+      }),
       seo({ siteUrl: SITE_URL }),
       rss({ siteUrl: SITE_URL }),
     ],
@@ -110,16 +120,6 @@ export default defineConfig({
         dateStyle: 'long',
         timeStyle: 'medium'
       }
-    },
-    search: {
-      provider: 'local',
-      // provider: 'algolia',
-      // options: {
-      //   appId: 'QG9ZLZ5K7X',
-      //   apiKey: 'd9c8b1e5c0a7f2b3e4f5g6h7i8j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3y4z5',
-      //   indexName: 'notes-atlas',
-      //   placeholder: '搜索文档...',
-      // }
     },
     docFooter: {
       prev: '上一页',
