@@ -114,7 +114,9 @@ COS_BUCKET=my-blog-bucket pnpm sync:images
 rclone sync ./docs/public/images/ cos:my-blog-bucket/images/ --progress --checksum
 ```
 
-它会只同步发生变化的文件，并删除 COS 中本地已删除的对应文件，保持两端一致。GitHub Actions 中可选启用自动同步：设置仓库变量 `COS_BUCKET`，以及 Secrets `COS_ENDPOINT`、`COS_ACCESS_KEY_ID`、`COS_SECRET_ACCESS_KEY`；未设置时会跳过该步骤。
+Rclone 会扫描目录并通过校验和只传输发生变化的文件，同时删除 COS 中本地已删除的对应文件。它适合本地手动维护 COS；生产 GitHub Actions 不再重复执行 Rclone。
+
+生产构建由 `scripts/prepare-cos-images.mjs` 负责唯一的图片同步入口：它将图片转换为 WebP，计算 SHA-256，并读取 COS 对象的 `x-cos-meta-sha256` 元数据；哈希一致时跳过上传，只有新增或内容变化的文件才会上传到 `images/` 目录。因此每次部署即使扫描全部图片，也不会重复上传未变化文件。
 
 生产构建默认使用 COS 图片地址。可配置 `COS_IMAGE_BASE_URL` Secret/环境变量为图片桶的公开访问前缀，例如 `https://picupload-1330431167.cos.ap-guangzhou.myqcloud.com`。图床异常时设置 `USE_LOCAL_IMAGES=true` 后重新构建即可一键回滚到本地图片；未设置时会使用 COS。
 

@@ -59,7 +59,8 @@ if (upload) {
   const uploadOne = async (webp) => {
     const body = readFileSync(webp);
     const sha256 = createHash('sha256').update(body).digest('hex');
-    const key = relative(root, webp).split('\\').join('/');
+    // Keep the object key aligned with the public URL (/images/...).
+    const key = `images/${relative(root, webp).split('\\').join('/')}`;
     let remoteHash = '';
     try {
       const head = await cosCall('headObject', { Bucket: bucket, Region: region, Key: key });
