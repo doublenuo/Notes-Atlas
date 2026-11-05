@@ -59,12 +59,16 @@ if (upload) {
   const uploadOne = async (webp) => {
     const body = readFileSync(webp);
     const sha256 = createHash('sha256').update(body).digest('hex');
+    const md5 = createHash('md5').update(body).digest('hex');
     // Keep the object key aligned with the public URL (/images/...).
     const key = `images/${relative(root, webp).split('\\').join('/')}`;
     let remoteHash = '';
     try {
       const head = await cosCall('headObject', { Bucket: bucket, Region: region, Key: key });
-      remoteHash = head.headers?.['x-cos-meta-sha256'] || head.headers?.['X-Cos-Meta-Sha256'] || '';
+      const headers = head.headers || head.Headers || {};
+      remoteHash = headers['x-cos-meta-sha256'] || headers['X-Cos-Meta-Sha256'] || '';
+      const remoteEtag = String(headers.etag || headers.ETag || '').replace(/^"|"$/g, '');
+      if (!remoteHash && remoteEtag === md5) remoteHash = sha256;
     } catch (error) {
       if (![404, 'NoSuchKey', 'NotFound'].includes(error.statusCode) && error.code !== 'NoSuchKey') throw error;
     }
@@ -74,8 +78,11 @@ if (upload) {
     }
     await cosCall('putObject', {
       Bucket: bucket, Region: region, Key: key, Body: body,
-      ContentType: 'image/webp', CacheControl: 'public, max-age=31536000, immutable',
-      Metadata: { sha256 },
+      Headers: {
+        'Content-Type': 'image/webp',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'x-cos-meta-sha256': sha256,
+      },
     });
     uploaded++;
     console.log(`[COS] uploaded ${key}`);
