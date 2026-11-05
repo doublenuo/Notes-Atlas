@@ -163,6 +163,8 @@ export const teekConfig = defineTeekConfig({
     provider: "twikoo",
     options: {
       envId: process.env.VITE_TWIKOO_ENV_ID ?? process.env.TWIKOO_ENV_ID ?? "",
+      // 与云函数版本保持一致；Teek 默认仍使用 1.6.44。
+      version: "2.0.17",
       lang: "zh-CN",
     }
   },
