@@ -9,6 +9,7 @@ on:
       - 'package-lock.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
+      - 'scripts/prepare-cos-images.mjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
