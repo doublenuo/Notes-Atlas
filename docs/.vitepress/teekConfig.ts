@@ -249,12 +249,12 @@ export const teekConfig = defineTeekConfig({
     features: [
       {
         title: "文档",
-        details: "组会材料、学习笔记与工具资源的系统性沉淀",
+        details: "学习笔记与工具资源的系统性沉淀",
         link: "/study",
       },
       {
         title: "随笔",
-        details: "朋友圈、读书笔记与年终总结，记录日常与思考",
+        details: "记录日常与思考",
         link: "/essays",
       },
       {

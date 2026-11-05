@@ -7,6 +7,7 @@
   order: 0;
   margin-right: auto;
   padding: 20px;
+
 }
 
 .VPNavBar .blog-search > .nav-search-btn-wait {
@@ -18,8 +19,7 @@
   padding: 0 12px;
   justify-content: flex-start;
   gap: 0;
-  // border: 1px solid var(--vp-c-divider);
-  // border-radius: 8px;
+  color: #cccccc;
   background-color: transparent;
   font: inherit;
   text-align: left;
