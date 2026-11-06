@@ -6,6 +6,8 @@ categories:
   - 论文复现
 tags:
   - 人体运动恢复
+
+sticky: 8
 ---
 
 # GVHMR: World-Grounded Human Motion Recovery via Gravity-View Coordinates
