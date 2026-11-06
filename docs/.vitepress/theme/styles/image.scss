@@ -1,0 +1,5 @@
+/* Keep article images centered while preserving their intrinsic dimensions. */
+.vp-doc img {
+  display: block;
+  margin-inline: auto;
+}

@@ -39,6 +39,7 @@ import "./fonts/misans/MiSans-Regular.min.css";
 import "./fonts/misans/MiSans-Semibold.min.css";
 import "./styles/iframe.scss";
 import "./styles/embed.scss";
+import "./styles/image.scss";
 import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变换（须在主题 CSS 之后）
 import "./styles/banner-feature-card.scss"; // 首页 Banner 特性区卡片化（须在主题 CSS 之后）
 import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（须在主题 CSS 之后）
