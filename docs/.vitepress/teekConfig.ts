@@ -460,7 +460,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <span style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
-        <img src="/animals.webp" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
+        <img src="https://images.lovetulin.cn/images/2026/11/animals-1793980739-D9DE.webp" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
         <span style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;max-width:100%;overflow-x:auto;white-space:nowrap;">
           <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Framework VitePress" src="https://img.shields.io/badge/Framework-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
           <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
