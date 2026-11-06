@@ -71,11 +71,18 @@ function readPage(docsRoot, rel) {
   }
 }
 
+/** Convert a timestamp to second-precision UTC for sitemap lastmod. */
+function toLastmod(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().replace(/\.\d{3}Z$/, '.000Z');
+}
+
 /**
- * 一次遍历 git 历史，建立「文件 → 最近一次提交日期」映射。
+ * 一次遍历 git 历史，建立「文件 → 最近一次提交时间」映射。
  * CI 环境 checkout 后所有文件 mtime 都是构建时间，lastmod 必须以 git 为准；
  * 非 git 环境（源码直接拷贝）整体退回 mtime。
- * 输出行形如「日期行 + 空行 + 文件列表」，自新到旧，每文件取首次出现的日期。
+ * 输出行形如「ISO 时间行 + 空行 + 文件列表」，自新到旧，每文件取首次出现的时间。
  */
 let gitTimesCache = null;
 function gitModTimes(docsRoot) {
@@ -89,13 +96,13 @@ function gitModTimes(docsRoot) {
     const prefix = path.relative(toplevel, docsRoot).split(path.sep).join('/');
     const out = execFileSync(
       'git',
-      ['-C', docsRoot, '-c', 'core.quotepath=false', 'log', '--format=%cs', '--name-only'],
+      ['-C', docsRoot, '-c', 'core.quotepath=false', 'log', '--format=%cI', '--name-only'],
       { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
     );
     let date = null;
     for (const line of out.split('\n')) {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(line)) {
-        date = line;
+      if (/^\d{4}-\d{2}-\d{2}T/.test(line)) {
+        date = toLastmod(line);
       } else if (line && date) {
         const rel = prefix && line.startsWith(prefix + '/') ? line.slice(prefix.length + 1) : line;
         if (!times.has(rel)) times.set(rel, date);
@@ -109,7 +116,7 @@ function gitModTimes(docsRoot) {
 }
 
 /**
- * 取页面最后修改时间，作为 sitemap 的 lastmod。优先级：
+ * 取页面最后修改时间，作为 sitemap 的 lastmod。输出 UTC ISO 时间戳。优先级：
  *   1. frontmatter.updated —— 作者显式声明的最后修改时间
  *   2. git 最近一次提交日期 —— CI checkout 后 mtime 失真，git 才是真实修改时间；
  *      排在 date 之前：date 是发布日期，文章后期修改过则它就是错的
@@ -118,19 +125,19 @@ function gitModTimes(docsRoot) {
  */
 function lastmod(docsRoot, rel, data = {}) {
   if (data.updated) {
-    const d = new Date(data.updated);
-    if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+    const updated = toLastmod(data.updated);
+    if (updated) return updated;
   }
   const gitDate = gitModTimes(docsRoot).get(rel);
   if (gitDate) return gitDate;
   const fallback = data.date ?? data.created;
   if (fallback) {
-    const d = new Date(fallback);
-    if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+    const date = toLastmod(fallback);
+    if (date) return date;
   }
   try {
     const file = path.join(docsRoot, rel);
-    if (fs.existsSync(file)) return fs.statSync(file).mtime.toISOString().slice(0, 10);
+    if (fs.existsSync(file)) return toLastmod(fs.statSync(file).mtime);
   } catch {
     // 读不到就跳过 lastmod
   }
