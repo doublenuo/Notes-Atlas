@@ -20,9 +20,6 @@ const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 // 有 permalink 的用它；没有的用文档标题派生 slug。详见 ./permalinks.ts
 const PAGES = collectPages(DOCS_ROOT)
 
-const useLocalImages = process.env.USE_LOCAL_IMAGES === 'true'
-const cosImageBase = (process.env.COS_IMAGE_BASE_URL || '').replace(/\/$/, '')
-
 export default defineConfig({
   extends: teekConfig,
   lang: 'zh-CN',
@@ -61,8 +58,6 @@ export default defineConfig({
   // 打包构建优化
   vite: {
     define: {
-      "import.meta.env.VITE_USE_LOCAL_IMAGES": JSON.stringify(process.env.USE_LOCAL_IMAGES ?? "false"),
-      "import.meta.env.VITE_COS_IMAGE_BASE_URL": JSON.stringify(process.env.COS_IMAGE_BASE_URL ?? ""),
     },
     // 文档分析(字数/阅读时长)按嵌入展开后重算,覆盖 doc-analysis 的原始源码口径
     plugins: [
@@ -191,14 +186,6 @@ export default defineConfig({
     // 全站约 300 张图片，开启原生懒加载（img loading="lazy"），避免首屏拉取全部图片
     image: { lazyLoading: true },
     config(md) {
-      // 保持 Markdown 源文件使用本地原图路径；构建时切换到 WebP，并按开关选择 COS 或本地。
-      md.core.ruler.before('normalize', 'cos-webp-image-urls', (state) => {
-        state.src = state.src.replace(/(^|[\s("'=])(\/images\/[^\s)"'<>]+)\.(png|jpe?g|webp)(?=[?#)]|[\s"'<>]|$)/gi, (_match, prefix, path) => {
-          const webpPath = `${path}.webp`
-          return `${prefix}${useLocalImages || !cosImageBase ? webpPath : `${cosImageBase}${webpPath}`}`
-        })
-      })
-
       // Obsidian 式 ! [[]] 嵌入与 [[]] 站内链接
       // 规格：docs/superpowers/specs/2026-09-23-obsidian-embed-design.md
       obsidianEmbed(md, DOCS_ROOT)

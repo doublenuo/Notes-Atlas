@@ -3,7 +3,6 @@
   "packageManager": "pnpm@10.33.0",
   "devDependencies": {
     "@vitejs/plugin-vue": "5.2.4",
-    "cos-nodejs-sdk-v5": "^3.0.0",
     "echarts": "^6.0.0",
     "gray-matter": "^4.0.3",
     "markdown-it": "14.1.0",
@@ -20,9 +19,8 @@
   },
   "scripts": {
     "docs:dev": "NODE_OPTIONS=--max-old-space-size=4096 vitepress dev docs",
-    "docs:build": "node scripts/prepare-cos-images.mjs && vitepress build docs",
+    "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "sync:images": "bash scripts/sync-images-rclone.sh",
     "test": "node --test \"tests/**/*.test.mjs\"",
     "check:links": "node scripts/check-links.mjs",
     "convert:images": "node scripts/convert-images.mjs",

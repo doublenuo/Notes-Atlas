@@ -39,9 +39,6 @@ jobs:
         run: pnpm test
 
       - name: Build site
-        env:
-          # CI validates the local fallback and must not depend on production COS secrets.
-          USE_LOCAL_IMAGES: "true"
         run: pnpm docs:build
 
       - name: Check dead links
