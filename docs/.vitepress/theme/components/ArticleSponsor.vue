@@ -56,13 +56,13 @@ const expanded = ref(false)
             <div class="article-sponsor__methods">
               <div class="article-sponsor__method">
                 <div class="article-sponsor__qrcode-wrap">
-                  <img class="article-sponsor__qrcode" :src="imageUrl('/images/cos/20261029123144108.webp')" alt="支付宝收款二维码">
+                  <img class="article-sponsor__qrcode" :src="imageUrl('https://images.lovetulin.cn/images/2026/11/20261029123144108-1793977867-Wpjg.webp')" alt="支付宝收款二维码">
                 </div>
                 <span>支付宝</span>
               </div>
               <div class="article-sponsor__method">
                 <div class="article-sponsor__qrcode-wrap">
-                  <img class="article-sponsor__qrcode" :src="imageUrl('/images/cos/20261029123230345.webp')" alt="微信收款二维码">
+                  <img class="article-sponsor__qrcode" :src="imageUrl('https://images.lovetulin.cn/images/2026/11/20261029123230345-1793977869-Hnqo.webp')" alt="微信收款二维码">
                 </div>
                 <span>微信</span>
               </div>
