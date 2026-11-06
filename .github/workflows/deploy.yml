@@ -28,6 +28,9 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          # sitemap.xml 的 lastmod 依赖文件最近一次 Git 提交日期；浅克隆会把旧页面误判为构建日修改。
+          fetch-depth: 0
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
