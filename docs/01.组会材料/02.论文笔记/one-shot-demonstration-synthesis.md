@@ -17,7 +17,7 @@ permalink: /materials/paper/one-shot-demonstration-synthesis
 
 ## 论文介绍
 
-![20261009201654006](/images/cos/20261009201654006.webp)
+![20261009201654006](https://images.lovetulin.cn/images/2026/11/20261009201654006-1793977852-XMBe.webp)
 
 ## 模型框架
 
@@ -37,4 +37,4 @@ permalink: /materials/paper/one-shot-demonstration-synthesis
 
 通过遍历不同物体布局，系统自动生成对应的新轨迹，可以从一条示教扩展出大规模双臂数据集
 
-![20261009201647213](/images/cos/20261009201647213.webp)
+![20261009201647213](https://images.lovetulin.cn/images/2026/11/20261009201647213-1793977851-rwfV.webp)

@@ -13,4 +13,4 @@ tags:
 - Paper Link: [https://arxiv.org/pdf/2602.21723](https://arxiv.org/pdf/2602.21723)
 ## 模型框架图
 
-![LessMimic模型框架图](/images/cos/20260728231256275.webp)
+![LessMimic模型框架图](https://images.lovetulin.cn/images/2026/11/20260728231256275-1793977766-RRQA.webp)

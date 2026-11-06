@@ -16,7 +16,7 @@ tags:
 - Docs Link: [https://behavior-robot-suite.github.io/docs/](https://behavior-robot-suite.github.io/docs/)
 ## 论文介绍图
 
-![20261009195939586](/images/cos/20261009195939586.webp)
+![20261009195939586](https://images.lovetulin.cn/images/2026/11/20261009195939586-1793977810-A3ik.webp)
 
 论文整体都围绕以下三种能力来实现的，图中也展示了模型在星海图 R1 机器人的三大核心能力：
 
@@ -31,4 +31,4 @@ tags:
 
 ## 模型框架
 
-![20261009195957154](/images/cos/20261009195957154.webp)
+![20261009195957154](https://images.lovetulin.cn/images/2026/11/20261009195957154-1793977810-OLeB.webp)

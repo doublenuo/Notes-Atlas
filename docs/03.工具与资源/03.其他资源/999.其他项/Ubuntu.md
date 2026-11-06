@@ -13,11 +13,11 @@ tags:
 
 ## 整体预览
 
-![桌面预览](/images/cos/20260715190941610.webp)
+![桌面预览](https://images.lovetulin.cn/images/2026/11/20260715190941610-1793977731-KJRy.webp)
 
-![Terminal](/images/cos/20260715191038745.webp)
+![Terminal](https://images.lovetulin.cn/images/2026/11/20260715191038745-1793977732-algV.webp)
 
-![Workspace](/images/cos/20260715191118830.webp)
+![Workspace](https://images.lovetulin.cn/images/2026/11/20260715191118830-1793977732-4iax.webp)
 
 ## 系统工具
 
@@ -38,25 +38,25 @@ tags:
 - Timeshift: 系统备份工具
 - PeaZip：压缩工具
 
-![Google浏览器](/images/cos/20260715193142633.webp)
+![Google浏览器](https://images.lovetulin.cn/images/2026/11/20260715193142633-1793977733-GwH3.webp)
 
-![Firefox浏览器](/images/cos/20260715193218227.webp)
+![Firefox浏览器](https://images.lovetulin.cn/images/2026/11/20260715193218227-1793977734-y92D.webp)
 
-![Nautils文件系统](/images/cos/20260715193247230.webp)
+![Nautils文件系统](https://images.lovetulin.cn/images/2026/11/20260715193247230-1793977734-NKdY.webp)
 
-![Motrix](/images/cos/20260715193345023.webp)
+![Motrix](https://images.lovetulin.cn/images/2026/11/20260715193345023-1793977735-7unm.webp)
 
-![fsearch](/images/cos/20260715193409845.webp)
+![fsearch](https://images.lovetulin.cn/images/2026/11/20260715193409845-1793977736-ZlPA.webp)
 
-![copyq](/images/cos/20260715193436868.webp)
+![copyq](https://images.lovetulin.cn/images/2026/11/20260715193436868-1793977736-6pFx.webp)
 
-![utools](/images/cos/20260715193515404.webp)
+![utools](https://images.lovetulin.cn/images/2026/11/20260715193515404-1793977736-eXkK.webp)
 
-![Gear Lever](/images/cos/20260715193833285.webp)
+![Gear Lever](https://images.lovetulin.cn/images/2026/11/20260715193833285-1793977740-AEgR.webp)
 
-![Timeshift](/images/cos/20260715194435473.webp)
+![Timeshift](https://images.lovetulin.cn/images/2026/11/20260715194435473-1793977744-a2rX.webp)
 
-![PeaZip](/images/cos/20260715194843306.webp)
+![PeaZip](https://images.lovetulin.cn/images/2026/11/20260715194843306-1793977747-yHia.webp)
 
 ## 办公软件
 
@@ -82,35 +82,35 @@ tags:
   - Shotwell：照片管理器
   - PicGo：图片上传工具
 
-![WPS office](/images/cos/20260715193631486.webp)
+![WPS office](https://images.lovetulin.cn/images/2026/11/20260715193631486-1793977738-tU8l.webp)
 
-![Okular](/images/cos/20260715193706285.webp)
+![Okular](https://images.lovetulin.cn/images/2026/11/20260715193706285-1793977738-5X99.webp)
 
-![Typora](/images/cos/20260715193747251.webp)   
+![Typora](https://images.lovetulin.cn/images/2026/11/20260715193747251-1793977738-ZvAa.webp)
 
-![腾讯会议](/images/cos/20260715193945690.webp)
+![腾讯会议](https://images.lovetulin.cn/images/2026/11/20260715193945690-1793977741-DqoY.webp)
 
-![Zotero](/images/cos/20260715194053202.webp)
+![Zotero](https://images.lovetulin.cn/images/2026/11/20260715194053202-1793977741-fMA6.webp)
 
-![Xmind](/images/cos/20260715194132677.webp)
+![Xmind](https://images.lovetulin.cn/images/2026/11/20260715194132677-1793977742-mEQp.webp)
 
-![QQ](/images/cos/20260715194301848.webp)
+![QQ](https://images.lovetulin.cn/images/2026/11/20260715194301848-1793977743-GnxT.webp)
 
-![飞书](/images/cos/20260715195042893.webp)
+![飞书](https://images.lovetulin.cn/images/2026/11/20260715195042893-1793977748-ZSwN.webp)
 
-![Thunderbird](/images/cos/20260715194359820.webp)
+![Thunderbird](https://images.lovetulin.cn/images/2026/11/20260715194359820-1793977743-xTiV.webp)
 
-![百度网盘](/images/cos/20260715194531708.webp)
+![百度网盘](https://images.lovetulin.cn/images/2026/11/20260715194531708-1793977745-wJ5A.webp)
 
-![GIMP](/images/cos/20260715194647914.webp)
+![GIMP](https://images.lovetulin.cn/images/2026/11/20260715194647914-1793977746-KhRS.webp)
 
-![Shotwell](/images/cos/20260715194724600.webp)
+![Shotwell](https://images.lovetulin.cn/images/2026/11/20260715194724600-1793977746-nzSt.webp)
 
-![VLC](/images/cos/20260715194755887.webp)
+![VLC](https://images.lovetulin.cn/images/2026/11/20260715194755887-1793977747-MnTk.webp)
 
-![PicGo](/images/cos/20260715194934568.webp)
+![PicGo](https://images.lovetulin.cn/images/2026/11/20260715194934568-1793977748-Yo8i.webp)
 
-![SimpleTex](/images/cos/20260715195333208.webp)
+![SimpleTex](https://images.lovetulin.cn/images/2026/11/20260715195333208-1793977750-9INE.webp)
 
 ## 开发工具
 
@@ -124,23 +124,23 @@ tags:
 - Filezilla
 - OpenCode
 
-![VSCode](/images/cos/20260715195414424.webp)
+![VSCode](https://images.lovetulin.cn/images/2026/11/20260715195414424-1793977750-zsZt.webp)
 
-![Pycharm](/images/cos/20260715195441506.webp)
+![Pycharm](https://images.lovetulin.cn/images/2026/11/20260715195441506-1793977751-TGJF.webp)
 
-![Cursor](/images/cos/20260715195555594.webp)
+![Cursor](https://images.lovetulin.cn/images/2026/11/20260715195555594-1793977751-auxr.webp)
 
-![Termius](/images/cos/20260715195640017.webp)
+![Termius](https://images.lovetulin.cn/images/2026/11/20260715195640017-1793977752-Hc6R.webp)
 
-![Postman](/images/cos/20260715195703985.webp)
+![Postman](https://images.lovetulin.cn/images/2026/11/20260715195703985-1793977753-ov9i.webp)
 
-![Oracle VirtualBox](/images/cos/20260715195723971.webp)
+![Oracle VirtualBox](https://images.lovetulin.cn/images/2026/11/20260715195723971-1793977754-wUF4.webp)
 
-![CCSwitch](/images/cos/20260715195746145.webp)
+![CCSwitch](https://images.lovetulin.cn/images/2026/11/20260715195746145-1793977754-OXHd.webp)
 
-![Filezilla](/images/cos/20260715200217071.webp)
+![Filezilla](https://images.lovetulin.cn/images/2026/11/20260715200217071-1793977758-yInp.webp)
 
-![OpenCode](/images/cos/20260715200358952.webp)
+![OpenCode](https://images.lovetulin.cn/images/2026/11/20260715200358952-1793977760-8X48.webp)
 
 ## 其他软件
 
@@ -154,25 +154,25 @@ tags:
   - QQ音乐
   - bilibili
 
-![向日葵](/images/cos/20260715195851130.webp)
+![向日葵](https://images.lovetulin.cn/images/2026/11/20260715195851130-1793977755-H9te.webp)
 
-![Todesk](/images/cos/20260715195929544.webp)
+![Todesk](https://images.lovetulin.cn/images/2026/11/20260715195929544-1793977756-EUMJ.webp)
 
-![Localsend](/images/cos/20260715195951071.webp)
+![Localsend](https://images.lovetulin.cn/images/2026/11/20260715195951071-1793977757-nlvr.webp)
 
-![Transmission](/images/cos/20260715200024023.webp)
+![Transmission](https://images.lovetulin.cn/images/2026/11/20260715200024023-1793977758-1zsH.webp)
 
-![小红书](/images/cos/20260715200116429.webp)
+![小红书](https://images.lovetulin.cn/images/2026/11/20260715200116429-1793977758-0gz6.webp)
 
-![Bilibili](/images/cos/20260715200237969.webp)
+![Bilibili](https://images.lovetulin.cn/images/2026/11/20260715200237969-1793977759-QT5f.webp)
 
 
 ## gnome插件
 
 我目前使用的gnome插件可以查看下图
 
-![gnome插件](/images/cos/20260715200527396.webp)
+![gnome插件](https://images.lovetulin.cn/images/2026/11/20260715200527396-1793977760-I7Ir.webp)
 
 所使用的主题、图标、字体可以见下图
 
-![gnome主题图标字体](/images/cos/20260715200624272.webp)
+![gnome主题图标字体](https://images.lovetulin.cn/images/2026/11/20260715200624272-1793977761-14mm.webp)

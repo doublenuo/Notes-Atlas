@@ -37,7 +37,7 @@ GVHMR（World-Grounded Human Motion Recovery via Gravity-View Coordinates）研�
 
 ### 方法框架
 
-![20261015144940283](/images/cos/20261015144940283.webp)
+![20261015144940283](https://images.lovetulin.cn/images/2026/11/20261015144940283-1793977863-YJb1.webp)
 
 GVHMR 的整体流程可分为以下五个阶段：
 1. **输入视频与特征提取**：输入连续单目 RGB 视频，通过人体检测、跟踪及相关预处理获取人体检测框、二维人体关键点、图像特征和相机相对旋转等信息，为后续人体状态预测提供视觉和几何依据。

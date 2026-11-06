@@ -12,4 +12,4 @@ categories:
 
 ## 模型框架图
 
-![20260715105749146](/images/cos/20260715105749146.webp)
+![20260715105749146](https://images.lovetulin.cn/images/2026/11/20260715105749146-1793977726-Wtsm.webp)

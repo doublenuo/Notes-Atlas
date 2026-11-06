@@ -13,8 +13,8 @@ tags:
 - Paper Link: [https://arxiv.org/abs/2512.01801](https://arxiv.org/abs/2512.01801)
 ## 论文介绍
 
-![20261009200830337](/images/cos/20261009200830337.webp)
+![20261009200830337](https://images.lovetulin.cn/images/2026/11/20261009200830337-1793977831-haVz.webp)
 
 ## 模型架构图
 
-![20261009200920565](/images/cos/20261009200920565.webp)
+![20261009200920565](https://images.lovetulin.cn/images/2026/11/20261009200920565-1793977831-BwZn.webp)

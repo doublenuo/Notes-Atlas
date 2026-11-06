@@ -33,8 +33,8 @@ RoboTwin2.0 是一个可扩展的模拟框架, 可以实现自动化、大规模
 - 引入了一种实施例感知的适应机制, 该机制根据对象可供性生成机器人特定的操作候选者；
 - 发布了 RoboTwin-OD 资产库、大规模预收集的多实施例域随机轨迹数据集、可扩展的双手数据生成器和标准化评估基准, 以支持跨不同机器人实施例、场景配 置和语言指令的可扩展策略的可扩展训练和评估。
 
-![RoboTwin2.0](/images/github/20260403104810236.webp)
+![RoboTwin2.0](https://images.lovetulin.cn/images/2026/11/20260403104810236-1793977924-jNvl.webp)
 
 ## 方法流程
 
-![RoboTwin2.0-Method](/images/github/20260403110033500.webp)
+![RoboTwin2.0-Method](https://images.lovetulin.cn/images/2026/11/20260403110033500-1793977925-DHb6.webp)

@@ -13,6 +13,6 @@ tags:
 -   Paper Link: [https://arxiv.org/abs/2603.03836](https://arxiv.org/abs/2603.03836)
 ## 模型架构
 
-![image-20260326145356435](/images/github/20260326145356562.webp)
+![image-20260326145356435](https://images.lovetulin.cn/images/2026/11/20260326145356562-1793977909-XO4z.webp)
 
-![image-20260326145411362](/images/github/20260326145411403.webp)
+![image-20260326145411362](https://images.lovetulin.cn/images/2026/11/20260326145411403-1793977910-LLf2.webp)

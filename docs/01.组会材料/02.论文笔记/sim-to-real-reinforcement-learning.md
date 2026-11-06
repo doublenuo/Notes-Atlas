@@ -18,7 +18,7 @@ permalink: /materials/paper/sim-to-real-reinforcement-learning
 - Paper Link：[http://arxiv.org/abs/2502.20396](http://arxiv.org/abs/2502.20396)
 ## 论文介绍
 
-![论文介绍图](/images/github/20260602134328952.webp)
+![论文介绍图](https://images.lovetulin.cn/images/2026/11/20260602134328952-1793977952-lK0c.webp)
 
 ## 模型框架
 
@@ -32,4 +32,4 @@ permalink: /materials/paper/sim-to-real-reinforcement-learning
 
 整个训练流程可以概括为：首先通过自动参数校准建立高保真仿真环境，然后利用接触目标与物体目标构建统一奖励函数，在此基础上采用分治式专家学习与策略蒸馏获得高效的通用策略，最后结合视觉感知与物体状态融合实现从仿真到真实机器人的迁移部署，最终完成双手抓取、搬运以及双手交接等复杂人形机器人操作任务。
 
-![模型框架图](/images/github/20260602134556449.webp)
+![模型框架图](https://images.lovetulin.cn/images/2026/11/20260602134556449-1793977955-YWwW.webp)

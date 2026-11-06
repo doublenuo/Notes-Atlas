@@ -14,7 +14,7 @@ permalink: /materials/paper/adaptmanip
 - Paper Link: [https://morganbyrd03.github.io/adaptmanip/AdaptManip-Arxiv.pdf](https://morganbyrd03.github.io/adaptmanip/AdaptManip-Arxiv.pdf)
 ## 论文介绍
 
-![AdaptManip论文介绍](/images/github/20260520160018723.webp)
+![AdaptManip论文介绍](https://images.lovetulin.cn/images/2026/11/20260520160018723-1793977947-Ww8S.webp)
 ## 模型框架
 
 这篇论文提出了一个分阶段训练的自适应全身搬运框架，核心目标是在未知负载条件下实现稳定的举起、搬运与递送。整个方法首先训练一个基础全身控制策略 π_wbc。在这一阶段，机器人并不进行搬运任务，而是在大量随机速度指令下学习稳定行走与全身平衡控制。策略输入主要是机器人本体感觉信息，例如关节状态、IMU以及足端接触信息，输出则是全身关节动作。通过强化学习训练后，机器人获得了稳定的 locomotion 和 whole-body coordination 能力，相当于先学习“如何稳定运动”。
@@ -23,5 +23,5 @@ permalink: /materials/paper/adaptmanip
 
 此外，论文还设计了一个基于 LSTM 的在线循环状态估计器，用于实时估计未知物体的动力学状态。估计器输入包括视觉观测以及机器人本体感觉信息，例如身体振动、关节力矩和运动响应等，再通过 LSTM 建模历史时序信息，最终输出估计的物体状态，例如质量、重心和惯性。这个估计结果会实时输入残差策略 π_res，使机器人能够在搬运过程中动态调整动作。因此整个系统形成了“在线估计 + 自适应补偿”的闭环控制框架，实现了未知负载条件下的自适应全身搬运。
 
-![20261009195611441](/images/cos/20261009195611441.webp)
+![20261009195611441](https://images.lovetulin.cn/images/2026/11/20261009195611441-1793977803-ETAG.webp)
 

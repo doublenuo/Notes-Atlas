@@ -15,9 +15,9 @@ tags:
 -   Github Link: [https://github.com/mujc2021/DexImit-Open](https://github.com/mujc2021/DexImit-Open)
 ## 论文介绍
 
-![20261009200210907](/images/cos/20261009200210907.webp)
+![20261009200210907](https://images.lovetulin.cn/images/2026/11/20261009200210907-1793977814-jp4H.webp)
 
 ## 模型框架
 
-![20261009200236455](/images/cos/20261009200236455.webp)
+![20261009200236455](https://images.lovetulin.cn/images/2026/11/20261009200236455-1793977814-iUvp.webp)
 

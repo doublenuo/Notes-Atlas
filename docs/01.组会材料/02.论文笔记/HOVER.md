@@ -30,5 +30,5 @@ tags:
 
 **所以整个 HOVER 的流程可以概括成：Human Motion / MoCap 数据首先经过 Retargeting，形成机器人可以执行的运动数据；然后把不同的控制需求统一转换成 Command Space，并通过 Mode Mask 和 Sparsity Mask 指定当前控制模式以及具体控制目标；接着使用这些不同任务组合训练具有 privileged information 的 Oracle Policy，让 Oracle 学会多种 whole-body motor skills；然后通过 DAgger-based policy distillation，把 Oracle 的多种控制能力压缩到一个共享参数的 HOVER Policy；最后部署的时候不需要根据任务切换不同 Policy，而是只需要改变 command 和 mask，就可以让同一个 Policy 表现出不同的控制行为。**
 
-![20260923105633444](/images/cos/20260923105633444.webp)
-![20260923105826690](/images/cos/20260923105826690.webp)
+![20260923105633444](https://images.lovetulin.cn/images/2026/11/20260923105633444-1793977790-VhY4.webp)
+![20260923105826690](https://images.lovetulin.cn/images/2026/11/20260923105826690-1793977791-pnRM.webp)

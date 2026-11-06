@@ -20,7 +20,7 @@ tags:
 
 作者提出了一个名为 UniDexGrasp 的双阶段流水线，将复杂的抓取任务分解为**多样化抓取位姿生成**和**目标条件下的策略执行**。
 
-![UniDexGrasp论文介绍](/images/github/20260428102242141.webp)
+![UniDexGrasp论文介绍](https://images.lovetulin.cn/images/2026/11/20260428102242141-1793977938-P885.webp)
 
 ## 问题定义
 
@@ -28,7 +28,7 @@ tags:
 
 ## 模型框架
 
-![UniDexGrasp模型框架](/images/github/20260427190530064.webp)
+![UniDexGrasp模型框架](https://images.lovetulin.cn/images/2026/11/20260427190530064-1793977936-RUdV.webp)
 
 ### 多样化抓取位姿生成
 
