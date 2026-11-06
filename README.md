@@ -82,22 +82,6 @@
 
 这里只追求**长期有效的知识沉淀。**
 
-## 🔍 预览部署
-
-项目已配置 Vercel 预览部署：
-
-1. 从 `main` 创建 `feature/xxx` 分支并推送到 GitHub。
-2. Vercel 会自动构建该分支并生成 Preview URL；创建 Pull Request 后，URL 也会显示在 PR checks 中。
-3. 验收 Preview 站点后合并到 `main`，Vercel 会将 `main` 部署为 Production。
-
-首次使用时，需要在 Vercel 中导入 `doublenuo/Notes-Atlas` 仓库，并将 Production Branch 设置为 `main`。构建配置已由根目录 `vercel.json` 提供。
-
-评论系统使用 Twikoo。部署前请配置 `TWIKOO_ENV_ID` GitHub Actions Secret；它的值应为 Twikoo 云函数或自建服务的环境 ID。Vercel 部署则在项目的 Preview 和 Production 环境变量中配置 `VITE_TWIKOO_ENV_ID`。未配置时站点仍可构建，但评论区无法初始化。
-
-生产构建和部署只使用仓库中的本地图片，不会将图片转换或上传到腾讯云 COS。
-
----
-
 ## ☕ 如果你读到了这里
 
 那我们大概是同类人：
