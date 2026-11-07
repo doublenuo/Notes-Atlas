@@ -216,7 +216,6 @@ const lightbox = ref<string | null>(null)
         <div class="moment-card">
           <header class="moment-head">
             <span class="moment-name">{{ props.name }}</span>
-            <time v-if="moment.time" class="moment-time">{{ moment.time }}</time>
           </header>
           <h3 v-if="moment.title" class="moment-title">{{ moment.title }}</h3>
           <div v-if="moment.content" class="moment-content" v-html="render(moment.content)"></div>
@@ -246,13 +245,16 @@ const lightbox = ref<string | null>(null)
             :src="moment.video"
           ></video>
 
-          <p v-if="moment.location" class="moment-location">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            <span>{{ moment.location }}</span>
-          </p>
+          <div v-if="moment.time || moment.location" class="moment-meta">
+            <time v-if="moment.time" class="moment-time">{{ moment.time }}</time>
+            <p v-if="moment.location" class="moment-location">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span>{{ moment.location }}</span>
+            </p>
+          </div>
         </div>
       </article>
     </div>
@@ -274,19 +276,13 @@ const lightbox = ref<string | null>(null)
 <style scoped>
 .moments-timeline {
   position: relative;
-  margin: 2rem 0;
-  padding: 0.25rem 0 0.25rem 1.75rem;
+  max-width: 44rem;
+  margin: 2rem auto;
+  padding: 0.25rem 0;
 }
 
 .moments-timeline::before {
-  position: absolute;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  left: 0.4rem;
-  width: 2px;
-  border-radius: 1px;
-  background: var(--vp-c-divider);
-  content: "";
+  display: none;
 }
 
 .moment-group + .moment-group {
@@ -295,7 +291,8 @@ const lightbox = ref<string | null>(null)
 
 .moment-divider {
   position: relative;
-  margin: 0 0 1rem;
+  margin: 1.5rem 0 1rem;
+  text-align: center;
 }
 
 .moment-divider time,
@@ -312,8 +309,8 @@ const lightbox = ref<string | null>(null)
 
 .moment {
   display: flex;
-  gap: 0.75rem;
-  margin: 0 0 1rem;
+  gap: 0.8rem;
+  margin: 0 0 1.35rem;
 }
 
 .moment:last-child {
@@ -322,50 +319,37 @@ const lightbox = ref<string | null>(null)
 
 .moment-avatar {
   flex: none;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.25rem;
   object-fit: cover;
 }
 
 .moment-card {
   flex: 1;
   min-width: 0;
-  padding: 0.85rem 1.1rem;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 0.85rem;
-  background: var(--vp-c-bg-soft);
-  transition: border-color 0.2s ease;
-}
-
-/* hover 效果只给真指针设备，触屏设备不产生粘滞高亮 */
-@media (hover: hover) {
-  .moment-card:hover {
-    border-color: var(--vp-c-brand-1);
-  }
 }
 
 .moment-head {
   display: flex;
   align-items: baseline;
-  gap: 0.75rem;
+  min-height: 1.5rem;
 }
 
 .moment-name {
-  font-size: 0.92rem;
+  color: #576b95;
+  font-size: 0.96rem;
   font-weight: 600;
 }
 
 .moment-time {
-  margin-left: auto;
-  color: var(--vp-c-text-3);
+  color: var(--vp-c-text-2);
   font-size: 0.8rem;
   white-space: nowrap;
 }
 
 .moment-title {
-  margin: 0.55rem 0 0;
+  margin: 0.25rem 0 0;
   border-top: 0;
   font-size: 1.02rem;
   font-weight: 600;
@@ -373,7 +357,7 @@ const lightbox = ref<string | null>(null)
 }
 
 .moment-content {
-  margin-top: 0.4rem;
+  margin-top: 0.2rem;
   color: var(--vp-c-text-1);
   font-size: 0.95rem;
   line-height: 1.75;
@@ -412,21 +396,20 @@ const lightbox = ref<string | null>(null)
 .moment-images {
   display: grid;
   gap: 0.3rem;
-  margin-top: 0.55rem;
+  width: min(100%, 20rem);
+  margin-top: 0.5rem;
 }
 
 .moment-images--1 {
-  grid-template-columns: minmax(0, 20rem);
+  grid-template-columns: minmax(0, 18rem);
 }
 
 .moment-images--2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 22rem;
 }
 
 .moment-images--3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 28rem;
 }
 
 .moment-image {
@@ -484,9 +467,9 @@ const lightbox = ref<string | null>(null)
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  margin: 0.6rem 0 0;
-  color: var(--vp-c-brand-1);
-  font-size: 0.85rem;
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: 0.8rem;
 }
 
 .moment-location svg {
@@ -497,6 +480,17 @@ const lightbox = ref<string | null>(null)
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.moment-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.55rem;
+}
+
+.moment-meta .moment-location {
+  color: #576b95;
 }
 
 .moment-lightbox {
@@ -527,20 +521,16 @@ const lightbox = ref<string | null>(null)
 
 @media (max-width: 640px) {
   .moments-timeline {
-    padding-left: 1.5rem;
+    margin: 1.5rem 0;
   }
 
   .moment {
-    gap: 0.6rem;
+    gap: 0.65rem;
   }
 
   .moment-avatar {
-    width: 34px;
-    height: 34px;
-  }
-
-  .moment-card {
-    padding: 0.7rem 0.9rem;
+    width: 40px;
+    height: 40px;
   }
 
   .moment-lightbox {
