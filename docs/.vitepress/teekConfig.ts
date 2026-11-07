@@ -169,8 +169,9 @@ export const teekConfig = defineTeekConfig({
     provider: "twikoo",
     options: {
       envId: process.env.VITE_TWIKOO_ENV_ID ?? process.env.TWIKOO_ENV_ID ?? localEnv.VITE_TWIKOO_ENV_ID ?? localEnv.TWIKOO_ENV_ID ?? "",
-      // 锁定 Teek 已验证的前端版本；它不需要与云函数版本一致。
-      version: "1.6.44",
+      // 前端版本必须与云函数保持一致；all.nocss 同时包含 CloudBase SDK，并保留独立 CSS 加载。
+      version: "2.0.17",
+      jsLink: "https://cdn.jsdelivr.net/npm/twikoo@{version}/dist/twikoo.all.nocss.js",
       lang: "zh-CN",
       katex: {
         cssLink: "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css",
