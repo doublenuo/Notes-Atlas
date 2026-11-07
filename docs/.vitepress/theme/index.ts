@@ -1,4 +1,4 @@
-import Teek, { teekConfigContext, TkMessage, usePosts, useTeekConfig } from "vitepress-theme-teek";
+import Teek, { teekConfigContext, twikooContext, TkMessage, usePosts, useTeekConfig } from "vitepress-theme-teek";
 import type { TeekConfig } from "vitepress-theme-teek";
 import ThemeConfig, { type ChangeType } from "./components/ThemeConfig.vue";
 import NotFound from "./components/404.vue";
@@ -47,6 +47,34 @@ import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（
 export default {
   extends: Teek,
   enhanceApp({ app }) {
+    // Twikoo 不同版本的 CDN 构建产物可能暴露为 window.twikoo.init、
+    // window.twikoo.default 或可直接调用的 window.twikoo。绕过 Teek
+    // 仅支持第一种形式的默认适配，避免生产环境因加载到模块化产物而初始化失败。
+    app.provide(twikooContext, (el, options) => {
+      type TwikooApi = {
+        init?: (config: Record<string, unknown>) => unknown;
+        default?: (config: Record<string, unknown>) => unknown;
+      };
+
+      const api = (window as Window & {
+        twikoo?: TwikooApi | ((config: Record<string, unknown>) => unknown);
+      }).twikoo;
+      const init =
+        typeof api === "function"
+          ? api
+          : typeof api?.init === "function"
+            ? api.init.bind(api)
+            : typeof api?.default === "function"
+              ? api.default
+              : null;
+
+      if (!init) {
+        throw new Error("[Notes Atlas] Twikoo 加载完成，但未找到可用的初始化 API");
+      }
+
+      return init({ ...options, el });
+    });
+
     // mermaid 只在真正出现图表时加载，避免全站每页预加载 2.8MB
     app.component("Mermaid", defineAsyncComponent(() => import("./components/Mermaid.vue")));
   },
