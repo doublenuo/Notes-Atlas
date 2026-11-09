@@ -27,5 +27,5 @@ tags:
 
 最后，这两大核心能力在 **(4) Fusion Phase（融合阶段）** 汇合，通过决策融合模块（Decision Fusion Module）将 Option-Aware VQ-VAE 预测出的动作选项、离线构建的数据分布特性以及高层切换策略的实时输出进行有机融合，从而实现人型机器人在长周期、复杂控制任务中敏捷与稳定状态的平滑、高效在线切换。
 
-![20261009195925256](https://images.lovetulin.cn/images/2026/11/20261009195925256-1793977809-wL7l.webp)
+![20261009195925256](https://static.lovetulin.cn/images/2026/11/09/20261009195925256-1793977809-wL7l-1794221390-9PFP.webp)
 

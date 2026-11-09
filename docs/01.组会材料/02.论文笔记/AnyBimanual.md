@@ -16,4 +16,4 @@ tags:
 
 ## 模型架构图
 
-![20261009195649065](https://images.lovetulin.cn/images/2026/11/20261009195649065-1793977804-9IEy.webp)
+![20261009195649065](https://static.lovetulin.cn/images/2026/11/09/20261009195649065-1793977804-9IEy-1794221390-mPuY.webp)

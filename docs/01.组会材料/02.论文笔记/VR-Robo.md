@@ -18,10 +18,10 @@ tags:
 
 这篇论文的核心思想是先用真实世界数据建立视觉真实感，再在仿真中进行大规模强化学习，最后无缝迁回真实机器人。
 
-![VR-Robo论文介绍图](https://images.lovetulin.cn/images/2026/11/20260326155455413-1793977911-azeL.webp)
+![VR-Robo论文介绍图](https://static.lovetulin.cn/images/2026/11/09/20260326155455413-1793977911-azeL-1794221508-9vwJ.webp)
 
 ## 模型架构图
 
-![image-20260326142738343](https://images.lovetulin.cn/images/2026/11/20260326142738480-1793977907-cUV7.webp)
+![image-20260326142738343](https://static.lovetulin.cn/images/2026/11/09/20260326142738480-1793977907-cUV7-1794221508-7FYM.webp)
 
-![image-20260326142747899](https://images.lovetulin.cn/images/2026/11/20260326142747966-1793977907-mLfL.webp)
+![image-20260326142747899](https://static.lovetulin.cn/images/2026/11/09/20260326142747966-1793977907-mLfL-1794221508-ZzUt.webp)

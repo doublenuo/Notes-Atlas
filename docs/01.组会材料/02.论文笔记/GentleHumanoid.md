@@ -15,7 +15,7 @@ tags:
 - Traning Code: [https://github.com/Axellwppr/gentle-humanoid-training](https://github.com/Axellwppr/gentle-humanoid-training)
 ## 模型框架图
 
-![20260715105620858](https://images.lovetulin.cn/images/2026/11/20260715105620858-1793977723-CJ0C.webp)
+![20260715105620858](https://static.lovetulin.cn/images/2026/11/09/20260715105620858-1793977723-CJ0C-1794221437-fpqh.webp)
 
 传统的人形机器人控制一般都是直接跟踪一条固定的参考轨迹，也就是说，无论机器人是否受到外力干扰，目标轨迹都是不变的。当机器人与人或者物体发生接触时，就容易产生较大的接触力，导致交互比较僵硬。
 

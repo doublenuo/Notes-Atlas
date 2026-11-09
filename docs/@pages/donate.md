@@ -17,11 +17,11 @@ comment: false
 
 <div style="display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin:28px 0;">
   <figure style="margin:0;text-align:center;">
-    <img src="https://images.lovetulin.cn/images/2026/11/20261029123144108-1793977867-Wpjg.webp" alt="支付宝收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
+    <img src="https://static.lovetulin.cn/images/2026/11/09/20261029123144108-1793977867-Wpjg-1794221372-jwz0.webp" alt="支付宝收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
     <figcaption style="margin-top:8px;font-size:14px;color:var(--vp-c-text-2);">支付宝</figcaption>
   </figure>
   <figure style="margin:0;text-align:center;">
-    <img src="https://images.lovetulin.cn/images/2026/11/20261029123230345-1793977869-Hnqo.webp" alt="微信收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
+    <img src="https://static.lovetulin.cn/images/2026/11/09/20261029123230345-1793977869-Hnqo-1794221372-uELM.webp" alt="微信收款二维码" style="width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid var(--vp-c-divider);" />
     <figcaption style="margin-top:8px;font-size:14px;color:var(--vp-c-text-2);">微信</figcaption>
   </figure>
 </div>

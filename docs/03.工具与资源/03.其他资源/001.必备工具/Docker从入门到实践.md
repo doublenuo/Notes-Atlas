@@ -12,7 +12,7 @@ tags:
 
 > 写在前面的话：本文的全部命令均在WSL2配置Ubuntu 26系统下进行完成，系统详细信息如下图所示，如有错误或问题欢迎随时指出！
 
-![WSL Ubuntu26.06 LTS系统](https://images.lovetulin.cn/images/2026/11/20260730213649369-1793977768-rJmN.webp)
+![WSL Ubuntu26.06 LTS系统](https://static.lovetulin.cn/images/2026/11/09/20260730213649369-1793977768-rJmN-1794221590-55dT.webp)
 
 
 # Dockerfile详解

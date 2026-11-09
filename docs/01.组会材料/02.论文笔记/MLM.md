@@ -24,4 +24,4 @@ tags:
 
 论文采用非对称actor-critic 结构，actor 使用真实部署可获得的 proprioception 和 trajectory condition，critic 则额外利用 privileged state 和 terrain information 来提升稳定性。
 
-![20261009201427043](https://images.lovetulin.cn/images/2026/11/20261009201427043-1793977846-015Y.webp)
+![20261009201427043](https://static.lovetulin.cn/images/2026/11/09/20261009201427043-1793977846-015Y-1794221470-s0TW.webp)

@@ -16,6 +16,6 @@ permalink: /materials/paper/amo
 ## 模型框架图
 
 
-![20261029125137626](https://images.lovetulin.cn/images/2026/11/20261029125137626-1793977870-eWON.webp)
+![20261029125137626](https://static.lovetulin.cn/images/2026/11/09/20261029125137626-1793977870-eWON-1794221390-xoao.webp)
 
 

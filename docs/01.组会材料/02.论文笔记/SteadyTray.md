@@ -15,4 +15,4 @@ tags:
 
 ## 模型框架图
 
-![SteadyTray模型框架图](https://images.lovetulin.cn/images/2026/11/20260722105049897-1793977763-c9BC.webp)
+![SteadyTray模型框架图](https://static.lovetulin.cn/images/2026/11/09/20260722105049897-1793977763-c9BC-1794221508-Zg2U.webp)

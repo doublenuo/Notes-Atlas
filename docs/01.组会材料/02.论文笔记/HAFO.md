@@ -12,5 +12,5 @@ categories:
 
 ## 模型框架图
 
-![20260915231658159](https://images.lovetulin.cn/images/2026/11/20260915231658159-1793977785-dtAu.webp)
+![20260915231658159](https://static.lovetulin.cn/images/2026/11/09/20260915231658159-1793977785-dtAu-1794221437-bo9W.webp)
 

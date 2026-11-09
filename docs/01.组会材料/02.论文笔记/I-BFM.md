@@ -17,7 +17,7 @@ tags:
 
 ## 模型框架图
 
-![20261009203218874](https://images.lovetulin.cn/images/2026/11/20261009203218874-1793977859-TSVx.webp)
+![20261009203218874](https://static.lovetulin.cn/images/2026/11/09/20261009203218874-1793977859-TSVx-1794221470-kyRj.webp)
 
 ## 核心思想
 

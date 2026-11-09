@@ -13,11 +13,11 @@ tags:
 
 ## 整体预览
 
-![桌面预览](https://images.lovetulin.cn/images/2026/11/20260715190941610-1793977731-KJRy.webp)
+![桌面预览](https://static.lovetulin.cn/images/2026/11/09/20260715190941610-1793977731-KJRy-1794221667-1xtm.webp)
 
-![Terminal](https://images.lovetulin.cn/images/2026/11/20260715191038745-1793977732-algV.webp)
+![Terminal](https://static.lovetulin.cn/images/2026/11/09/20260715191038745-1793977732-algV-1794221667-UMGP.webp)
 
-![Workspace](https://images.lovetulin.cn/images/2026/11/20260715191118830-1793977732-4iax.webp)
+![Workspace](https://static.lovetulin.cn/images/2026/11/09/20260715191118830-1793977732-4iax-1794221667-3pwW.webp)
 
 ## 系统工具
 
@@ -38,25 +38,25 @@ tags:
 - Timeshift: 系统备份工具
 - PeaZip：压缩工具
 
-![Google浏览器](https://images.lovetulin.cn/images/2026/11/20260715193142633-1793977733-GwH3.webp)
+![Google浏览器](https://static.lovetulin.cn/images/2026/11/09/20260715193142633-1793977733-GwH3-1794221667-3oP3.webp)
 
-![Firefox浏览器](https://images.lovetulin.cn/images/2026/11/20260715193218227-1793977734-y92D.webp)
+![Firefox浏览器](https://static.lovetulin.cn/images/2026/11/09/20260715193218227-1793977734-y92D-1794221667-Bt9W.webp)
 
-![Nautils文件系统](https://images.lovetulin.cn/images/2026/11/20260715193247230-1793977734-NKdY.webp)
+![Nautils文件系统](https://static.lovetulin.cn/images/2026/11/09/20260715193247230-1793977734-NKdY-1794221667-SCgj.webp)
 
-![Motrix](https://images.lovetulin.cn/images/2026/11/20260715193345023-1793977735-7unm.webp)
+![Motrix](https://static.lovetulin.cn/images/2026/11/09/20260715193345023-1793977735-7unm-1794221667-HvwC.webp)
 
-![fsearch](https://images.lovetulin.cn/images/2026/11/20260715193409845-1793977736-ZlPA.webp)
+![fsearch](https://static.lovetulin.cn/images/2026/11/09/20260715193409845-1793977736-ZlPA-1794221667-kso3.webp)
 
-![copyq](https://images.lovetulin.cn/images/2026/11/20260715193436868-1793977736-6pFx.webp)
+![copyq](https://static.lovetulin.cn/images/2026/11/09/20260715193436868-1793977736-6pFx-1794221667-6pRk.webp)
 
-![utools](https://images.lovetulin.cn/images/2026/11/20260715193515404-1793977736-eXkK.webp)
+![utools](https://static.lovetulin.cn/images/2026/11/09/20260715193515404-1793977736-eXkK-1794221667-uOcR.webp)
 
-![Gear Lever](https://images.lovetulin.cn/images/2026/11/20260715193833285-1793977740-AEgR.webp)
+![Gear Lever](https://static.lovetulin.cn/images/2026/11/09/20260715193833285-1793977740-AEgR-1794221667-iG30.webp)
 
-![Timeshift](https://images.lovetulin.cn/images/2026/11/20260715194435473-1793977744-a2rX.webp)
+![Timeshift](https://static.lovetulin.cn/images/2026/11/09/20260715194435473-1793977744-a2rX-1794221667-iU7p.webp)
 
-![PeaZip](https://images.lovetulin.cn/images/2026/11/20260715194843306-1793977747-yHia.webp)
+![PeaZip](https://static.lovetulin.cn/images/2026/11/09/20260715194843306-1793977747-yHia-1794221667-JFot.webp)
 
 ## 办公软件
 
@@ -82,35 +82,35 @@ tags:
   - Shotwell：照片管理器
   - PicGo：图片上传工具
 
-![WPS office](https://images.lovetulin.cn/images/2026/11/20260715193631486-1793977738-tU8l.webp)
+![WPS office](https://static.lovetulin.cn/images/2026/11/09/20260715193631486-1793977738-tU8l-1794221667-iUiX.webp)
 
-![Okular](https://images.lovetulin.cn/images/2026/11/20260715193706285-1793977738-5X99.webp)
+![Okular](https://static.lovetulin.cn/images/2026/11/09/20260715193706285-1793977738-5X99-1794221667-JtmQ.webp)
 
-![Typora](https://images.lovetulin.cn/images/2026/11/20260715193747251-1793977738-ZvAa.webp)
+![Typora](https://static.lovetulin.cn/images/2026/11/09/20260715193747251-1793977738-ZvAa-1794221667-e8PY.webp)
 
-![腾讯会议](https://images.lovetulin.cn/images/2026/11/20260715193945690-1793977741-DqoY.webp)
+![腾讯会议](https://static.lovetulin.cn/images/2026/11/09/20260715193945690-1793977741-DqoY-1794221667-mKJf.webp)
 
-![Zotero](https://images.lovetulin.cn/images/2026/11/20260715194053202-1793977741-fMA6.webp)
+![Zotero](https://static.lovetulin.cn/images/2026/11/09/20260715194053202-1793977741-fMA6-1794221667-2gUc.webp)
 
-![Xmind](https://images.lovetulin.cn/images/2026/11/20260715194132677-1793977742-mEQp.webp)
+![Xmind](https://static.lovetulin.cn/images/2026/11/09/20260715194132677-1793977742-mEQp-1794221667-hAzj.webp)
 
-![QQ](https://images.lovetulin.cn/images/2026/11/20260715194301848-1793977743-GnxT.webp)
+![QQ](https://static.lovetulin.cn/images/2026/11/09/20260715194301848-1793977743-GnxT-1794221689-N1bf.webp)
 
-![飞书](https://images.lovetulin.cn/images/2026/11/20260715195042893-1793977748-ZSwN.webp)
+![飞书](https://static.lovetulin.cn/images/2026/11/09/20260715195042893-1793977748-ZSwN-1794221689-CvNn.webp)
 
-![Thunderbird](https://images.lovetulin.cn/images/2026/11/20260715194359820-1793977743-xTiV.webp)
+![Thunderbird](https://static.lovetulin.cn/images/2026/11/09/20260715194359820-1793977743-xTiV-1794221689-vMYX.webp)
 
-![百度网盘](https://images.lovetulin.cn/images/2026/11/20260715194531708-1793977745-wJ5A.webp)
+![百度网盘](https://static.lovetulin.cn/images/2026/11/09/20260715194531708-1793977745-wJ5A-1794221689-sNoq.webp)
 
-![GIMP](https://images.lovetulin.cn/images/2026/11/20260715194647914-1793977746-KhRS.webp)
+![GIMP](https://static.lovetulin.cn/images/2026/11/09/20260715194647914-1793977746-KhRS-1794221689-KJ8q.webp)
 
-![Shotwell](https://images.lovetulin.cn/images/2026/11/20260715194724600-1793977746-nzSt.webp)
+![Shotwell](https://static.lovetulin.cn/images/2026/11/09/20260715194724600-1793977746-nzSt-1794221689-DZBW.webp)
 
-![VLC](https://images.lovetulin.cn/images/2026/11/20260715194755887-1793977747-MnTk.webp)
+![VLC](https://static.lovetulin.cn/images/2026/11/09/20260715194755887-1793977747-MnTk-1794221689-efj5.webp)
 
-![PicGo](https://images.lovetulin.cn/images/2026/11/20260715194934568-1793977748-Yo8i.webp)
+![PicGo](https://static.lovetulin.cn/images/2026/11/09/20260715194934568-1793977748-Yo8i-1794221689-6qXr.webp)
 
-![SimpleTex](https://images.lovetulin.cn/images/2026/11/20260715195333208-1793977750-9INE.webp)
+![SimpleTex](https://static.lovetulin.cn/images/2026/11/09/20260715195333208-1793977750-9INE-1794221689-3CZu.webp)
 
 ## 开发工具
 
@@ -124,23 +124,23 @@ tags:
 - Filezilla
 - OpenCode
 
-![VSCode](https://images.lovetulin.cn/images/2026/11/20260715195414424-1793977750-zsZt.webp)
+![VSCode](https://static.lovetulin.cn/images/2026/11/09/20260715195414424-1793977750-zsZt-1794221689-AvmP.webp)
 
-![Pycharm](https://images.lovetulin.cn/images/2026/11/20260715195441506-1793977751-TGJF.webp)
+![Pycharm](https://static.lovetulin.cn/images/2026/11/09/20260715195441506-1793977751-TGJF-1794221689-0r29.webp)
 
-![Cursor](https://images.lovetulin.cn/images/2026/11/20260715195555594-1793977751-auxr.webp)
+![Cursor](https://static.lovetulin.cn/images/2026/11/09/20260715195555594-1793977751-auxr-1794221689-3euV.webp)
 
-![Termius](https://images.lovetulin.cn/images/2026/11/20260715195640017-1793977752-Hc6R.webp)
+![Termius](https://static.lovetulin.cn/images/2026/11/09/20260715195640017-1793977752-Hc6R-1794221689-WGll.webp)
 
-![Postman](https://images.lovetulin.cn/images/2026/11/20260715195703985-1793977753-ov9i.webp)
+![Postman](https://static.lovetulin.cn/images/2026/11/09/20260715195703985-1793977753-ov9i-1794221689-K9wp.webp)
 
-![Oracle VirtualBox](https://images.lovetulin.cn/images/2026/11/20260715195723971-1793977754-wUF4.webp)
+![Oracle VirtualBox](https://static.lovetulin.cn/images/2026/11/09/20260715195723971-1793977754-wUF4-1794221689-yzLA.webp)
 
-![CCSwitch](https://images.lovetulin.cn/images/2026/11/20260715195746145-1793977754-OXHd.webp)
+![CCSwitch](https://static.lovetulin.cn/images/2026/11/09/20260715195746145-1793977754-OXHd-1794221689-JlQI.webp)
 
-![Filezilla](https://images.lovetulin.cn/images/2026/11/20260715200217071-1793977758-yInp.webp)
+![Filezilla](https://static.lovetulin.cn/images/2026/11/09/20260715200217071-1793977758-yInp-1794221689-yiXe.webp)
 
-![OpenCode](https://images.lovetulin.cn/images/2026/11/20260715200358952-1793977760-8X48.webp)
+![OpenCode](https://static.lovetulin.cn/images/2026/11/09/20260715200358952-1793977760-8X48-1794221689-ZGby.webp)
 
 ## 其他软件
 
@@ -154,25 +154,25 @@ tags:
   - QQ音乐
   - bilibili
 
-![向日葵](https://images.lovetulin.cn/images/2026/11/20260715195851130-1793977755-H9te.webp)
+![向日葵](https://static.lovetulin.cn/images/2026/11/09/20260715195851130-1793977755-H9te-1794221689-lf7A.webp)
 
-![Todesk](https://images.lovetulin.cn/images/2026/11/20260715195929544-1793977756-EUMJ.webp)
+![Todesk](https://static.lovetulin.cn/images/2026/11/09/20260715195929544-1793977756-EUMJ-1794221689-ARM8.webp)
 
-![Localsend](https://images.lovetulin.cn/images/2026/11/20260715195951071-1793977757-nlvr.webp)
+![Localsend](https://static.lovetulin.cn/images/2026/11/09/20260715195951071-1793977757-nlvr-1794221713-XsIY.webp)
 
-![Transmission](https://images.lovetulin.cn/images/2026/11/20260715200024023-1793977758-1zsH.webp)
+![Transmission](https://static.lovetulin.cn/images/2026/11/09/20260715200024023-1793977758-1zsH-1794221713-FeZA.webp)
 
-![小红书](https://images.lovetulin.cn/images/2026/11/20260715200116429-1793977758-0gz6.webp)
+![小红书](https://static.lovetulin.cn/images/2026/11/09/20260715200116429-1793977758-0gz6-1794221713-TGvw.webp)
 
-![Bilibili](https://images.lovetulin.cn/images/2026/11/20260715200237969-1793977759-QT5f.webp)
+![Bilibili](https://static.lovetulin.cn/images/2026/11/09/20260715200237969-1793977759-QT5f-1794221713-Ee0y.webp)
 
 
 ## gnome插件
 
 我目前使用的gnome插件可以查看下图
 
-![gnome插件](https://images.lovetulin.cn/images/2026/11/20260715200527396-1793977760-I7Ir.webp)
+![gnome插件](https://static.lovetulin.cn/images/2026/11/09/20260715200527396-1793977760-I7Ir-1794221713-NLez.webp)
 
 所使用的主题、图标、字体可以见下图
 
-![gnome主题图标字体](https://images.lovetulin.cn/images/2026/11/20260715200624272-1793977761-14mm.webp)
+![gnome主题图标字体](https://static.lovetulin.cn/images/2026/11/09/20260715200624272-1793977761-14mm-1794221713-51Gn.webp)

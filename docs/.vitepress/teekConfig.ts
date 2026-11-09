@@ -246,7 +246,7 @@ export const teekConfig = defineTeekConfig({
     enabled: true,
     name: "Hi, I'm weno 👋",
     bgStyle: "fullImg",
-    imgSrc: [imageUrl("https://images.lovetulin.cn/images/2026/11/20261029123245750-1793977869-hVG2.webp")],
+    imgSrc: [imageUrl("https://static.lovetulin.cn/images/2026/11/09/20261029123245750-1793977869-hVG2-1794221372-1qpn.webp")],
     imgWaves: true,
     mask: true,
     maskBg: "rgba(15, 23, 42, 0.55)",
@@ -297,7 +297,7 @@ export const teekConfig = defineTeekConfig({
     },
     shape: "circle-rotate",
     circleSize: 96,
-    circleBgImg: imageUrl("https://images.lovetulin.cn/images/2026/11/20261029123308963-1793977870-xt1Y.webp"),
+    circleBgImg: imageUrl("https://static.lovetulin.cn/images/2026/11/09/20261029123308963-1793977870-xt1Y-1794221372-b9qo.webp"),
     circleBgMask: true,
     color: "#ffffff",
   },
@@ -461,7 +461,7 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <span style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
-        <img src="https://images.lovetulin.cn/images/2026/11/animals-1793980739-D9DE.webp" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
+        <img src="https://static.lovetulin.cn/images/2026/11/09/animals-1793980739-D9DE-1794221372-PSfg.webp" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
         <span style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;max-width:100%;overflow-x:auto;white-space:nowrap;">
           <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Framework VitePress" src="https://img.shields.io/badge/Framework-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
           <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>

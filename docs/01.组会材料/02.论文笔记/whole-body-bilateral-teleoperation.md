@@ -16,5 +16,5 @@ permalink: /materials/paper/whole-body-bilateral-teleoperation
 -   Paper Link: [https://arxiv.org/abs/2508.09846](https://arxiv.org/abs/2508.09846)
 ## 模型框架
 
-![image-20260519155155708](https://images.lovetulin.cn/images/2026/11/20260519155156028-1793977944-ZsGE.webp)
+![image-20260519155155708](https://static.lovetulin.cn/images/2026/11/09/20260519155156028-1793977944-ZsGE-1794221527-tI6i.webp)
 

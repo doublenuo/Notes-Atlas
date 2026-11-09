@@ -19,7 +19,7 @@ const expanded = ref(false)
     >
       <img
         class="article-sponsor__image"
-        src="/coffee.webp"
+        src="https://static.lovetulin.cn/images/2026/11/09/coffee-1794220831-Iult.webp"
         alt="请作者喝杯咖啡"
       >
       <span class="article-sponsor__text">
@@ -56,13 +56,13 @@ const expanded = ref(false)
             <div class="article-sponsor__methods">
               <div class="article-sponsor__method">
                 <div class="article-sponsor__qrcode-wrap">
-                  <img class="article-sponsor__qrcode" :src="imageUrl('https://images.lovetulin.cn/images/2026/11/20261029123144108-1793977867-Wpjg.webp')" alt="支付宝收款二维码">
+                  <img class="article-sponsor__qrcode" :src="imageUrl('https://static.lovetulin.cn/images/2026/11/09/20261029123144108-1793977867-Wpjg-1794221372-jwz0.webp')" alt="支付宝收款二维码">
                 </div>
                 <span>支付宝</span>
               </div>
               <div class="article-sponsor__method">
                 <div class="article-sponsor__qrcode-wrap">
-                  <img class="article-sponsor__qrcode" :src="imageUrl('https://images.lovetulin.cn/images/2026/11/20261029123230345-1793977869-Hnqo.webp')" alt="微信收款二维码">
+                  <img class="article-sponsor__qrcode" :src="imageUrl('https://static.lovetulin.cn/images/2026/11/09/20261029123230345-1793977869-Hnqo-1794221372-uELM.webp')" alt="微信收款二维码">
                 </div>
                 <span>微信</span>
               </div>

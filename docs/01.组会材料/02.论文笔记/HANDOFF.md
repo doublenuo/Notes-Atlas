@@ -44,6 +44,6 @@ Gate 网络会根据当前场景动态决定各 Expert 的贡献比例。例如�
 
 最终所有 Expert 的输出经过加权融合，生成统一的动作输出：$a \in \mathbb{R}^{29}$即机器人 29 个自由度的关节控制信号，并直接发送给机器人执行。
 
-![20261009200949568](https://images.lovetulin.cn/images/2026/11/20261009200949568-1793977834-rfVI.webp)
+![20261009200949568](https://static.lovetulin.cn/images/2026/11/09/20261009200949568-1793977834-rfVI-1794221437-uQxX.webp)
 
-![20261009201014296](https://images.lovetulin.cn/images/2026/11/20261009201014296-1793977835-mcao.webp)
+![20261009201014296](https://static.lovetulin.cn/images/2026/11/09/20261009201014296-1793977835-mcao-1794221437-S0ha.webp)

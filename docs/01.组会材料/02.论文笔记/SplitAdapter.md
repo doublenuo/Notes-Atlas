@@ -12,4 +12,4 @@ categories:
 
 ## 模型框架图
 
-![SplitAdapter模型框架图](https://images.lovetulin.cn/images/2026/11/20260728230735879-1793977764-fhem.webp)
+![SplitAdapter模型框架图](https://static.lovetulin.cn/images/2026/11/09/20260728230735879-1793977764-fhem-1794221508-wWLw.webp)

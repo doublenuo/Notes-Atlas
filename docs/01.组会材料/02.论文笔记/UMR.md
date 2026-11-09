@@ -19,7 +19,7 @@ tags:
 
 ## 模型框架图
 
-![20261028104934176](https://images.lovetulin.cn/images/2026/11/20261028104934176-1793977866-wBYZ.webp)
+![20261028104934176](https://static.lovetulin.cn/images/2026/11/09/20261028104934176-1793977866-wBYZ-1794221508-hQKB.webp)
 
 ## 一句话总结
 

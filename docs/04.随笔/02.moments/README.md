@@ -12,7 +12,7 @@ title: 可选标题
 date: 2026-10-30 22:08
 location: 杭州
 images:
-  - /coffee.webp
+  - https://static.lovetulin.cn/images/2026/11/09/coffee-1794220831-Iult.webp
   - /tx.jpg
 video: /video.mp4
 visible: true
@@ -34,6 +34,6 @@ visible: true
 
 ## 约定
 
-- 本地图片、视频放到 `docs/public/` 下，用 `/` 开头的绝对路径引用（如 `/coffee.webp`）；也可以直接填写 CDN 的完整 URL（如 `https://cdn.example.com/coffee.webp`）。
+- 图片上传后直接使用 API 返回的 CDN URL；本地文件只作为上传命令的输入，不再作为页面资源引用。
 - 正文、图片、视频全空的文件会被忽略。
 - 新增或修改文件后重新构建即自动聚合，开发模式下热更新直接可见。

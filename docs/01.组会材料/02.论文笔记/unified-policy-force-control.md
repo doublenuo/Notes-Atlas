@@ -29,4 +29,4 @@ permalink: /materials/paper/unified-policy-force-control
 
 最后看右侧的真实机器人部署。整个系统形成一个闭环：首先 Diffusion Policy 根据视觉、本体状态和估计的外力生成 Position 和 Force Command；然后 UniFP 根据这些 Command 和实时的本体状态生成全身 Action，再通过 PD 控制机器人。机器人和环境发生接触以后，身体状态会发生变化，这些状态变化再次输入 Force Estimator，得到新的 Estimated Force，然后反馈给上层 Diffusion Policy。这样机器人就形成了一个**视觉感知—力估计—高层决策—全身控制—环境反馈**的闭环。
 
-![20260915230919779](https://images.lovetulin.cn/images/2026/11/20260915230919779-1793977782-k8l7.webp)
+![20260915230919779](https://static.lovetulin.cn/images/2026/11/09/20260915230919779-1793977782-k8l7-1794221527-sqwQ.webp)

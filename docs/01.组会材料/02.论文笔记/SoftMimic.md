@@ -14,7 +14,7 @@ categories:
 
 ## 模型框架图
 
-![20261012221621117](https://images.lovetulin.cn/images/2026/11/20261012221621117-1793977863-VspE.webp)
+![20261012221621117](https://static.lovetulin.cn/images/2026/11/09/20261012221621117-1793977863-VspE-1794221508-EdxS.webp)
 
 ## 核心思想
 

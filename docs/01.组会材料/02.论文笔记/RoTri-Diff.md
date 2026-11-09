@@ -17,5 +17,5 @@ tags:
 
 ## 模型框架
 
-![RoTri-Diff模型框架图](https://images.lovetulin.cn/images/2026/11/20260515121025585-1793977943-RKGa.webp)
+![RoTri-Diff模型框架图](https://static.lovetulin.cn/images/2026/11/09/20260515121025585-1793977943-RKGa-1794221489-3Rmi.webp)
 

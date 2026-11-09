@@ -18,4 +18,4 @@ tags:
 ## 模型框架图
 
 
-![20260908200124562](https://images.lovetulin.cn/images/2026/11/20260908200124562-1793977777-suqI.webp)
+![20260908200124562](https://static.lovetulin.cn/images/2026/11/09/20260908200124562-1793977777-suqI-1794221390-EaLs.webp)
