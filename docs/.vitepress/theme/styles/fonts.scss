@@ -1,20 +1,22 @@
 /**
- * 字体与中文排版优化。
+ * 字体与中文排版策略（2026-11 重构）。
  *
- * 现状：VitePress 1.6.4 自带两套零成本字体机制 —— Inter（本地子集化 woff2，
- * 负责拉丁文）和 Punctuation SC（local() 本地字体 + unicode-range 只覆盖中文
- * 标点，不下载任何文件）。汉字原本只跟在 ui-sans-serif 后走隐式回退。
+ * 原方案：MiSans Regular + Semibold 各 56 个 cn-font-split 分片（共 4.2MB），
+ * 按正文用字下载。实测长文页会拉 40–50 个 woff2、约 1.3–1.5MB，首屏代价很高。
  *
- * 本文件的策略：
- *   1. 汉字首选 MiSans（小米免费商用，Apache-2.0）：从 npm misans@5.0.0 提取
- *      cn-font-split 预分片 woff2（每字重 56 片 + unicode-range），自托管在
- *      theme/fonts/misans/，经 Vite 管线产出（自动 hash、自动适配部署 base），
- *      浏览器按页面实际用字只下载需要的分片（chunk 0 仅 21.7KB）
- *   2. MiSans 之后保留系统 CJK 回退链：分片未覆盖的字符（emoji、上下标、
- *      罕用字）落到各平台 native 字体，不会出现豆腐块
- *   3. 标题字距修正：VitePress 默认 -0.02em 负字距是为拉丁文设计的，汉字用
- *      负字距会糊在一起，改微正
- *   4. 等宽栈补 CJK 回退：代码注释常含中文，否则中文注释会掉出等宽上下文
+ * 现方案：
+ *   1. 正文不再下载中文 webfont，走系统中文栈（苹方 / 鸿蒙 / 思源 / 雅黑）。
+ *      中文正文用系统字体在清晰度和阅读体验上已经很成熟，且零下载、零 FOUT。
+ *   2. 一级标题/品牌文案使用 MiSans VF 子集（theme/fonts/misans/MiSans-Heading.css）：
+ *      只覆盖站内 h1 实际用字，按频率切成 3 个 unicode-range 分片，总约 277KB；
+ *      常见页面只命中第 1 片（约 92KB），而不是原来的 1MB+。
+ *      h2–h6 不套 MiSans：标题数量多，几乎每页都会命中全部 3 片（360KB），
+ *      而它们在视觉上不承担品牌识别，交给系统中文栈更划算。
+ *   3. MiSans 之后保留完整系统 CJK 回退链：子集未覆盖的冷僻字会逐字回退，
+ *      不会出现豆腐块；emoji 也走各平台原生字体。
+ *   4. 标题字距修正：VitePress 默认 -0.02em 负字距是为拉丁文设计的，汉字用
+ *      负字距会糊在一起，改微正。
+ *   5. 等宽栈补 CJK 回退：代码注释常含中文，否则中文注释会掉出等宽上下文。
  *
  * 注意：自定义属性的值内部不能写 Sass // 注释 —— Sass 不处理属性值内的注释，
  * 会原样输出进 CSS，把 font-family 栈变成非法值。注释一律写在声明块之外。
@@ -24,9 +26,8 @@
  */
 
 :root {
-  // 拉丁文与标点保持 Punctuation SC + Inter 不变；汉字首选自托管 MiSans，
-  // 其后按平台显式回退：苹方(macOS/iOS) → 鸿蒙(华为) → 思源黑体(Linux/Android)
-  // → 雅黑 UI(Win11) → 雅黑(旧 Windows)
+  // 正文：拉丁文与标点保持 Punctuation SC + Inter；汉字走系统栈。
+  // 保留 "MiSans"/"MiSans VF" 作为本机已安装字体时的优先项（local only，不下载）。
   --vp-font-family-base:
     "Punctuation SC",
     "Inter",
@@ -46,6 +47,21 @@
     "Segoe UI Symbol",
     "Noto Color Emoji";
 
+  // 一级标题/品牌文案：MiSans VF 子集，缺失字符逐字回退系统中文栈
+  --vp-font-family-heading:
+    "MiSans Heading",
+    "MiSans",
+    ui-sans-serif,
+    system-ui,
+    "PingFang SC",
+    "HarmonyOS Sans SC",
+    "MiSans VF",
+    "Noto Sans CJK SC",
+    "Source Han Sans SC",
+    "Microsoft YaHei UI",
+    "Microsoft YaHei",
+    sans-serif;
+
   // 等宽字体：优先本地现代等宽字体（SF Mono / Cascadia Code / JetBrains Mono），
   // 尾部补 CJK 回退，保证代码注释里的中文不掉出等宽上下文
   --vp-font-family-mono:
@@ -63,13 +79,25 @@
     monospace;
 }
 
-// 标题：-0.02em → +0.01em。负字距让拉丁文更紧致，但汉字笔画密度高，
-// 负字距下笔画粘连；微正字距对中英混排的标题都更稳
+// 只有一级标题（文章标题/目录页大标题）使用 MiSans，h2–h6 保持系统字体
+.vp-doc h1 {
+  font-family: var(--vp-font-family-heading);
+}
+
+// 标题字距 -0.02em → +0.01em，避免汉字笔画粘连
 .vp-doc h1,
 .vp-doc h2,
 .vp-doc h3,
-.vp-doc h4 {
+.vp-doc h4,
+.vp-doc h5,
+.vp-doc h6 {
   letter-spacing: 0.01em;
+}
+
+// 首页 Banner 的标题/描述同属品牌文案，和文章标题保持同一字体
+.tk-banner-content__title,
+.tk-banner-content__desc {
+  font-family: var(--vp-font-family-heading);
 }
 
 // 正文与列表：16px 屏显下汉字加 0.01em 微字距，长文阅读略疏、减少笔画粘连

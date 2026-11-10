@@ -14,7 +14,8 @@ test("! [[]] 全文嵌入：卡片、去 frontmatter、标题降级、公式", a
   assert.match(html, /<h2[^>]*>Alpha 大标题/, "H1 应降级为 H2");
   assert.match(html, /<h3[^>]*>小节标题/, "H2 应降级为 H3");
   assert.ok(!html.includes("$$"), "$$ 定界符不应残留");
-  assert.ok(html.includes("mjx-container"), "公式应被 MathJax 预渲染（mjx-container）");
+  assert.ok(html.includes('class="katex"'), "公式应被 KaTeX 预渲染（.katex）");
+  assert.ok(!html.includes("katex-error"), "公式不应出现 KaTeX 渲染错误");
   assert.ok(html.includes("嵌入正文段落"), "笔记正文应出现");
   assert.equal(html.split("嵌入正文段落").length - 1, 1, "嵌入正文只应渲染一次");
   assert.equal(html.split('class="header-anchor"').length - 1, 2, "锚点不应翻倍（H1、H2 各一）");

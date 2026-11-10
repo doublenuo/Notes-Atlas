@@ -6,8 +6,6 @@ categories:
   - 论文笔记
 ---
 
-
-
 # Learning vision-driven reactive soccer skills for humanoid robots
 
 
@@ -17,4 +15,4 @@ categories:
 
 ## 模型框架图
 
-![](https://static.lovetulin.cn/images/2026/11/09/84dbdd40-a374-4cc9-8e10-24e3111b3bae-1794224694-XIfV.webp)
+![模型框架图](https://static.lovetulin.cn/images/2026/11/09/84dbdd40-a374-4cc9-8e10-24e3111b3bae-1794224694-XIfV.webp)

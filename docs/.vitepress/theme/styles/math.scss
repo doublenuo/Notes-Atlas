@@ -1,0 +1,28 @@
+/**
+ * KaTeX 公式样式补充。
+ *
+ * KaTeX 自带的 .katex-display 是 nowrap 的块级公式，长公式在窄屏/侧边栏布局下
+ * 会撑破正文列并让整页出现横向滚动条。这里只给公式容器加横向滚动，
+ * 保留 KaTeX 自身的 nowrap/居中规则，避免改变公式断行。
+ */
+.vp-doc .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  // 触屏上横向滑公式时不要触发页面回弹
+  overscroll-behavior-x: contain;
+  // 给滚动条留一点呼吸空间，避免紧贴公式下沿
+  padding-bottom: 2px;
+}
+
+// @mdit/plugin-katex 把块公式包在 <p class="katex-block"> 里，
+// 若不归零，.vp-doc p 的段间距会和 .katex-display 的 1em 叠加成双倍留白。
+.vp-doc p.katex-block {
+  margin: 0;
+}
+
+// 打印/导出 PDF 时取消滚动容器，否则 Chrome 会把滚动区域裁掉
+@media print {
+  .vp-doc .katex-display {
+    overflow: visible;
+  }
+}

@@ -2,4 +2,7 @@
 .vp-doc img {
   display: block;
   margin-inline: auto;
+  /* 配合注入的 width/height 属性：窄屏 max-width 生效时按原始比例缩放，不拉伸 */
+  max-width: 100%;
+  height: auto;
 }

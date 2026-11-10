@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { collectPages, buildRewrites, buildSidebar } from './permalinks'
 import { obsidianEmbed } from './plugins/obsidianEmbed.js'
+import { math } from './plugins/math.js'
+import { katexGuard } from './plugins/mathGuard.js'
 import { imageSizePlugin } from './plugins/imageSize'
 import { footnotes } from './plugins/footnotes.js'
 import { siteDataOptimize } from './plugins/siteDataOptimize'
@@ -35,13 +37,20 @@ export default defineConfig({
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}favicon-32.png` }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
-    // 预连接外部资源，减少 DNS/TLS 握手延迟
-    ['link', { rel: 'preconnect', href: 'https://www.googletagmanager.com', crossorigin: 'anonymous' }],
-    ['link', { rel: 'preconnect', href: 'https://www.google-analytics.com', crossorigin: 'anonymous' }],
+    // 预连接外部资源，减少 DNS/TLS 握手延迟。
+    // 只保留真正会请求的域：站点图片/头像在 static.lovetulin.cn，
+    // 评论在 comments.lovetulin.cn，统计在 stats.lovetulin.cn。
+    // 旧的 googletagmanager / google-analytics 预连接已无对应脚本，移除可省 2 次握手。
+    ['link', { rel: 'preconnect', href: 'https://static.lovetulin.cn' }],
+    ['link', { rel: 'preconnect', href: 'https://comments.lovetulin.cn' }],
+    ['link', { rel: 'preconnect', href: 'https://stats.lovetulin.cn' }],
     ['link', { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: 'anonymous' }],
-    ['link', { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css', integrity: 'sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X', crossorigin: 'anonymous' }],
-    ['script', { defer: '', src: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js', integrity: 'sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4', crossorigin: 'anonymous' }],
-    ['script', { defer: '', src: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js', integrity: 'sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa', crossorigin: 'anonymous' }],
+    // 首页 Banner 背景图（LCP）的 preload 只对首页生效，放在 seo.ts 的 buildHead 里按页面注入，
+    // 避免文章页也白下载 260KB 图片。
+    // 正文公式由构建期 KaTeX 直接输出 HTML/MathML，不需要客户端 JS；
+    // 评论区的 KaTeX JS 由 Teek 的 CommentTwikoo 组件在评论区挂载时按需注入
+    // （见 teekConfig.comment.options.katex）。这里不要再全局声明 KaTeX 资源，
+    // 否则每个页面（包括没有公式和评论的首页/列表页）都会多加载一份。
     ['script', { defer: '', src: 'https://stats.lovetulin.cn/recorder.js', 'data-website-id': '0406218e-b83d-4b3c-ad2f-2253eecaeb03' }],
     // 内联 @page 规则：直接写入 HTML <head>，避免外部 CSS 打包顺序导致 Chrome headless 忽略
     ['style', { type: 'text/css' }, '@page { size: A4; margin: 15mm; }'],
@@ -49,6 +58,8 @@ export default defineConfig({
   // canonical / og / twitter / description。buildHead 复用 permalinks 的 URL 体系，
   // 保证 permalink 页的 og:url 与实际地址一致（plugins 里的 transformHead 不会被 VitePress 调用）
   transformHead: ({ pageData }) => buildHead(pageData, SITE_URL, DOCS_ROOT),
+  // 页面全部写完后检查 KaTeX 是否产出错误块（插件本身不会中断构建，见 plugins/mathGuard.js）
+  buildEnd: katexGuard(),
   cleanUrls: true,
   rewrites: buildRewrites(PAGES),
   // 朋友圈碎片只作为时间线条目被 MomentsTimeline.vue 聚合（?raw 读取），不生成独立页面；
@@ -83,7 +94,6 @@ export default defineConfig({
           // 手动代码分割：将重依赖拆分为独立 chunk，按需加载
           manualChunks(id: string) {
             if (id.includes('node_modules/echarts')) return 'echarts'
-            if (id.includes('node_modules/mathjax')) return 'mathjax'
             if (id.includes('node_modules/monaco')) return 'monaco'
             // 评论系统由 Teek 内置的 Twikoo 适配器按需加载，不需要单独拆分评论依赖。
           },
@@ -94,7 +104,7 @@ export default defineConfig({
       },
       // 内联小资源，减少 HTTP 请求
       assetsInlineLimit: 4096,             // 4KB 以下资源内联为 base64
-      chunkSizeWarningLimit: 3000,         // mathjax 等大依赖已手动分割，mermaid 按需加载
+      chunkSizeWarningLimit: 3000,         // mermaid 等大依赖已手动分割/按需加载
     },
     // 开发服务器优化
     server: {
@@ -182,10 +192,13 @@ export default defineConfig({
     ],
   },
   markdown: {
-    math: true,
     // 全站约 300 张图片，开启原生懒加载（img loading="lazy"），避免首屏拉取全部图片
     image: { lazyLoading: true },
     config(md) {
+      // 数学公式：KaTeX（构建期输出 HTML/MathML），见 ./plugins/math.js
+      // 不能再开 VitePress 的 math: true —— 那会同时挂上 MathJax 并重复渲染。
+      math(md)
+
       // Obsidian 式 ! [[]] 嵌入与 [[]] 站内链接
       // 规格：docs/superpowers/specs/2026-09-23-obsidian-embed-design.md
       obsidianEmbed(md, DOCS_ROOT)

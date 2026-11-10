@@ -23,5 +23,21 @@ export const SITE_NAME = "Weno's Blog"
 export const SITE_DESCRIPTION =
   'Weno\'s Blog：记录学习、研究与生活的个人知识库，汇聚组会材料、学习笔记、工具资源与随笔沉淀。'
 
-/** 社交分享配图直接使用站点统一头像，兼容站点品牌视觉。带 base，子路径部署不 404。 */
-export const OG_IMAGE = `${BASE}tx.jpg`
+/**
+ * 社交分享配图直接使用站点统一头像，兼容站点品牌视觉。
+ * 用站点绝对路径（不带 base）：canonical 已固定为生产域名，og:image 也必须指向
+ * 生产域名的同名文件。若拼 BASE，GitHub Pages 子路径构建会产出
+ * https://blogs.lovetulin.cn/Notes-Atlas/tx.jpg 这种 404 地址。
+ */
+export const OG_IMAGE = '/tx.jpg'
+
+/** 与 public/tx.jpg 实际尺寸一致；写错会让部分社交平台裁切/校验失败。 */
+export const OG_IMAGE_WIDTH = 1080
+export const OG_IMAGE_HEIGHT = 1080
+
+/**
+ * 首页 Banner 背景图（LCP 元素）。seo.ts 的 buildHead 在首页注入 preload，
+ * teekConfig 的 banner.imgSrc 复用同一常量，避免两处 URL 改漏。
+ */
+export const BANNER_IMAGE_URL =
+  'https://static.lovetulin.cn/images/2026/11/09/20261029123245750-1793977869-hVG2-1794221372-1qpn.webp'

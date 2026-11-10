@@ -1,66 +1,94 @@
 /**
- * markdown 图片尺寸注入插件：为本地图片（public 目录下，如 /images/...）的 <img>
- * 注入 width/height 属性，消除图片加载时的布局偏移（CLS）。
- * 尺寸在构建期从文件头解析（PNG/JPEG/GIF/WebP），按 src 进程内缓存，只读一次。
- * 已有显式 width/height 的图片不覆盖；解析失败或文件缺失时静默跳过。
+ * markdown 图片尺寸注入插件：为图片 <img> 注入 width/height 属性，消除图片加载时的
+ * 布局偏移（CLS）。
+ *
+ * 两类图片：
+ *  1. 本地 public 图片（/images/...）：构建期从文件头解析（PNG/JPEG/GIF/WebP）。
+ *  2. 远程图片（阿里云 OSS/CDN、腾讯 COS 等）：从 image-dimensions.json 查表。
+ *     该 JSON 由 scripts/cache-image-sizes.mjs 用 HTTP Range 只读文件头生成，
+ *     构建本身不访问网络；新增图片后运行 `pnpm images:sizes` 更新即可。
+ *
+ * 已有显式 width/height 的图片不覆盖；查不到尺寸时静默跳过，保持原渲染。
  */
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import type { MarkdownRenderer } from "vitepress";
-import { imageUrl } from "./imageSource";
+import { imageUrl } from "./imageSource.js";
+import { decodeImageSize } from "./imageDimensions.js";
 
 type Dim = { width: number; height: number };
 
-function png(buf: Buffer): Dim | null {
-  if (buf.length < 24 || buf.readUInt32BE(0) !== 0x89504e47) return null;
-  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
-}
+const DIMENSIONS_FILE = fileURLToPath(new URL("../image-dimensions.json", import.meta.url));
 
-function gif(buf: Buffer): Dim | null {
-  if (buf.length < 10 || buf.toString("latin1", 0, 3) !== "GIF") return null;
-  return { width: buf.readUInt16LE(6), height: buf.readUInt16LE(8) };
-}
-
-function jpeg(buf: Buffer): Dim | null {
-  if (buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return null;
-  let off = 2;
-  while (off + 9 < buf.length) {
-    if (buf[off] !== 0xff) { off++; continue; }
-    const marker = buf[off + 1];
-    // SOF0-3/5-7/9-11/13-15 段内含尺寸；C4/DHT、C8/JPG、CC/DAC 不是 SOF
-    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
-      return { height: buf.readUInt16BE(off + 5), width: buf.readUInt16BE(off + 7) };
+/** 读取构建期尺寸缓存；文件不存在或格式错误时返回空 Map，不阻断构建。 */
+export function loadImageDimensions(file = DIMENSIONS_FILE): Map<string, Dim> {
+  const result = new Map<string, Dim>();
+  try {
+    const parsed = JSON.parse(readFileSync(file, "utf8"));
+    for (const [url, value] of Object.entries(parsed?.images ?? {})) {
+      if (Array.isArray(value) && value.length >= 2) {
+        const width = Number(value[0]);
+        const height = Number(value[1]);
+        if (width > 0 && height > 0) result.set(url, { width, height });
+      } else if (value && typeof value === "object") {
+        const { width, height } = value as Dim;
+        if (width > 0 && height > 0) result.set(url, { width, height });
+      }
     }
-    off += 2 + buf.readUInt16BE(off + 2);
+  } catch {
+    // 缓存缺失/损坏：退回仅本地图片尺寸，不影响构建
   }
-  return null;
+  return result;
 }
 
-function webp(buf: Buffer): Dim | null {
-  if (buf.length < 30 || buf.toString("latin1", 0, 4) !== "RIFF" || buf.toString("latin1", 8, 12) !== "WEBP") return null;
-  const fmt = buf.toString("latin1", 12, 16);
-  if (fmt === "VP8X") return { width: 1 + buf.readUIntLE(24, 3), height: 1 + buf.readUIntLE(27, 3) };
-  if (fmt === "VP8 ") return { width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff };
-  if (fmt === "VP8L") {
-    const bits = buf.readUInt32LE(21);
-    return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+/** 同一个远程 URL 可能有 HTML 实体、编码、协议相对等写法，逐个尝试查表。 */
+function remoteCandidates(src: string): string[] {
+  const raw = src.replace(/&amp;/g, "&").trim();
+  const keys = new Set<string>([raw]);
+  try {
+    keys.add(new URL(raw).href);
+  } catch {
+    // 非绝对 URL，交给下面的协议相对/解码分支
   }
-  return null;
+  try {
+    keys.add(decodeURI(raw));
+  } catch {
+    // 含非法 % 转义时忽略
+  }
+  if (raw.startsWith("//")) {
+    try {
+      keys.add(new URL(`https:${raw}`).href);
+    } catch {
+      // 忽略
+    }
+  }
+  return [...keys];
 }
 
-export function imageSizePlugin(md: MarkdownRenderer, publicDir: string) {
+export function imageSizePlugin(
+  md: MarkdownRenderer,
+  publicDir: string,
+  remoteDimensions: Map<string, Dim> = loadImageDimensions(),
+) {
   const cache = new Map<string, Dim | null>();
 
   const dimsFor = (src: string): Dim | null => {
     if (cache.has(src)) return cache.get(src) ?? null;
     let dim: Dim | null = null;
     try {
-      // 仅处理站点绝对路径（/images/...），协议相对路径 // 与外链不碰
       if (src.startsWith("/") && !src.startsWith("//")) {
+        // 本地 public 图片：读文件头
         const file = join(publicDir, src);
-        if (existsSync(file)) {
-          const buf = readFileSync(file);
-          dim = png(buf) ?? gif(buf) ?? jpeg(buf) ?? webp(buf);
+        if (existsSync(file)) dim = decodeImageSize(readFileSync(file));
+      } else if (/^https?:\/\//i.test(src) || src.startsWith("//")) {
+        // 远程图片：查构建期缓存
+        for (const key of remoteCandidates(src)) {
+          const hit = remoteDimensions.get(key);
+          if (hit) {
+            dim = hit;
+            break;
+          }
         }
       }
     } catch {
@@ -70,11 +98,25 @@ export function imageSizePlugin(md: MarkdownRenderer, publicDir: string) {
     return dim;
   };
 
-  const raw = md.renderer.rules.image;
-  const rawHtml = md.renderer.rules.html_block;
-  const rewriteHtml = (html: string) =>
+  const rawImage = md.renderer.rules.image;
+  const rawHtmlBlock = md.renderer.rules.html_block;
+  const rawHtmlInline = md.renderer.rules.html_inline;
+
+  /** 把本地 /images/... 过一遍 imageUrl（当前是恒等，保留扩展点）。 */
+  const rewriteSrc = (html: string) =>
     html.replace(/(\bsrc\s*=\s*["'])((?:\/images\/)[^"']+)(["'])/g, (_match, prefix, src, suffix) => {
       return `${prefix}${imageUrl(src)}${suffix}`;
+    });
+
+  /** 给 HTML 片段里的 <img> 补 width/height（已有尺寸或查不到则原样返回）。 */
+  const injectHtmlImages = (html: string) =>
+    rewriteSrc(html).replace(/<img\b[^>]*>/gi, (tag) => {
+      const src = tag.match(/\bsrc\s*=\s*(["'])(.*?)\1/i)?.[2];
+      if (!src) return tag;
+      if (/(\s|^)width\s*=/i.test(tag) || /(\s|^)height\s*=/i.test(tag)) return tag;
+      const dim = dimsFor(src);
+      if (!dim) return tag;
+      return tag.replace(/\s*(\/?)>$/, ` width="${dim.width}" height="${dim.height}"$1>`);
     });
 
   md.renderer.rules.image = (tokens, idx, options, env, self) => {
@@ -86,11 +128,21 @@ export function imageSizePlugin(md: MarkdownRenderer, publicDir: string) {
       token.attrSet("width", String(dim.width));
       token.attrSet("height", String(dim.height));
     }
-    return raw ? raw(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options);
+    if (token.attrGet("decoding") === null) token.attrSet("decoding", "async");
+    return rawImage ? rawImage(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options);
   };
+
   md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
     const token = tokens[idx];
-    token.content = rewriteHtml(token.content);
-    return rawHtml ? rawHtml(tokens, idx, options, env, self) : token.content;
+    token.content = injectHtmlImages(token.content);
+    return rawHtmlBlock ? rawHtmlBlock(tokens, idx, options, env, self) : token.content;
   };
+
+  if (rawHtmlInline) {
+    md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
+      const token = tokens[idx];
+      token.content = injectHtmlImages(token.content);
+      return rawHtmlInline(tokens, idx, options, env, self) ?? token.content;
+    };
+  }
 }

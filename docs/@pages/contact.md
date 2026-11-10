@@ -26,7 +26,7 @@ comment: false
 | RSS 订阅 | <https://blogs.lovetulin.cn/feed.xml> |
 
 ```html
-<a href="https://blogs.lovetulin.cn" target="_blank">Weno's Blog</a>
+<a href="https://blogs.lovetulin.cn" target="_blank" rel="noopener">Weno's Blog</a>
 ```
 
 ## 申请方式

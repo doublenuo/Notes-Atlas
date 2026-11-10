@@ -18,6 +18,7 @@ import "vitepress-theme-teek/theme-chalk/tk-index-rainbow.css"; // 首页图片�
 import "vitepress-theme-teek/theme-chalk/tk-banner-desc-gradient.css"; // 博客风格 Banner 描述渐变样式
 import "vitepress-theme-teek/theme-chalk/tk-home-card-hover.css"; // 首页卡片悬停效果
 import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加载的动画效果
+import "katex/dist/katex.min.css"; // 数学公式（构建期 KaTeX 输出，字体由 Vite 自托管）
 import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
@@ -34,12 +35,12 @@ import "./styles/homepage.scss";
 import "./styles/home-card.scss";
 import "./styles/fonts.scss"; // 字体栈显式化与中文排版（须在主题 CSS 之后）
 import "./styles/search.scss"; // Pagefind 搜索按钮与导航栏样式对齐
-// MiSans 自托管分片（npm misans@5.0.0，cn-font-split 预分片 + unicode-range 按需加载）
-import "./fonts/misans/MiSans-Regular.min.css";
-import "./fonts/misans/MiSans-Semibold.min.css";
+// MiSans VF 标题子集（只覆盖标题/品牌用字，正文走系统中文栈）
+import "./fonts/misans/MiSans-Heading.css";
 import "./styles/iframe.scss";
 import "./styles/embed.scss";
 import "./styles/image.scss";
+import "./styles/math.scss"; // KaTeX 公式横向滚动/打印修正（须在 katex.min.css 之后）
 import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变换（须在主题 CSS 之后）
 import "./styles/banner-feature-card.scss"; // 首页 Banner 特性区卡片化（须在主题 CSS 之后）
 import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（须在主题 CSS 之后）

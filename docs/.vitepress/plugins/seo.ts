@@ -17,7 +17,7 @@ import { execFileSync } from 'node:child_process';
 import matter from 'gray-matter';
 import { fileURLToPath } from 'node:url';
 import { buildRewrites, collectPages } from '../permalinks.ts';
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, OG_IMAGE } from '../site.ts';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, OG_IMAGE, OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT, BANNER_IMAGE_URL } from '../site.ts';
 
 /** docs/ 根目录：本文件在 docs/.vitepress/plugins/ 下，上溯三层即 docs/。 */
 const DEFAULT_DOCS_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -59,6 +59,27 @@ function escapeXml(s) {
 }
 
 const attr = (v) => (v ? String(v).replace(/"/g, '&quot;') : '');
+
+/**
+ * 空壳文章：只有 frontmatter、没有任何正文的普通文章页。
+ *
+ * 站点里有大量「先占位、以后补」的笔记（如 /study/ros/...），它们会进 sitemap、
+ * 被搜索引擎收录成空页面（soft 404），也会在归档/分类里显示 0 字。这里统一识别，
+ * 由下面两处消费：
+ *   - buildHead：输出 noindex, follow（保留链接权重，不收录空页）
+ *   - buildSitemap：不写入 sitemap
+ * 一旦作者补上正文，下一次构建会自动恢复 index 与 sitemap 收录，无需手工维护。
+ *
+ * 必须排除目录页/聚合页：它们的 index.md 正文可能为空，但页面由目录插件渲染。
+ * 同时排除带 layout 的功能页与 article: false 的非文章页。
+ */
+function isPlaceholderPage(rel: string, data: Record<string, unknown>, content: string): boolean {
+  if (content.trim()) return false;
+  if (rel.split('/').pop() === 'index.md') return false;
+  if (typeof data.layout === 'string' || data.layout === false) return false;
+  if (data.article === false || data.catalogue === true) return false;
+  return Boolean(data.date ?? data.created ?? data.updated);
+}
 
 /** 读取页面 frontmatter + 正文，供 description 与 sitemap 复用。 */
 function readPage(docsRoot, rel) {
@@ -150,15 +171,19 @@ function lastmod(docsRoot, rel, data = {}) {
  */
 function buildSitemap(docsRoot, outDir) {
   const pages = collectPages(docsRoot).filter((p) => p.url !== 'risk-link');
-  const urls = pages.map((p) => {
+  const urls = [];
+  for (const p of pages) {
+    const page = readPage(docsRoot, p.rel);
+    // 空壳文章不进 sitemap（判定与 buildHead 的 noindex 同源，见 isPlaceholderPage）
+    if (isPlaceholderPage(p.rel, page.data, page.content)) continue;
     const loc = `${SITE_URL}/${p.url === 'index' ? '' : p.url}`.replace(/\/+$/, '') + '/';
-    const mod = lastmod(docsRoot, p.rel, readPage(docsRoot, p.rel).data);
-    return `  <url>\n    <loc>${escapeXml(loc)}</loc>${mod ? `\n    <lastmod>${mod}</lastmod>` : ''}\n  </url>`;
-  });
+    const mod = lastmod(docsRoot, p.rel, page.data);
+    urls.push(`  <url>\n    <loc>${escapeXml(loc)}</loc>${mod ? `\n    <lastmod>${mod}</lastmod>` : ''}\n  </url>`);
+  }
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'sitemap.xml'), xml);
-  return pages.length;
+  return urls.length;
 }
 
 /**
@@ -326,14 +351,13 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
     SECTION_DESC[cleanUrl.split('/')[0]] ||
     SITE_DESCRIPTION;
 
-  // 站内相对路径转绝对 URL
+  // 站内相对路径转绝对 URL。OG_IMAGE 是站点绝对路径（/tx.jpg），
+  // 用 new URL 拼到生产域名上，子路径部署（GitHub Pages）也不会拼出 /Notes-Atlas/tx.jpg。
   const url = siteUrl + relUrl;
-  const ogImage = siteUrl + OG_IMAGE;
+  const ogImage = new URL(OG_IMAGE, siteUrl).href;
 
   // /risk-link 是点击站外链接的中转提示页，没有独立内容，不进索引
   const isRiskLink = relUrl.replace(/\/+$/, '') === '/risk-link';
-  // 404 不该进索引，否则搜索引擎会收录不存在的路径
-  const robots = isRiskLink || is404 ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
 
   // 文章页判定：有 date、非首页/404/中转页、frontmatter 未显式关闭 article。
   // 聚合页（@pages 下的 layout 页）都没有 date，天然落为 website。
@@ -341,6 +365,16 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
   const published = toIso(fm.date);
   const modified = lastmod(docsRoot, diskRel, fm);
   const isArticle = !isHome && !is404 && !isRiskLink && published !== null && fm.article !== false;
+  // 只有 frontmatter、没有正文的占位文章：不收录（补正文后自动恢复，见 isPlaceholderPage）
+  const isPlaceholder = isPlaceholderPage(diskRel, fm, content);
+
+  // 404 不该进索引，否则搜索引擎会收录不存在的路径
+  const robots =
+    isRiskLink || is404
+      ? 'noindex, nofollow'
+      : isPlaceholder
+        ? 'noindex, follow'
+        : 'index, follow, max-image-preview:large';
 
   // transformHead 的返回值必须是 head 数组，返回对象会报 head.some is not a function。
   // 标题不进这里：VitePress 的 title 由 frontmatter.title + config.titleTemplate 拼，
@@ -355,18 +389,26 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
     ['meta', { property: 'og:description', content: description }],
     ['meta', { property: 'og:url', content: url }],
     ['meta', { property: 'og:image', content: ogImage }],
-    ['meta', { property: 'og:image:width', content: '1200' }],
-    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { property: 'og:image:width', content: String(OG_IMAGE_WIDTH) }],
+    ['meta', { property: 'og:image:height', content: String(OG_IMAGE_HEIGHT) }],
+    ['meta', { property: 'og:image:alt', content: `${SITE_NAME} 站点头像` }],
     ['meta', { property: 'og:locale', content: 'zh_CN' }],
 
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: fullTitle }],
     ['meta', { name: 'twitter:description', content: description }],
     ['meta', { name: 'twitter:image', content: ogImage }],
+    ['meta', { name: 'twitter:image:alt', content: `${SITE_NAME} 站点头像` }],
 
     ['meta', { name: 'author', content: 'doublenuo' }],
     ['meta', { name: 'robots', content: robots }],
   ];
+
+  // 首页 Banner 背景图是 LCP 元素：仅首页提前以高优先级拉取，
+  // 文章页注入会白下载 260KB（banner 只出现在首页）。
+  if (isHome) {
+    tags.push(['link', { rel: 'preload', as: 'image', href: BANNER_IMAGE_URL, fetchpriority: 'high' }]);
+  }
 
   // 文章元信息：发布时间/修改时间是 Google 判断新鲜度的直接信号
   if (isArticle && published) {
@@ -383,7 +425,7 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
   }
 
   // JSON-LD：文章页注入 Article schema（富媒体搜索结果：作者/时间/描述）
-  if (isArticle) {
+  if (isArticle && !isPlaceholder) {
     const article: Record<string, unknown> = {
       '@context': 'https://schema.org',
       '@type': 'Article',

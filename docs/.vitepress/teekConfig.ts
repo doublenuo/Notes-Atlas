@@ -6,7 +6,8 @@ import { loadEnv } from "vite";
 // VitePress does not reliably populate process.env from .env before evaluating
 // this imported theme config, so load the local env file explicitly.
 const localEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
-import { imageUrl } from "./plugins/imageSource";
+import { imageUrl } from "./plugins/imageSource.js";
+import { BANNER_IMAGE_URL, BASE } from "./site";
 
 const formatNumericTitle = (value: unknown) => {
   const text = String(value ?? "").trim();
@@ -174,12 +175,15 @@ export const teekConfig = defineTeekConfig({
       jsLink: "https://cdn.jsdelivr.net/npm/twikoo@{version}/dist/twikoo.all.min.js",
       lang: "zh-CN",
       katex: {
-        cssLink: "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css",
-        cssIntegrity: "sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X",
-        coreJsLink: "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js",
-        coreJsIntegrity: "sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4",
-        renderJsLink: "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js",
-        renderJsIntegrity: "sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa",
+        // 正文的 KaTeX 样式已由 theme/index.ts 全局引入（katex.min.css），
+        // 评论区只需 katex.min.js / auto-render 提供 window.katex 与 renderMathInElement。
+        // 这里用空 data URI 阻止组件再注入一份 CDN CSS：旧版 0.12 的 CSS 会覆盖正文
+        // 0.16 的字体度量，让文章里的公式在评论挂载后发生重排。
+        cssLink: "data:text/css,",
+        coreJsLink: "https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.js",
+        coreJsIntegrity: "sha384-CwjPRVHTvLiMBFjEoij+QZViMV5rhTOIp7CJzl24JEqpRDA1sJFHVXXLURktbYYp",
+        renderJsLink: "https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/contrib/auto-render.min.js",
+        renderJsIntegrity: "sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz",
       },
     }
   },
@@ -246,7 +250,7 @@ export const teekConfig = defineTeekConfig({
     enabled: true,
     name: "Hi, I'm weno 👋",
     bgStyle: "fullImg",
-    imgSrc: [imageUrl("https://static.lovetulin.cn/images/2026/11/09/20261029123245750-1793977869-hVG2-1794221372-1qpn.webp")],
+    imgSrc: [imageUrl(BANNER_IMAGE_URL)],
     imgWaves: true,
     mask: true,
     maskBg: "rgba(15, 23, 42, 0.55)",
@@ -461,15 +465,15 @@ export const teekConfig = defineTeekConfig({
     topMessage: [
       `
       <span style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
-        <img src="https://static.lovetulin.cn/images/2026/11/09/animals-1793980739-D9DE-1794221372-PSfg.webp" alt="animals" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
+        <img src="https://static.lovetulin.cn/images/2026/11/09/animals-1793980739-D9DE-1794221372-PSfg.webp" alt="animals" loading="lazy" decoding="async" style="display:block;width:750px;max-width:100%;height:auto;border-radius:14px;margin:0 auto;" />
         <span style="display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;max-width:100%;overflow-x:auto;white-space:nowrap;">
-          <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Framework VitePress" src="https://img.shields.io/badge/Framework-VitePress-4868C2?logo=vitepress&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
-          <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Hosting Aliyun" src="https://img.shields.io/badge/Hosting-Aliyun-FF6A00?logo=alibabacloud&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
-          <a href="https://edgeone.ai/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CDN Tencent EdgeOne" src="https://img.shields.io/badge/CDN-Tencent%20EdgeOne-2DDE98?logo=tencent&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
-          <a href="https://caddyserver.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Proxy Caddy" src="https://img.shields.io/badge/Proxy-Caddy-00C7B7?logo=caddy&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
-          <a href="https://twikoo.js.org/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Comments Twikoo" src="https://img.shields.io/badge/Comments-Twikoo-42b883?logo=vue.js&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
-          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CC BY-NC-SA 4.0" src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-1F6FEB" style="height:20px;border-radius:4px;display:block;" /></a>
-          <a href="https://github.com/Kele-Bingtang/vitepress-theme-teek" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Built with Teek" src="https://img.shields.io/badge/Built%20with-Teek-FFB703?logo=vue.js&logoColor=fff" style="height:20px;border-radius:4px;display:block;" /></a>
+          <a href="https://vitepress.dev/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Framework VitePress" src="${BASE}badges/framework-vitepress.svg" width="149" height="20" style="height:20px;border-radius:4px;display:block;" loading="lazy" decoding="async" /></a>
+          <a href="https://www.aliyun.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Hosting Aliyun" src="${BASE}badges/hosting-aliyun.svg" width="111" height="20" style="height:20px;border-radius:4px;display:block;" loading="lazy" decoding="async" /></a>
+          <a href="https://edgeone.ai/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CDN Tencent EdgeOne" src="${BASE}badges/cdn-edgeone.svg" width="142" height="20" style="height:20px;border-radius:4px;display:block;" loading="lazy" decoding="async" /></a>
+          <a href="https://caddyserver.com/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Proxy Caddy" src="${BASE}badges/proxy-caddy.svg" width="103" height="20" style="height:20px;border-radius:4px;display:block;" loading="lazy" decoding="async" /></a>
+          <a href="https://twikoo.js.org/" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Comments Twikoo" src="${BASE}badges/comments-twikoo.svg" width="135" height="20" style="height:20px;border-radius:4px;display:block;" loading="lazy" decoding="async" /></a>
+          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="CC BY-NC-SA 4.0" src="${BASE}badges/license-cc-by-nc-sa.svg" width="158" height="20" style="height:20px;border-radius:4px;display:block;" loading="lazy" decoding="async" /></a>
+          <a href="https://github.com/Kele-Bingtang/vitepress-theme-teek" target="_blank" rel="noopener" style="display:inline-block;line-height:0;flex:0 0 auto;"><img alt="Built with Teek" src="${BASE}badges/built-with-teek.svg" width="117" height="20" style="height:20px;border-radius:4px;display:block;" loading="lazy" decoding="async" /></a>
         </span>
       </span>
       `,
