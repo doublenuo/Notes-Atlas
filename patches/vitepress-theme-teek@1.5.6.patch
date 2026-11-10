@@ -27,6 +27,7 @@ index aedfb68f0c7a975fc3870046d771a14583d5baa0..d1c54f5308ba86ca75105af99e2a0ef4
 +        envId,
 +        ...(katex ? {
 +          katex: {
++            ...katex,
 +            delimiters: [
 +              { left: "$$", right: "$$", display: true },
 +              { left: "$", right: "$", display: false },
