@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   vitepress-theme-teek@1.5.6:
-    hash: 84f5313351d9a04aff1d4f59c1d083ce71a3fe41814d156620d34df68534fdca
+    hash: 7f3568426c10b1b88bb1e7e8ded559cc8a61db51be7153f93c3076f05abe9cf2
     path: patches/vitepress-theme-teek@1.5.6.patch
 
 importers:
@@ -58,7 +58,7 @@ importers:
         version: 0.4.26(pagefind@1.6.0)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3))(vue@3.5.33)
       vitepress-theme-teek:
         specifier: ^1.5.6
-        version: 1.5.6(patch_hash=84f5313351d9a04aff1d4f59c1d083ce71a3fe41814d156620d34df68534fdca)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3))(vue@3.5.33)
+        version: 1.5.6(patch_hash=7f3568426c10b1b88bb1e7e8ded559cc8a61db51be7153f93c3076f05abe9cf2)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3))(vue@3.5.33)
       vue:
         specifier: 3.5.33
         version: 3.5.33
@@ -918,6 +918,7 @@ packages:
   '@xmldom/xmldom@0.9.10':
     resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==}
     engines: {node: '>=14.6'}
+    deprecated: this version has critical issues, please update to the latest version
 
   algoliasearch@5.51.0:
     resolution: {integrity: sha512-u3XS8HaTzt5YN90KPsOXMRjYJUMVD1dtr6yi4NXQluMbZ5IjQNBu1MEabdAxFhYtEuexqomPMSmRIhQJUd3QSg==}
@@ -3740,7 +3741,7 @@ snapshots:
       picocolors: 1.1.1
       vitepress: 1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3)
 
-  vitepress-theme-teek@1.5.6(patch_hash=84f5313351d9a04aff1d4f59c1d083ce71a3fe41814d156620d34df68534fdca)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3))(vue@3.5.33):
+  vitepress-theme-teek@1.5.6(patch_hash=7f3568426c10b1b88bb1e7e8ded559cc8a61db51be7153f93c3076f05abe9cf2)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3))(vue@3.5.33):
     dependencies:
       '@iconify/vue': 4.3.0(vue@3.5.33)
       gray-matter: 4.0.3

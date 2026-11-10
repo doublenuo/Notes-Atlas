@@ -2,7 +2,7 @@ diff --git a/es/components/theme/CommentTwikoo/src/index.vue2.mjs b/es/component
 index aedfb68f0c7a975fc3870046d771a14583d5baa0..d1c54f5308ba86ca75105af99e2a0ef469958577 100644
 --- a/es/components/theme/CommentTwikoo/src/index.vue2.mjs
 +++ b/es/components/theme/CommentTwikoo/src/index.vue2.mjs
-@@ -27,18 +27,44 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+@@ -27,18 +27,45 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
        timeout = 700,
        ...options
      } = twikooOptions;

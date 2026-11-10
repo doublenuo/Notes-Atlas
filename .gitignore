@@ -125,6 +125,7 @@ temp/
 .worktrees/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
+docs/.vitepress/.temp/
 docs/public/images/**/*.webp
 node_modules
 *.pptx
