@@ -4,7 +4,7 @@ import ThemeConfig, { type ChangeType } from "./components/ThemeConfig.vue";
 import NotFound from "./components/404.vue";
 import { useRibbon } from "./composables/useRibbon";
 
-import { defineComponent, defineAsyncComponent, provide, h, ref, computed, watch, onMounted } from 'vue'
+import { defineComponent, defineAsyncComponent, provide, h, ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import "vitepress-theme-teek/index.css";
 import "vitepress-theme-teek/theme-chalk/tk-code-block-mobile.css"; // 移动端代码块样式优化
 import "vitepress-theme-teek/theme-chalk/tk-sidebar.css"; // 侧边栏优化
@@ -44,6 +44,7 @@ import "./styles/image.scss";
 import "./styles/math.scss"; // KaTeX 公式横向滚动/打印修正（须在 katex.min.css 之后）
 import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变换（须在主题 CSS 之后）
 import "./styles/banner-feature-card.scss"; // 首页 Banner 特性区卡片化（须在主题 CSS 之后）
+import "./styles/mobile-home.scss"; // 手机端首页/分类/标签/归档：信息密度与响应式布局（须在主题 CSS 之后）
 import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（须在主题 CSS 之后）
 
 export default {
@@ -73,6 +74,26 @@ export default {
       const hasFriendLink = Boolean(getTeekConfig("friendLink", { list: [] }).list?.length);
       teekConfig.value.topArticle = { ...getTeekConfig("topArticle"), enabled: hasTopArticle.value };
       teekConfig.value.friendLink = { ...getTeekConfig("friendLink"), enabled: hasFriendLink };
+
+      // 手机端 Banner 描述改为静态首句（桌面端保留打字机）：
+      // types 模式每删完一句会留 typesNextTime（1.2s）的空白态，只剩一个灰色胶囊 + 竖线；
+      // 打字/删字过程中胶囊宽度持续变化，移动端观感像加载失败，也带来无谓的布局抖动。
+      let bannerDescStyle: "default" | "types" = "types";
+      let bannerMediaQuery: MediaQueryList | undefined;
+      const syncBannerDescStyle = () => {
+        const next = bannerMediaQuery?.matches ? "default" : "types";
+        if (bannerDescStyle === next) return;
+        bannerDescStyle = next;
+        teekConfig.value.banner = { ...teekConfig.value.banner, descStyle: next };
+      };
+      onMounted(() => {
+        bannerMediaQuery = window.matchMedia("(max-width: 768px)");
+        syncBannerDescStyle();
+        bannerMediaQuery.addEventListener("change", syncBannerDescStyle);
+      });
+      onBeforeUnmount(() => {
+        bannerMediaQuery?.removeEventListener("change", syncBannerDescStyle);
+      });
 
       // 「主题配置」→ 彩带背景开关（默认关闭，仅在首页渲染）
       // 这里不用 useRibbon 的 immediate，改为自行控制，避免与下面的路由监听重复初始化
@@ -152,6 +173,10 @@ export default {
         "teek-article-share-after": () => h(ArticleExportPdf),
         // 首页 Banner 特性区下方的「向下滚动」箭头（点击平滑滚动到内容区）
         "teek-home-banner-feature-after": () => h(ScrollDownArrow),
+        // 手机端首页尾部的「一些句子」小标题：桌面端隐藏，仅用于给
+        // VitePress 默认 features（index.md 里的书摘卡片）一个章节入口。
+        // 分类/标签页同样使用 teek 首页布局，必须只在真正的站点首页渲染。
+        "teek-home-after": () => (isHomePage.value ? h("h2", { class: "home-quotes-heading" }, "一些句子") : null),
         // 朋友圈时间线（frontmatter.moments === true 时生效）
         "page-top": () => (isMomentsPage.value ? h(MomentsTimeline) : null),
         // PWA：新版本 / 离线就绪提示（组件内部SSR安全，仅在客户端注册 SW）

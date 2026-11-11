@@ -32,10 +32,14 @@
   /* 4) 内容区回落 part 排版（height:100vh→auto；底部留白 15vh→10vh）。
    *    .no-feature 选择器与主题特异性持平（4 类），靠本文件后加载取胜。
    *    底部留白取 14vh：除原排版呼吸意外，还需容纳贴底箭头（绝对定位 bottom:28px，
-   *    含图标总高约 52px，10vh 在矮屏上会被卡片底边咬住）。 */
+   *    含图标总高约 52px，10vh 在矮屏上会被卡片底边咬住）。
+   *    padding-top：Banner 用负 margin 顶到导航栏下方，内容区从 y=0 开始，
+   *    标题原本会钻进 64px 高的固定导航栏（首字与 I'm 的撇号被裁掉）。
+   *    32px + 主题自带 48px = 80px，标题与导航栏之间留出 16px 呼吸位。 */
   .tk-banner.is-full-img .tk-banner__content,
   .tk-banner.is-full-img .tk-banner__content.no-feature {
     height: auto;
+    padding-top: 32px;
     padding-bottom: 14vh;
   }
 
@@ -51,5 +55,18 @@
    *    改实底 #28282d（与网格底色同色）→ 其全部白字规则在任意滚动位置可读。 */
   .tk-layout .VPNavBar.home.full-img-nav-bar:not(.screen-open) {
     background-color: #28282d !important;
+  }
+}
+
+/* 窄屏（iPhone SE 1 代 / Galaxy Fold 外屏等 ≤340px）：
+ * 2.4rem 标题在 320px 下已贴边，再小一档留出安全边距。 */
+@media (max-width: 340px) {
+  .tk-banner.is-full-img {
+    --tk-banner-title-text: 2rem !important;
+    --tk-banner-desc-text: 0.9rem !important;
+  }
+
+  .tk-banner.is-full-img .tk-banner-content__desc {
+    padding: 6px 10px;
   }
 }

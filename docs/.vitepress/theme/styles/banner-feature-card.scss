@@ -50,17 +50,60 @@
   }
 }
 
-// 移动端特性轮播（主题在 ≤719px 时改为单卡 width:100% 轮播）：压缩内边距与字号
+// 移动端不再用「一次只显示一张、每 4s 自动轮播」的卡片（主题 ≤719px 的行为）：
+// 轮播没有指示器，首屏只能看到「文档」一项，随笔/项目实践永远藏在后面。
+// 改为三行紧凑入口，全部可见、可点，高度与原来单卡轮播基本持平。
+// v-show 会把非激活项写成内联 display:none，必须用 !important 覆盖。
 @media (max-width: 719px) {
+  .tk-banner-feature {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+    padding: 16px 16px 4px;
+  }
+
   .tk-banner-feature .tk-banner-feature__feature__item {
-    padding: 20px 16px;
+    display: flex !important;
+    width: 100%;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    text-align: left;
+    backdrop-filter: blur(8px);
+
+    &:active {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    > a {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      width: 100%;
+      height: auto;
+      padding: 12px 14px;
+      text-align: left;
+    }
 
     .feature-title {
-      font-size: 20px;
+      flex: 0 0 auto;
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: nowrap;
     }
 
     .feature-details {
-      font-size: 13px;
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.5;
+      opacity: 0.82;
+      text-align: left;
     }
   }
 }

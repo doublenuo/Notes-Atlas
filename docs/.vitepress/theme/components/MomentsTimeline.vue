@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
-import { withBase } from 'vitepress'
-import { computed, ref } from 'vue'
+import { withBase, useData } from 'vitepress'
+import { computed, nextTick, onMounted, ref } from 'vue'
 
 type Moment = {
+  /** 文件名（不含 .md），用作评论归属的稳定 ID */
+  id: string
   /** 可选标题：仅当 frontmatter 显式写了 title 才显示 */
   title: string
   /** 时刻（HH:mm），日期部分由 day 承载 */
   time: string
-  /** 分组键 yyyy-mm-dd；无法解析日期时为空串（该条不进日期分组头） */
+  /** 分组键 yyyy-mm-dd；无法解析日期时为空串 */
   day: string
   /** 排序用时间戳，无日期时为 0（沉底） */
   ts: number
@@ -23,17 +25,44 @@ type Moment = {
   source: string
 }
 
-type MomentGroup = { day: string; label: string; items: Moment[] }
+/** Twikoo COMMENT_GET 返回的评论里我们实际用到的字段 */
+type TwikooComment = {
+  id?: string
+  nick?: string
+  comment?: string
+  created?: number
+  master?: boolean
+  isSpam?: boolean
+}
+
+type MomentComment = {
+  id: string
+  nick: string
+  text: string
+  created: number
+  master: boolean
+}
 
 const props = withDefaults(
   defineProps<{
-    /** 卡片头像，默认用站点头像 */
+    /** 封面图，默认复用首页 Banner 背景 */
+    cover?: string
+    /** 头像，默认用站点头像 */
     avatar?: string
-    /** 卡片昵称 */
+    /** 昵称 */
     name?: string
+    /** 签名，留空则取页面 frontmatter.desc */
+    signature?: string
   }>(),
-  { avatar: '/logo.png', name: 'weno' },
+  {
+    cover: '',
+    avatar: '/logo.png',
+    name: 'weno',
+    signature: '',
+  },
 )
+
+const { frontmatter, theme } = useData()
 
 // glob 以 Vite root（即 docs/）为根；?raw 拿原文，frontmatter 在此自行解析，
 // 从而绕开 VitePress 的 md 转换 —— 碎片文件不生成独立页面，只作为数据被聚合
@@ -117,19 +146,6 @@ const asList = (value: string | string[] | undefined): string[] => {
 const asScalar = (value: string | string[] | undefined): string =>
   typeof value === 'string' ? value : ''
 
-const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
-
-// 日期一律按「墙上时间」处理（不做时区换算）：分组、时刻直接取自字符串，
-// 否则构建机时区（如 CI 的 UTC）与作者本地时间相差数小时会导致分组跨天。
-// 星期几由 T00:00 本地解析得到——同一日期串在任何时区下星期一致
-const formatDayLabel = (day: string) => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return day
-  const [year, month, date] = day.split('-')
-  const weekday = new Date(`${day}T00:00:00`).getDay()
-  if (Number.isNaN(weekday)) return day
-  return `${year}年${Number(month)}月${Number(date)}日 · 周${WEEKDAY_LABELS[weekday]}`
-}
-
 const parseMoment = (source: string, raw: string): Moment | null => {
   const filename = source.split('/').pop() ?? ''
   // 目录内的 README.md 是写字段的说明文档，不是动态
@@ -158,6 +174,7 @@ const parseMoment = (source: string, raw: string): Moment | null => {
   const valid = parsed !== null && !Number.isNaN(parsed.getTime())
 
   return {
+    id: filename.replace(/\.md$/i, ''),
     title,
     time: timeMatch ? `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}` : '',
     day: valid ? rawDate.slice(0, 10) : rawDate,
@@ -177,77 +194,420 @@ const moments = computed(() =>
     .sort((a, b) => b.ts - a.ts || b.source.localeCompare(a.source)),
 )
 
-const groups = computed<MomentGroup[]>(() => {
-  const out: MomentGroup[] = []
-  for (const moment of moments.value) {
-    const last = out[out.length - 1]
-    if (last && last.day === moment.day) {
-      last.items.push(moment)
-    } else {
-      out.push({ day: moment.day, label: formatDayLabel(moment.day), items: [moment] })
-    }
-  }
-  return out
-})
-
 const render = (content: string) => markdown.render(content)
 
-/** 朋友圈式九宫格：1 张自然比例，2 张两列，≥3 张三列 */
+/** 朋友圈式九宫格：1 张自然比例；2/4 张两列；3+ 张三列 */
 const imageLayout = (count: number) =>
-  count === 1 ? 'moment-images--1' : count === 2 ? 'moment-images--2' : 'moment-images--3'
+  count === 1
+    ? 'moment-images--1'
+    : count === 2 || count === 4
+      ? 'moment-images--2'
+      : 'moment-images--3'
+
+/** 本地 `/` 路径在 GitHub Pages 子路径部署时需要补 base */
+const assetUrl = (value: string) => (/^https?:\/\//.test(value) ? value : withBase(value))
+
+// 封面默认复用首页 Banner 背景。不能直接 import site.ts：那里用了
+// process.env，会被打进客户端导致 “process is not defined”，
+// 因此从运行时 theme 配置里取 banner.imgSrc（构建期已解析成字符串）。
+const themeCover = computed(() => {
+  const banner = (theme.value as { banner?: { imgSrc?: unknown } }).banner
+  const imgSrc = banner?.imgSrc
+  if (typeof imgSrc === 'string') return imgSrc
+  if (Array.isArray(imgSrc) && typeof imgSrc[0] === 'string') return imgSrc[0]
+  return ''
+})
+
+const coverSrc = computed(() =>
+  assetUrl(props.cover || String(frontmatter.value.cover || themeCover.value)),
+)
+const pageTitle = computed(() => String(frontmatter.value.title || '朋友圈'))
+const coverFailed = ref(false)
+const avatarSrc = computed(() => assetUrl(props.avatar))
+const signatureText = computed(
+  () =>
+    props.signature ||
+    String(frontmatter.value.signature || frontmatter.value.desc || '零星的岛屿也能找到海'),
+)
+
+const formatMomentTime = (moment: Moment) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(moment.day)) return moment.time || moment.day
+  const [, month, date] = moment.day.split('-')
+  const label = `${Number(month)}月${Number(date)}日`
+  return moment.time ? `${label} ${moment.time}` : label
+}
+
+const momentDateTime = (moment: Moment) =>
+  moment.day ? `${moment.day}T${moment.time || '00:00'}` : undefined
+
+// ---------------------------------------------------------------------------
+// 点赞：按产品确认，点赞仅保存在本机 localStorage，不改动评论后端
+// ---------------------------------------------------------------------------
+const LIKE_STORAGE_KEY = 'moments-likes-v1'
+const likedIds = ref<Record<string, boolean>>({})
+
+const loadLikes = () => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LIKE_STORAGE_KEY) || '{}')
+    if (raw && typeof raw === 'object') likedIds.value = raw as Record<string, boolean>
+  } catch {
+    // 隐私模式 / 禁用存储时静默降级为仅内存点赞
+  }
+}
+
+const isLiked = (id: string) => Boolean(likedIds.value[id])
+
+const toggleLike = (moment: Moment) => {
+  const next = !isLiked(moment.id)
+  likedIds.value = { ...likedIds.value, [moment.id]: next }
+  try {
+    localStorage.setItem(LIKE_STORAGE_KEY, JSON.stringify(likedIds.value))
+  } catch {
+    // 忽略存储失败，本次会话内仍然生效
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 评论：直接使用站点已有的 Twikoo 后端，但用朋友圈自己的评论 UI 渲染。
+//
+// 所有评论落在同一个 Twikoo 页面路径 /moments 下，评论正文用 [[moment:<id>]]
+// 前缀标记归属，这样只需一次 COMMENT_GET 就能拿到全站朋友圈评论，避免每条
+// 朋友圈各发一次请求。提交时同样带上前缀，前端渲染前会剥掉。
+// ---------------------------------------------------------------------------
+const MOMENTS_COMMENT_PATH = '/moments'
+/**
+ * 线上评论服务地址。正常构建会从 teekConfig.comment.options.envId 注入；
+ * 本地 .env 没有该变量时回退到这里，保证 dev 下也能联调评论。
+ */
+const FALLBACK_TWIKOO_ENDPOINT = 'https://comments.lovetulin.cn'
+const TWIKOO_TOKEN_KEY = 'moments-twikoo-token'
+const NICKNAME_KEY = 'moments-nickname'
+const COMMENT_MARKER_RE = /^\[\[moment:([^\]]+)\]\]\s*/
+
+const twikooEndpoint = computed(() => {
+  const comment = (theme.value as {
+    comment?: { options?: { envId?: string } }
+  }).comment
+  const envId = comment?.options?.envId
+  return typeof envId === 'string' && envId ? envId : FALLBACK_TWIKOO_ENDPOINT
+})
+
+let accessToken = ''
+let configReady = false
+
+const readAccessToken = () => {
+  if (accessToken) return accessToken
+  try {
+    accessToken = localStorage.getItem(TWIKOO_TOKEN_KEY) || ''
+  } catch {
+    // ignore
+  }
+  return accessToken
+}
+
+const twikooCall = async (
+  event: string,
+  payload: Record<string, unknown> = {},
+): Promise<{
+  code?: number
+  message?: string
+  accessToken?: string
+  id?: string
+  data?: TwikooComment[]
+}> => {
+  const endpoint = twikooEndpoint.value
+  if (!/^https?:\/\//.test(endpoint)) {
+    throw new Error('评论服务未配置')
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event,
+      envId: endpoint,
+      accessToken: readAccessToken(),
+      ...payload,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`评论服务返回 ${response.status}`)
+  }
+
+  const result = (await response.json()) as {
+    code?: number
+    message?: string
+    accessToken?: string
+    data?: TwikooComment[]
+  }
+
+  if (typeof result.accessToken === 'string' && result.accessToken) {
+    accessToken = result.accessToken
+    try {
+      localStorage.setItem(TWIKOO_TOKEN_KEY, accessToken)
+    } catch {
+      // ignore
+    }
+  }
+
+  if (typeof result.code === 'number' && result.code !== 0) {
+    throw new Error(result.message || '评论服务暂不可用')
+  }
+
+  return result
+}
+
+const ensureConfig = async () => {
+  if (configReady) return
+  await twikooCall('GET_CONFIG')
+  configReady = true
+}
+
+const commentsByMoment = ref<Record<string, MomentComment[]>>({})
+const commentsError = ref('')
+
+const commentsFor = (id: string) => commentsByMoment.value[id] ?? []
+const commentCount = (id: string) => commentsFor(id).length
+
+const loadComments = async () => {
+  commentsError.value = ''
+  try {
+    await ensureConfig()
+    const result = await twikooCall('COMMENT_GET', {
+      url: MOMENTS_COMMENT_PATH,
+      sort: 'newest',
+      keyword: '',
+      pageSize: 500,
+    })
+
+    const grouped: Record<string, MomentComment[]> = {}
+    const seen = new Set<string>()
+
+    for (const raw of result.data ?? []) {
+      if (raw.isSpam) continue
+      const rawText = String(raw.comment || '')
+      const marker = rawText.match(COMMENT_MARKER_RE)
+      if (!marker) continue
+
+      const momentId = marker[1]
+      const text = rawText.slice(marker[0].length).trim()
+      if (!text) continue
+
+      const key = String(raw.id || `${momentId}-${raw.created || 0}-${raw.nick || ''}`)
+      if (seen.has(key)) continue
+      seen.add(key)
+
+      if (!grouped[momentId]) grouped[momentId] = []
+      grouped[momentId].push({
+        id: key,
+        nick: String(raw.nick || '访客'),
+        text,
+        created: Number(raw.created) || 0,
+        master: Boolean(raw.master),
+      })
+    }
+
+    Object.values(grouped).forEach((list) => list.sort((a, b) => a.created - b.created))
+    commentsByMoment.value = grouped
+  } catch (error) {
+    commentsError.value = error instanceof Error ? error.message : '评论加载失败'
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 评论输入
+// ---------------------------------------------------------------------------
+const composerId = ref<string | null>(null)
+const composerText = ref('')
+const nickname = ref('')
+const submittingId = ref('')
+const composerError = ref('')
+const composerTextInput = ref<HTMLInputElement | null>(null)
+const composerNickInput = ref<HTMLInputElement | null>(null)
+const setComposerText = (el: unknown) => { composerTextInput.value = (el as HTMLInputElement | null) ?? null }
+const setComposerNick = (el: unknown) => { composerNickInput.value = (el as HTMLInputElement | null) ?? null }
+
+const openComposer = async (moment: Moment) => {
+  composerId.value = moment.id
+  composerText.value = ''
+  composerError.value = ''
+  if (!nickname.value) {
+    try {
+      nickname.value = localStorage.getItem(NICKNAME_KEY) || ''
+    } catch {
+      // ignore
+    }
+  }
+  await nextTick()
+  if (!nickname.value) composerNickInput.value?.focus()
+  else composerTextInput.value?.focus()
+}
+
+const closeComposer = () => {
+  composerId.value = null
+  composerError.value = ''
+}
+
+const saveNickname = (value: string) => {
+  try {
+    localStorage.setItem(NICKNAME_KEY, value)
+  } catch {
+    // ignore
+  }
+}
+
+const submitComment = async (moment: Moment) => {
+  if (submittingId.value) return
+
+  const text = composerText.value.trim()
+  const nick = nickname.value.trim()
+
+  if (!nick) {
+    composerError.value = '请先填写昵称'
+    return
+  }
+  if (!text) {
+    composerError.value = '写点什么再发送吧'
+    return
+  }
+
+  submittingId.value = moment.id
+  composerError.value = ''
+
+  try {
+    await ensureConfig()
+    const result = await twikooCall('COMMENT_SUBMIT', {
+      url: MOMENTS_COMMENT_PATH,
+      nick,
+      mail: '',
+      comment: `[[moment:${moment.id}]] ${text}`,
+      ua: navigator.userAgent,
+    })
+
+    // 先乐观插入，避免评论服务刷新稍慢时输入框关闭却看不到新评论
+    const optimistic: MomentComment = {
+      id: String(result.id || `local-${Date.now()}`),
+      nick,
+      text,
+      created: Date.now(),
+      master: false,
+    }
+    commentsByMoment.value = {
+      ...commentsByMoment.value,
+      [moment.id]: [...commentsFor(moment.id), optimistic],
+    }
+    saveNickname(nick)
+    composerText.value = ''
+    composerId.value = null
+    void loadComments()
+  } catch (error) {
+    composerError.value = error instanceof Error ? error.message : '发送失败，请稍后重试'
+  } finally {
+    submittingId.value = ''
+  }
+}
 
 const lightbox = ref<string | null>(null)
+
+onMounted(() => {
+  loadLikes()
+  try {
+    nickname.value = localStorage.getItem(NICKNAME_KEY) || ''
+  } catch {
+    // ignore
+  }
+  void loadComments()
+})
 </script>
 
 <template>
-  <section class="moments-timeline" aria-label="朋友圈动态">
-    <div v-if="!groups.length" class="moments-empty">
+  <section class="moments-timeline" aria-label="朋友圈">
+    <h1 class="moments-sr-only">{{ pageTitle }}</h1>
+
+    <header class="moments-header">
+      <div class="moments-cover">
+        <img
+          v-if="coverSrc && !coverFailed"
+          :src="coverSrc"
+          alt=""
+          fetchpriority="high"
+          decoding="async"
+          @error="coverFailed = true"
+        />
+        <img
+          v-else-if="coverFailed"
+          class="moments-cover__fallback"
+          :src="assetUrl('/tx.jpg')"
+          alt=""
+          decoding="async"
+        />
+      </div>
+      <div class="moments-profile">
+        <div class="moments-profile__text">
+          <p class="moments-name">{{ props.name }}</p>
+          <p class="moments-signature">{{ signatureText }}</p>
+        </div>
+        <img class="moments-avatar" :src="avatarSrc" :alt="`${props.name} 的头像`" />
+      </div>
+    </header>
+
+    <div class="moments-feed-head">
+      <span>{{ pageTitle }}</span>
+      <span class="moments-feed-head__meta">
+        {{ moments.length }} 条动态
+      </span>
+    </div>
+
+    <p v-if="commentsError" class="moments-alert" role="status">
+      评论暂时加载失败：{{ commentsError }}
+      <button type="button" @click="loadComments">重试</button>
+    </p>
+
+    <div v-if="!moments.length" class="moments-empty">
       还没有动态。新建一个 Markdown 文件放入本目录，重新构建后就会自动出现在这里。
     </div>
 
-    <div v-for="group in groups" :key="group.day || group.label" class="moment-group">
-      <div v-if="group.label" class="moment-divider">
-        <time v-if="group.day" :datetime="group.day">{{ group.label }}</time>
-        <span v-else>{{ group.label }}</span>
-      </div>
+    <article v-for="moment in moments" :key="moment.source" class="moment">
+      <img class="moment-avatar" :src="avatarSrc" alt="" loading="lazy" />
 
-      <article v-for="moment in group.items" :key="moment.source" class="moment">
-        <img class="moment-avatar" :src="withBase(props.avatar)" alt="" loading="lazy" />
-        <div class="moment-card">
-          <header class="moment-head">
-            <span class="moment-name">{{ props.name }}</span>
-          </header>
-          <h3 v-if="moment.title" class="moment-title">{{ moment.title }}</h3>
-          <div v-if="moment.content" class="moment-content" v-html="render(moment.content)"></div>
+      <div class="moment-body">
+        <p class="moment-name">{{ props.name }}</p>
 
-          <div
-            v-if="moment.images.length"
-            class="moment-images"
-            :class="imageLayout(moment.images.length)"
+        <h2 v-if="moment.title" class="moment-title">{{ moment.title }}</h2>
+        <div v-if="moment.content" class="moment-content" v-html="render(moment.content)"></div>
+
+        <div
+          v-if="moment.images.length"
+          class="moment-images"
+          :class="imageLayout(moment.images.length)"
+        >
+          <button
+            v-for="image in moment.images"
+            :key="image"
+            type="button"
+            class="moment-image"
+            :aria-label="`查看图片 ${image}`"
+            @click="lightbox = assetUrl(image)"
           >
-            <button
-              v-for="image in moment.images"
-              :key="image"
-              type="button"
-              class="moment-image"
-              :aria-label="`查看图片 ${image}`"
-              @click="lightbox = image"
-            >
-              <img :src="image" alt="" loading="lazy" />
-            </button>
-          </div>
+            <img :src="assetUrl(image)" alt="" loading="lazy" decoding="async" />
+          </button>
+        </div>
 
-          <video
-            v-if="moment.video"
-            class="moment-video"
-            controls
-            preload="metadata"
-            :src="moment.video"
-          ></video>
+        <video
+          v-if="moment.video"
+          class="moment-video"
+          controls
+          preload="metadata"
+          :src="assetUrl(moment.video)"
+        ></video>
 
-          <div v-if="moment.time || moment.location" class="moment-meta">
-            <time v-if="moment.time" class="moment-time">{{ moment.time }}</time>
-            <p v-if="moment.location" class="moment-location">
+        <div class="moment-footer">
+          <div class="moment-meta">
+            <time v-if="moment.time || moment.day" :datetime="momentDateTime(moment)">
+              {{ formatMomentTime(moment) }}
+            </time>
+            <p v-if="moment.location" class="moment-location" :title="moment.location">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z" />
                 <circle cx="12" cy="10" r="3" />
@@ -255,19 +615,120 @@ const lightbox = ref<string | null>(null)
               <span>{{ moment.location }}</span>
             </p>
           </div>
+
+          <div class="moment-actions">
+            <button
+              type="button"
+              class="moment-action"
+              :class="{ 'is-liked': isLiked(moment.id) }"
+              :aria-pressed="isLiked(moment.id)"
+              :aria-label="isLiked(moment.id) ? '取消点赞' : '点赞'"
+              :title="isLiked(moment.id) ? '取消点赞（仅本机）' : '点赞（仅本机保存）'"
+              @click="toggleLike(moment)"
+            >
+              <svg class="moment-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 20.7 4.8 13.5a4.8 4.8 0 0 1 0-6.8 4.8 4.8 0 0 1 6.8 0l.4.4.4-.4a4.8 4.8 0 0 1 6.8 0 4.8 4.8 0 0 1 0 6.8L12 20.7Z"
+                />
+              </svg>
+              <span>{{ isLiked(moment.id) ? '已赞' : '赞' }}</span>
+            </button>
+
+            <button
+              type="button"
+              class="moment-action"
+              aria-label="评论"
+              @click="openComposer(moment)"
+            >
+              <svg class="moment-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M4 5.8A2.8 2.8 0 0 1 6.8 3h10.4A2.8 2.8 0 0 1 20 5.8v8.4a2.8 2.8 0 0 1-2.8 2.8H9.4l-4 3.2a.8.8 0 0 1-1.3-.6v-2.8A2.8 2.8 0 0 1 4 14.2V5.8Z"
+                />
+              </svg>
+              <span>评论</span>
+              <span v-if="commentCount(moment.id)" class="moment-action__count">
+                {{ commentCount(moment.id) }}
+              </span>
+            </button>
+          </div>
         </div>
-      </article>
-    </div>
+
+        <div
+          v-if="isLiked(moment.id) || commentsFor(moment.id).length"
+          class="moment-interactions"
+        >
+          <div v-if="isLiked(moment.id)" class="moment-likes">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 20.7 4.8 13.5a4.8 4.8 0 0 1 0-6.8 4.8 4.8 0 0 1 6.8 0l.4.4.4-.4a4.8 4.8 0 0 1 6.8 0 4.8 4.8 0 0 1 0 6.8L12 20.7Z"
+              />
+            </svg>
+            <span>我</span>
+          </div>
+
+          <ul v-if="commentsFor(moment.id).length" class="moment-comments" aria-label="评论">
+            <li v-for="comment in commentsFor(moment.id)" :key="comment.id" class="moment-comment">
+              <span class="moment-comment__name">{{ comment.nick }}</span>
+              <span v-if="comment.master" class="moment-comment__master">博主</span>
+              <span class="moment-comment__sep">：</span>
+              <span class="moment-comment__text">{{ comment.text }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <form v-if="composerId === moment.id" class="moment-composer" @submit.prevent="submitComment(moment)">
+          <div class="moment-composer__row">
+            <input
+              v-model="nickname"
+              :ref="setComposerNick"
+              class="moment-composer__nick"
+              type="text"
+              maxlength="20"
+              placeholder="昵称"
+              aria-label="昵称"
+            />
+            <input
+              :ref="setComposerText"
+              v-model="composerText"
+              class="moment-composer__text"
+              type="text"
+              maxlength="500"
+              :placeholder="`评论 ${props.name}…`"
+              aria-label="评论内容"
+            />
+            <button
+              type="submit"
+              class="moment-composer__send"
+              :disabled="submittingId === moment.id"
+            >
+              {{ submittingId === moment.id ? '发送中' : '发送' }}
+            </button>
+          </div>
+          <div class="moment-composer__foot">
+            <span v-if="composerError" class="moment-composer__error">{{ composerError }}</span>
+            <button type="button" class="moment-composer__cancel" @click="closeComposer">
+              取消
+            </button>
+          </div>
+        </form>
+      </div>
+    </article>
+
+    <p v-if="moments.length" class="moments-end">没有更多了</p>
 
     <Teleport to="body">
       <div
         v-if="lightbox"
         class="moment-lightbox"
         role="dialog"
+        aria-modal="true"
         aria-label="查看图片"
         @click="lightbox = null"
       >
         <img :src="lightbox" alt="" />
+        <button type="button" class="moment-lightbox__close" aria-label="关闭" @click.stop="lightbox = null">
+          ×
+        </button>
       </div>
     </Teleport>
   </section>
@@ -275,93 +736,196 @@ const lightbox = ref<string | null>(null)
 
 <style scoped>
 .moments-timeline {
+  --moments-name-color: #576b95;
+  --moments-liked-color: #e64340;
   position: relative;
   max-width: 44rem;
-  margin: 2rem auto;
-  padding: 0.25rem 0;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
 }
 
-.moments-timeline::before {
-  display: none;
+.moments-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.moment-group + .moment-group {
-  margin-top: 1.25rem;
+:global(.dark) .moments-timeline {
+  --moments-name-color: #8ab4f8;
+  --moments-liked-color: #ff7b72;
 }
 
-.moment-divider {
+/* 封面与个人资料：仿微信朋友圈的「封面 + 右下角头像」结构 */
+.moments-cover {
   position: relative;
-  margin: 1.5rem 0 1rem;
+  height: 210px;
+  overflow: hidden;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(113, 102, 240, 0.35), transparent 45%),
+    linear-gradient(135deg, #1f2937, #4b5563);
+}
+
+.moments-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.moments-cover__fallback {
+  object-position: center 32%;
+}
+
+.moments-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 0 10px;
+}
+
+.moments-profile__text {
+  flex: 1;
+  min-width: 0;
+  padding-top: 10px;
+}
+
+.moments-name {
+  margin: 0;
+  color: var(--vp-c-text-1);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.moments-signature {
+  margin: 4px 0 0;
+  color: var(--vp-c-text-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.moments-avatar {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  width: 76px;
+  height: 76px;
+  margin-top: -34px;
+  border: 3px solid var(--vp-c-bg);
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+  object-fit: cover;
+}
+
+.moments-feed-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--vp-c-divider);
+  color: var(--vp-c-text-1);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.moments-feed-head__meta {
+  color: var(--vp-c-text-3);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.moments-alert {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--vp-c-danger-2);
+  border-radius: 8px;
+  background: var(--vp-c-danger-soft);
+  color: var(--vp-c-danger-1);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.moments-alert button {
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.moments-empty {
+  margin-top: 16px;
+  padding: 32px 16px;
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 12px;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
   text-align: center;
 }
 
-.moment-divider time,
-.moment-divider span {
-  display: inline-block;
-  padding: 0.2rem 0.75rem;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 999px;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-2);
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
+/* 动态：左头像 + 右内容，分隔线而不是卡片，贴近微信朋友圈 */
 .moment {
   display: flex;
-  gap: 0.8rem;
-  margin: 0 0 1.35rem;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--vp-c-divider);
 }
 
-.moment:last-child {
-  margin-bottom: 0;
+.moment:last-of-type {
+  border-bottom: 0;
 }
 
 .moment-avatar {
   flex: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 0.25rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
   object-fit: cover;
 }
 
-.moment-card {
+.moment-body {
   flex: 1;
   min-width: 0;
 }
 
-.moment-head {
-  display: flex;
-  align-items: baseline;
-  min-height: 1.5rem;
-}
-
 .moment-name {
-  color: #576b95;
-  font-size: 0.96rem;
+  margin: 0;
+  color: var(--moments-name-color);
+  font-size: 14.5px;
   font-weight: 600;
-}
-
-.moment-time {
-  color: var(--vp-c-text-2);
-  font-size: 0.8rem;
-  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .moment-title {
-  margin: 0.25rem 0 0;
+  margin: 4px 0 0;
   border-top: 0;
-  font-size: 1.02rem;
+  color: var(--vp-c-text-1);
+  font-size: 16.5px;
   font-weight: 600;
   line-height: 1.5;
 }
 
 .moment-content {
-  margin-top: 0.2rem;
+  margin-top: 4px;
   color: var(--vp-c-text-1);
-  font-size: 0.95rem;
+  font-size: 15px;
   line-height: 1.75;
-  /* 长链接在窄屏卡片里也能折行，不撑破布局 */
+  letter-spacing: 0.01em;
   overflow-wrap: anywhere;
 }
 
@@ -379,7 +943,7 @@ const lightbox = ref<string | null>(null)
 
 .moment-content :deep(img) {
   max-width: 100%;
-  border-radius: 0.6rem;
+  border-radius: 4px;
 }
 
 .moment-content :deep(a) {
@@ -395,9 +959,9 @@ const lightbox = ref<string | null>(null)
 
 .moment-images {
   display: grid;
-  gap: 0.3rem;
-  width: min(100%, 20rem);
-  margin-top: 0.5rem;
+  gap: 4px;
+  width: min(100%, 22rem);
+  margin-top: 8px;
 }
 
 .moment-images--1 {
@@ -418,7 +982,7 @@ const lightbox = ref<string | null>(null)
   background: none;
   cursor: zoom-in;
   overflow: hidden;
-  border-radius: 0.5rem;
+  border-radius: 4px;
 }
 
 .moment-images--2 .moment-image,
@@ -430,8 +994,8 @@ const lightbox = ref<string | null>(null)
   display: block;
   width: 100%;
   height: 100%;
+  border-radius: 4px;
   object-fit: cover;
-  border-radius: 0.5rem;
   transition: transform 0.25s ease;
 }
 
@@ -441,7 +1005,6 @@ const lightbox = ref<string | null>(null)
   }
 }
 
-/* 触屏按压反馈 */
 .moment-image:active img {
   transform: scale(0.96);
 }
@@ -458,39 +1021,294 @@ const lightbox = ref<string | null>(null)
   display: block;
   width: 100%;
   max-width: 26rem;
-  margin-top: 0.55rem;
-  border-radius: 0.6rem;
+  margin-top: 8px;
+  border-radius: 4px;
   background: #000;
+}
+
+.moment-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--vp-c-text-3);
+  font-size: 12.5px;
+}
+
+.moment-meta {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  min-width: 0;
+}
+
+.moment-meta time {
+  flex: none;
+  white-space: nowrap;
 }
 
 .moment-location {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 3px;
+  max-width: 100%;
+  min-width: 0;
   margin: 0;
-  color: var(--vp-c-text-2);
-  font-size: 0.8rem;
+  color: var(--moments-name-color);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .moment-location svg {
-  width: 1em;
-  height: 1em;
+  flex: none;
+  width: 12px;
+  height: 12px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  stroke-width: 2;
 }
 
-.moment-meta {
+.moment-location span {
+  min-width: 0;
+}
+
+.moment-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.moment-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--moments-name-color);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.moment-action:hover {
+  background: var(--vp-c-default-soft);
+}
+
+.moment-action.is-liked {
+  color: var(--moments-liked-color);
+}
+
+.moment-action__icon {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.moment-action.is-liked .moment-action__icon {
+  fill: currentColor;
+  animation: moment-heart-pop 0.28s ease;
+}
+
+.moment-action__count {
+  color: var(--vp-c-text-3);
+  font-size: 11px;
+}
+
+@keyframes moment-heart-pop {
+  0% {
+    transform: scale(0.72);
+  }
+  60% {
+    transform: scale(1.16);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 点赞/评论块：灰底小气泡，顶部有一个指向操作区的小三角 */
+.moment-interactions {
+  position: relative;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--vp-c-bg-soft);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.moment-interactions::before {
+  position: absolute;
+  top: -4px;
+  left: 14px;
+  width: 9px;
+  height: 9px;
+  background: var(--vp-c-bg-soft);
+  content: '';
+  transform: rotate(45deg);
+}
+
+.moment-likes {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  margin-top: 0.55rem;
+  gap: 4px;
+  color: var(--moments-name-color);
 }
 
-.moment-meta .moment-location {
-  color: #576b95;
+.moment-likes svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--moments-liked-color);
+}
+
+.moment-likes + .moment-comments {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.moment-comments {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.moment-comment {
+  margin: 1px 0;
+  color: var(--vp-c-text-1);
+  overflow-wrap: anywhere;
+}
+
+.moment-comment__name {
+  color: var(--moments-name-color);
+  font-weight: 600;
+}
+
+.moment-comment__master {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  vertical-align: 1px;
+}
+
+.moment-comment__sep {
+  color: var(--vp-c-text-2);
+}
+
+.moment-comment__text {
+  white-space: pre-wrap;
+}
+
+.moment-composer {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+}
+
+.moment-composer__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.moment-composer__nick,
+.moment-composer__text {
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  outline: none;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font: inherit;
+  font-size: 13px;
+  transition: border-color 0.2s ease;
+}
+
+.moment-composer__nick:focus,
+.moment-composer__text:focus {
+  border-color: var(--vp-c-brand-1);
+}
+
+.moment-composer__nick {
+  flex: 0 0 76px;
+  width: 76px;
+}
+
+.moment-composer__text {
+  flex: 1 1 auto;
+}
+
+.moment-composer__send {
+  flex: none;
+  min-height: 30px;
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--vp-c-brand-1);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.moment-composer__send:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.moment-composer__foot {
+  display: flex;
+  align-items: center;
+  min-height: 18px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.moment-composer__error {
+  color: var(--vp-c-danger-1);
+}
+
+.moment-composer__cancel {
+  margin-left: auto;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.moments-end {
+  margin: 24px 0 0;
+  color: var(--vp-c-text-3);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-align: center;
 }
 
 .moment-lightbox {
@@ -508,24 +1326,59 @@ const lightbox = ref<string | null>(null)
 .moment-lightbox img {
   max-width: 100%;
   max-height: 100%;
-  border-radius: 0.5rem;
+  border-radius: 6px;
 }
 
-.moments-empty {
-  padding: 1.5rem;
-  border: 1px dashed var(--vp-c-divider);
-  border-radius: 0.85rem;
-  color: var(--vp-c-text-2);
-  text-align: center;
+.moment-lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 24px;
+  line-height: 40px;
+  cursor: pointer;
 }
 
 @media (max-width: 640px) {
   .moments-timeline {
-    margin: 1.5rem 0;
+    padding: 14px 12px 40px;
+  }
+
+  .moments-cover {
+    height: 160px;
+    border-radius: 10px;
+  }
+
+  .moments-avatar {
+    width: 64px;
+    height: 64px;
+    margin-top: -30px;
+    border-width: 3px;
+    border-radius: 8px;
+  }
+
+  .moments-name {
+    font-size: 20px;
+  }
+
+  .moments-profile {
+    gap: 10px;
+    padding: 0 6px;
+  }
+
+  .moments-feed-head {
+    margin-top: 20px;
   }
 
   .moment {
-    gap: 0.65rem;
+    gap: 10px;
+    padding: 12px 0;
   }
 
   .moment-avatar {
@@ -533,8 +1386,53 @@ const lightbox = ref<string | null>(null)
     height: 40px;
   }
 
+  .moment-title {
+    font-size: 15.5px;
+  }
+
+  .moment-content {
+    font-size: 14.5px;
+    line-height: 1.72;
+  }
+
+  .moment-footer {
+    font-size: 12px;
+  }
+
+  .moment-location {
+    max-width: 100%;
+  }
+
+  .moment-action {
+    min-height: 30px;
+    padding: 5px 5px;
+  }
+
+  .moment-composer__nick {
+    flex-basis: 66px;
+    width: 66px;
+  }
+
+  .moment-composer__send {
+    padding: 5px 10px;
+  }
+
   .moment-lightbox {
     padding: 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .moment-composer__row {
+    flex-wrap: wrap;
+  }
+
+  .moment-composer__text {
+    flex-basis: calc(100% - 72px);
+  }
+
+  .moment-composer__send {
+    margin-left: auto;
   }
 }
 </style>

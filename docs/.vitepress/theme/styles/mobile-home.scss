@@ -1,0 +1,181 @@
+/**
+ * 手机端索引页（≤768px）阅读效率与信息密度优化：
+ * 首页、文章分类、标签、归档。
+ *
+ * 目标：首屏信息不打架，列表在 390px 宽度下尽量一行放下关键信息，
+ * 同时压缩首页尾部与正文无关的重复内容。
+ *
+ * 依赖：本文件在主题 CSS 与 banner-*.scss 之后加载（见 theme/index.ts）。
+ */
+
+/* 仅手机端显示：见下方 @media */
+.home-quotes-heading {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* 0) banner 与文章列表之间的 48px 间距在手机上偏大，收到 28px，
+   *    让 375×667 这类矮屏也能多露出一截首篇卡片。 */
+  .tk-home .tk-home__content {
+    margin-top: 28px;
+  }
+
+  /* 文章列表的信息密度只在手机宽度（≤719px，与主题轮播断点一致）处理；
+   * 768px 的平板卡片宽度足够放下作者/标签，不做删减。 */
+  @media (max-width: 719px) {
+    /* 1) 文章卡片标题：允许两行。
+     *    主题默认 nowrap + 单行省略，390px 下「Windows 安装 Ubuntu 24.04 双系统教程」
+     *    会只剩「…双…」，两行能完整表达标题，且短标题仍只占一行。 */
+    .tk-post-list .tk-post-item__left__title {
+      display: -webkit-box;
+      overflow: hidden;
+      white-space: normal;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    /* 2) 文章卡片底部信息：手机端只保留「日期 + 分类」。
+     *    作者恒为博主本人、标签常与分类重复，四组信息在 316px 内必然折成两行
+     *    （日期甚至会在空格处断成「2026-06-22 / 08:18:26」）。收起后单行可读，
+     *    每张卡片少 24px，12 篇的列表少约 288px。
+     *    改 flex 而不是依赖 inline 排版：中文分类在行尾会被逐字拆行
+     *    （「强化学 / 习」），nowrap 的 flex item 能保证整组信息不被拆开。 */
+    .tk-post-list .tk-article-info {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .tk-post-list .tk-article-info__item {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .tk-post-list .tk-article-info .split:not(:last-child)::after {
+      content: none;
+    }
+
+    /* 日期与分类之间保留一条细分隔线，代替原来的 | 分隔符 */
+    .tk-post-list .tk-article-info__item[aria-label="分类"]::before {
+      content: "";
+      flex: 0 0 1px;
+      width: 1px;
+      height: 10px;
+      margin-right: 2px;
+      background: var(--vp-c-divider);
+    }
+
+    .tk-post-list .tk-article-info__icon {
+      flex: 0 0 auto;
+    }
+
+    .tk-post-list .tk-article-info__item[aria-label="作者"],
+    .tk-post-list .tk-article-info__item[aria-label="标签"] {
+      display: none;
+    }
+  }
+
+  /* 分类页 / 标签页：
+   * 桌面端分类/标签索引是右侧栏，手机端会掉到 12 篇文章 + 分页之后（约 3200px 处），
+   * 用户几乎永远看不到“全部分类/全部标签”。这里把索引卡提到文章列表之前，
+   * 并取消索引卡的 sticky + 内部滚动，避免首屏出现第二层滚动容器。 */
+  .tk-home__content:has(.tk-category.is-page),
+  .tk-home__content:has(.tk-tag.is-page) {
+    flex-direction: column;
+  }
+
+  .tk-home__content:has(.tk-category.is-page) .tk-home__content__info,
+  .tk-home__content:has(.tk-tag.is-page) .tk-home__content__info {
+    order: -1;
+    width: 100%;
+    /* 右侧栏容器本身是 sticky（桌面跟随滚动），移到文章前面后必须解除，
+     * 否则索引卡会一直钉在视口顶部盖住文章。 */
+    position: static;
+    top: auto;
+  }
+
+  .tk-home__content:has(.tk-category.is-page) .tk-category.is-page,
+  .tk-home__content:has(.tk-tag.is-page) .tk-tag.is-page {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* 3) VitePress 默认首页 Hero 与上方 teek Banner 完全重复（同一句 Hi, I'm Weno
+   *    和同一组按钮），手机端不再第二次占据 340px；桌面端保持原样。 */
+  .VPContent.is-home .VPHome > .VPHero {
+    display: none;
+  }
+
+  /* 给默认 features（书摘卡片）一个章节入口，避免 VPHero 隐藏后出现无标题卡片墙 */
+  .home-quotes-heading {
+    display: block;
+    margin: 40px auto 0;
+    padding: 0 16px;
+    color: var(--vp-c-text-1);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  /* 4) 尾部引用卡片：默认单列 8 张共 1712px，改为两列紧凑卡片。 */
+  .VPContent.is-home .VPHomeFeatures {
+    padding: 14px 0 28px;
+  }
+
+  .VPContent.is-home .VPHomeFeatures .container {
+    padding: 0 16px;
+    max-width: 100%;
+  }
+
+  .VPContent.is-home .VPHomeFeatures .items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+  }
+
+  .VPContent.is-home .VPHomeFeatures .item {
+    width: auto;
+    padding: 0;
+  }
+
+  .VPContent.is-home .VPHomeFeatures .VPFeature,
+  .VPContent.is-home .VPHomeFeatures .box {
+    height: 100%;
+  }
+
+  .VPContent.is-home .VPHomeFeatures .box {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  /* 图标在窄卡片里只占空间，隐藏后正文能多放两行 */
+  .VPContent.is-home .VPHomeFeatures .icon {
+    display: none;
+  }
+
+  .VPContent.is-home .VPHomeFeatures .title {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .VPContent.is-home .VPHomeFeatures .details {
+    margin-top: auto;
+    padding-top: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  /* 5) 返回顶部按钮：避开 iPhone 底部 Home 指示条 */
+  .tk-right-bottom-button {
+    right: 12px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+}
