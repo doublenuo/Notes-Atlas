@@ -23,6 +23,7 @@ import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
+import ReloadPrompt from "./components/ReloadPrompt.vue";
 
 import { useData, useRoute } from "vitepress";
 
@@ -153,6 +154,8 @@ export default {
         "teek-home-banner-feature-after": () => h(ScrollDownArrow),
         // 朋友圈时间线（frontmatter.moments === true 时生效）
         "page-top": () => (isMomentsPage.value ? h(MomentsTimeline) : null),
+        // PWA：新版本 / 离线就绪提示（组件内部SSR安全，仅在客户端注册 SW）
+        "layout-bottom": () => h(ReloadPrompt),
         "not-found": () => h(NotFound),
       });
     },

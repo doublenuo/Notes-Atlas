@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { withPwa } from '@vite-pwa/vitepress'
 
 import { teekConfig } from './teekConfig'
 import { fileURLToPath } from 'node:url'
@@ -22,7 +23,10 @@ const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 // 有 permalink 的用它；没有的用文档标题派生 slug。详见 ./permalinks.ts
 const PAGES = collectPages(DOCS_ROOT)
 
-export default defineConfig({
+// withPwa 返回 Promise<UserConfigExport>；VitePress 在 resolveConfigExtends 里会 await 配置导出。
+// 它会链式包装 transformHead / buildEnd（不会覆盖 SEO head 与 katexGuard），
+// 并把 vite-plugin-pwa 加进 vite.plugins —— 所以这里不要再手动加 VitePWA()。
+export default withPwa(defineConfig({
   extends: teekConfig,
   lang: 'zh-CN',
   base: BASE,
@@ -37,6 +41,9 @@ export default defineConfig({
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}favicon-32.png` }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
+    // PWA 安装后浏览器 UI 的主色；manifest 由 withPwa 自动生成并注入 <link rel="manifest">，
+    // theme-color 只在启用 pwaAssets 时才自动注入，这里显式声明。
+    ['meta', { name: 'theme-color', content: '#ffffff' }],
     // 预连接外部资源，减少 DNS/TLS 握手延迟。
     // 只保留真正会请求的域：站点图片/头像在 static.lovetulin.cn，
     // 评论在 comments.lovetulin.cn；统计域只在正式构建里预连接（见下方条件）。
@@ -75,6 +82,123 @@ export default defineConfig({
   // 朋友圈页面本体在 @pages/momentsPage.md，02.moments/ 是纯数据目录。
   // 与 permalinks.ts 的 collectPages、teekConfig.ts 的 fileContentLoaderIgnore 三处口径一致
   srcExclude: ["superpowers/**", "04.随笔/02.moments/**"],
+  // PWA：可安装 + 离线 + 新版本提示刷新。见 @vite-pwa/vitepress 的 withPwa 包装。
+  // 关键约束：dist 有 359 个 HTML 共 43MB，不能全量预缓存；且 VitePress 的 HTML
+  // 是在 Vite closeBundle 之后才写出，withPwa 通过 VitePress buildEnd 生成 SW 才看得到完整 dist。
+  pwa: {
+    // 三种部署目标：生产 /、预览 /preview/、GitHub Pages /Notes-Atlas/，都由 BASE 派生。
+    base: BASE,
+    scope: BASE,
+    // 默认 outDir 是相对仓库根的 .vitepress/dist（错误路径），必须显式指到 docs/.vitepress/dist。
+    outDir: fileURLToPath(new URL('./dist', import.meta.url)),
+    registerType: 'prompt',
+    // VitePress 是 SSG，注册脚本必须由主题里动态 import('virtual:pwa-register') 完成，
+    // 不能用插件往 HTML 注入（transformIndexHtml 对 VitePress 不生效）。
+    injectRegister: null,
+    // 图标已由下面的 globPatterns 预缓存，避免插件再把 manifest icons
+    // 追加进 additionalManifestEntries 造成重复条目。
+    includeManifestIcons: false,
+    strategies: 'generateSW',
+    // dev server 有 HMR 内存泄漏 OOM 历史，PWA 只在构建时启用。
+    devOptions: { enabled: false },
+    manifest: {
+      id: BASE,
+      name: SITE_NAME,
+      short_name: 'Weno',
+      description: SITE_DESCRIPTION,
+      lang: 'zh-CN',
+      start_url: BASE,
+      scope: BASE,
+      display: 'standalone',
+      theme_color: '#ffffff',
+      background_color: '#ffffff',
+      // 相对路径：相对 manifest 所在目录解析，天然适配所有 base。
+      icons: [
+        { src: 'pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+        { src: 'pwa-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    },
+    workbox: {
+      // vite-plugin-pwa 默认 navigateFallback: 'index.html' 是 SPA 行为，会让 359 页 MPA
+      // 的每一次导航都被导到首页，必须禁用；页面改由下面的 NetworkFirst 规则按需缓存。
+      navigateFallback: null,
+      // 只预缓存「应用外壳」：入口 JS、主 CSS、字体、图标、离线页，约 2~3MB。
+      // 刻意不预缓存 359 个页面各自的 assets/*.md.*.js（700+ 个 / 14MB）、
+      // 43MB 页面 HTML、2.2MB 全站 metadata chunk、以及 mermaid/echarts 等按需 chunk，
+      // 这些改由下面的 CacheFirst 运行时规则在浏览到时才缓存（按需缓存）。
+      // 预缓存里的 assets/app*.js、assets/css/style-*.css 带内容哈希，hash 变化会让
+      // sw.js 内容变化 → 浏览器检测到新版本 → 触发 ReloadPrompt 的更新提示。
+      // 纯 markdown 改动不改 SW（此时在线用户本就由 NetworkFirst 直接拿到新内容）。
+      // 注意：index.html / vp-icons.css 是 VitePress 在 Vite closeBundle 之后才写出的，
+      // 放进 glob 会在插件的第一次（closeBundle）生成时报「glob 不匹配」警告；
+      // 它们改由运行时规则按需缓存。manifest.webmanifest 由插件自动加入预缓存，
+      // 显式写出来会重复。真正需要预缓存的只有离线页（precacheFallback 依赖它）。
+      globPatterns: [
+        'offline.html',
+        'assets/app*.js',
+        'assets/css/*.css',
+        'assets/woff2/*',
+        '*.{ico,png,svg}',
+      ],
+      cleanupOutdatedCaches: true,
+      // urlPattern 函数会被 toString() 写进 sw.js，函数体必须自包含，不能闭包引用外部变量。
+      runtimeCaching: [
+        {
+          urlPattern: ({ request, sameOrigin }) => sameOrigin && request.mode === 'navigate',
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'pages',
+            networkTimeoutSeconds: 3,
+            expiration: { maxEntries: 100, maxAgeSeconds: 604800 },
+            cacheableResponse: { statuses: [200] },
+            // 离线且该页未缓存时回退到独立离线页，而不是浏览器报错页。
+            precacheFallback: { fallbackURL: 'offline.html' },
+          },
+        },
+        {
+          // 未预缓存的站内静态资源（各页面 JS chunk、mermaid/echarts 懒加载 chunk、
+          // 根目录 vp-icons.css 等）：首次在线访问时缓存，之后离线可读。
+          // 用 request.destination 而非 URL 正则，才能覆盖不在 /assets/ 下的样式。
+          urlPattern: ({ request, sameOrigin }) => sameOrigin && (
+            request.destination === 'script'
+            || request.destination === 'style'
+            || request.destination === 'font'
+          ),
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'assets',
+            expiration: { maxEntries: 500, maxAgeSeconds: 2592000, purgeOnQuotaError: true },
+            cacheableResponse: { statuses: [200] },
+          },
+        },
+        {
+          // 站内本地图片（docs/public/2026/** 等）同样按需缓存，保证离线读已访问页时
+          // 图片不破图；单独一个缓存并限量，避免和上面的脚本 LRU 互相挤掉。
+          urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === 'image',
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'images',
+            expiration: { maxEntries: 150, maxAgeSeconds: 2592000, purgeOnQuotaError: true },
+            cacheableResponse: { statuses: [200] },
+          },
+        },
+        {
+          // 评论（comments.lovetulin.cn）与统计（stats.lovetulin.cn）刻意不列入，
+          // 动态内容不缓存；未匹配任何规则的请求默认直连网络。
+          urlPattern: ({ url }) => url.origin === 'https://static.lovetulin.cn'
+            || url.origin === 'https://cdn.jsdelivr.net',
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'cdn',
+            expiration: { maxEntries: 120, maxAgeSeconds: 2592000, purgeOnQuotaError: true },
+            cacheableResponse: { statuses: [0, 200] },
+          },
+        },
+      ],
+    },
+  },
   // 打包构建优化
   vite: {
     define: {
@@ -232,4 +356,4 @@ export default defineConfig({
       }
     },
   },
-})
+}))
