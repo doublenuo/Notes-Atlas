@@ -1,0 +1,118 @@
+name: Deploy preview
+
+# 预览站地址：https://blogs.lovetulin.cn/preview/
+# 触发方式：
+#   1. 推送到 preview 分支（推荐：重大改动先合到 preview）
+#   2. 在 Actions 页面手动 Run workflow，选择任意分支
+#   3. 仓库内 PR 的 open/synchronize/reopen（fork PR 没有 secrets，会自动跳过部署）
+#
+# 预览构建与生产共用同一套服务器 secrets，但：
+#   - base 改为 /preview/，部署到 /opt/blogs/preview/
+#   - 设置 VITEPRESS_PREVIEW=1：全站 noindex、关闭 Umami/浏览量统计、底部注入「预览版」角标
+# 生产部署的 rsync 会排除 preview/，所以发布正式站不会删掉预览站。
+
+on:
+  push:
+    branches: [preview]
+    paths:
+      - 'docs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/preview.yml'
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    # fork PR 拿不到部署 secrets，直接跳过，避免红叉
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          # sitemap.xml 的 lastmod 依赖完整 git 历史
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build preview site
+        env:
+          VITE_TWIKOO_ENV_ID: ${{ secrets.TWIKOO_ENV_ID }}
+          VITEPRESS_BASE: /preview/
+          VITEPRESS_PREVIEW: '1'
+        run: pnpm docs:build
+
+      - name: Check dead links
+        env:
+          VITEPRESS_BASE: /preview/
+        run: pnpm check:links
+
+      - name: Deploy preview to server
+        env:
+          DEPLOY_HOST: ${{ secrets.SERVER_HOST }}
+          DEPLOY_PORT: ${{ secrets.SERVER_PORT || 22 }}
+          DEPLOY_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          SSH="ssh -p $DEPLOY_PORT -i ~/.ssh/deploy_key -o ServerAliveInterval=15 -o ServerAliveCountMax=6"
+
+          # 预览目录与生产目录同级，Caddy 的 file_server 会直接按 /preview/ 子路径提供
+          $SSH "$DEPLOY_USER@$DEPLOY_HOST" 'mkdir -p /opt/blogs/preview'
+          for attempt in 1 2 3; do
+            if rsync -azc --delete --partial -e "$SSH" \
+                 docs/.vitepress/dist/ "$DEPLOY_USER@$DEPLOY_HOST:/opt/blogs/preview/"; then
+              break
+            fi
+            echo "rsync attempt $attempt failed, retrying..."
+            sleep 10
+          done
+          $SSH "$DEPLOY_USER@$DEPLOY_HOST" 'chown -R admin:admin /opt/blogs/preview || true'
+
+      - name: Verify preview is live and noindexed
+        run: |
+          for path in /preview/ /preview/sitemap.xml; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "https://blogs.lovetulin.cn$path")
+            echo "$path -> $code"
+            [ "$code" = "200" ] || { echo "preview health check failed: $path"; exit 1; }
+          done
+          curl -s https://blogs.lovetulin.cn/preview/ | grep -q 'noindex, nofollow' \
+            || { echo "preview page is missing noindex"; exit 1; }
+
+      - name: Write job summary
+        run: |
+          {
+            echo "### 预览站已部署"
+            echo ""
+            echo "- 地址：https://blogs.lovetulin.cn/preview/"
+            echo "- 分支/提交：\`${{ github.ref_name }}\` / \`${{ github.sha }}\`"
+            echo "- 本页已设置 noindex，且关闭了 Umami 与浏览量统计。"
+            echo "- 预览确认无误后，把改动合入 \`main\` 即触发正式发布。"
+          } >> "$GITHUB_STEP_SUMMARY"

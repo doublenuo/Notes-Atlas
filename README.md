@@ -94,6 +94,22 @@
 
 也许未来某一天，你会回来找一篇曾经救过你的笔记。
 
+## 🧪 预览部署
+
+重大改动先上预览，确认后再发生产：
+
+1. 把改动推到 `preview` 分支，或在 GitHub Actions 里手动运行 **Deploy preview**（可选择任意分支）
+2. 打开 <https://blogs.lovetulin.cn/preview/> 检查
+3. 预览没问题后合入 `main`，触发正式发布
+
+预览站和正式站同域不同路径，使用 `VITEPRESS_BASE=/preview/` 构建；预览构建会自动：
+
+* 全站 `noindex, nofollow`，不会被搜索引擎收录
+* 关闭 Umami 与会话录制，不污染生产统计
+* 页面左下角显示「预览版」角标
+
+生产发布时会跳过 `preview/` 目录，因此不会把预览站删掉。
+
 ---
 
 <p align="center">

@@ -54,6 +54,8 @@ jobs:
       #   -c        内容校验,跳过未变文件(每次只传真正改动的页面/哈希资源)
       #   --delete   清除服务端已不存在的旧页面(与 scp 拷贝式上传不同,避免"先清空"导致站点空窗)
       #   --partial  跨境链路抖动时保留半截文件,配合下面的重试
+      #   --exclude=preview/  preview.yml 把预览站部署到 /opt/blogs/preview/，
+      #                       生产发布必须保留它，否则 --delete 会把预览站删掉
       #   keepalive 长连接保活;慢带宽(约 1-10 Mbps)下大站首传可能数分钟,故重试 3 次
       - name: Deploy site to server
         env:
@@ -67,7 +69,7 @@ jobs:
           ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           SSH="ssh -p $DEPLOY_PORT -i ~/.ssh/deploy_key -o ServerAliveInterval=15 -o ServerAliveCountMax=6"
           for attempt in 1 2 3; do
-            if rsync -azc --delete --partial -e "$SSH" \
+            if rsync -azc --delete --partial --exclude=preview/ -e "$SSH" \
                  docs/.vitepress/dist/ "$DEPLOY_USER@$DEPLOY_HOST:/opt/blogs/"; then
               break
             fi

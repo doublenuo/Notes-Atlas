@@ -7,7 +7,7 @@ import { loadEnv } from "vite";
 // this imported theme config, so load the local env file explicitly.
 const localEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
 import { imageUrl } from "./plugins/imageSource.js";
-import { BANNER_IMAGE_URL, BASE } from "./site";
+import { BANNER_IMAGE_URL, BASE, IS_PREVIEW } from "./site";
 
 const formatNumericTitle = (value: unknown) => {
   const text = String(value ?? "").trim();
@@ -383,8 +383,9 @@ export const teekConfig = defineTeekConfig({
     statistics: {
       // 默认的 busuanzi 端点（busuanzi.ibruce.info）已失效（502/404），改用主题内置的 vercount
       provider: "vercount",
-      siteView: true,
-      pageView: true,
+      // 预览站不写入生产浏览量统计
+      siteView: !IS_PREVIEW,
+      pageView: !IS_PREVIEW,
       // vercount 脚本加载失败时 useUvPv 会 reject 且不重置 isGet，开启重试避免整页浏览量永久失效
       tryRequest: true,
       tryCount: 5,
@@ -581,7 +582,8 @@ export const teekConfig = defineTeekConfig({
     // 而 rewrites 产出的 HTML 只存在于 permalink 路径，会造成 404，故一并关掉。
     permalink: false,
   },
-  siteAnalytics: [
+  // 预览站关闭 Umami，避免测试流量污染生产统计
+  siteAnalytics: IS_PREVIEW ? [] : [
     {
       provider: "umami",
       options: {

@@ -17,7 +17,7 @@ import { execFileSync } from 'node:child_process';
 import matter from 'gray-matter';
 import { fileURLToPath } from 'node:url';
 import { buildRewrites, collectPages } from '../permalinks.ts';
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, OG_IMAGE, OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT, BANNER_IMAGE_URL } from '../site.ts';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, OG_IMAGE, OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT, BANNER_IMAGE_URL, IS_PREVIEW } from '../site.ts';
 
 /** docs/ 根目录：本文件在 docs/.vitepress/plugins/ 下，上溯三层即 docs/。 */
 const DEFAULT_DOCS_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -372,9 +372,11 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
   const robots =
     isRiskLink || is404
       ? 'noindex, nofollow'
-      : isPlaceholder
-        ? 'noindex, follow'
-        : 'index, follow, max-image-preview:large';
+      : IS_PREVIEW
+        ? 'noindex, nofollow'
+        : isPlaceholder
+          ? 'noindex, follow'
+          : 'index, follow, max-image-preview:large';
 
   // transformHead 的返回值必须是 head 数组，返回对象会报 head.some is not a function。
   // 标题不进这里：VitePress 的 title 由 frontmatter.title + config.titleTemplate 拼，

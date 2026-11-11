@@ -13,7 +13,7 @@ import { siteDataOptimize } from './plugins/siteDataOptimize'
 import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
 import { seo, buildHead } from './plugins/seo'
 import { rss } from './plugins/rss'
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE } from './site'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE, IS_PREVIEW } from './site'
 import { zhihuIcon, cnbIcon, emailIcon } from './socialIcons'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 
@@ -39,11 +39,10 @@ export default defineConfig({
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
     // 预连接外部资源，减少 DNS/TLS 握手延迟。
     // 只保留真正会请求的域：站点图片/头像在 static.lovetulin.cn，
-    // 评论在 comments.lovetulin.cn，统计在 stats.lovetulin.cn。
+    // 评论在 comments.lovetulin.cn；统计域只在正式构建里预连接（见下方条件）。
     // 旧的 googletagmanager / google-analytics 预连接已无对应脚本，移除可省 2 次握手。
     ['link', { rel: 'preconnect', href: 'https://static.lovetulin.cn' }],
     ['link', { rel: 'preconnect', href: 'https://comments.lovetulin.cn' }],
-    ['link', { rel: 'preconnect', href: 'https://stats.lovetulin.cn' }],
     ['link', { rel: 'preconnect', href: 'https://cdn.jsdelivr.net', crossorigin: 'anonymous' }],
     // 首页 Banner 背景图（LCP）的 preload 只对首页生效，放在 seo.ts 的 buildHead 里按页面注入，
     // 避免文章页也白下载 260KB 图片。
@@ -51,13 +50,23 @@ export default defineConfig({
     // 评论区的 KaTeX JS 由 Teek 的 CommentTwikoo 组件在评论区挂载时按需注入
     // （见 teekConfig.comment.options.katex）。这里不要再全局声明 KaTeX 资源，
     // 否则每个页面（包括没有公式和评论的首页/列表页）都会多加载一份。
-    ['script', { defer: '', src: 'https://stats.lovetulin.cn/recorder.js', 'data-website-id': '0406218e-b83d-4b3c-ad2f-2253eecaeb03' }],
+    // 预览站不加载 Umami 会话录制（siteAnalytics 也已在 teekConfig 中关闭）
+    ...(IS_PREVIEW ? [] : [
+      ['link', { rel: 'preconnect', href: 'https://stats.lovetulin.cn' }],
+      ['script', { defer: '', src: 'https://stats.lovetulin.cn/recorder.js', 'data-website-id': '0406218e-b83d-4b3c-ad2f-2253eecaeb03' }],
+    ] as any),
     // 内联 @page 规则：直接写入 HTML <head>，避免外部 CSS 打包顺序导致 Chrome headless 忽略
     ['style', { type: 'text/css' }, '@page { size: A4; margin: 15mm; }'],
   ],
   // canonical / og / twitter / description。buildHead 复用 permalinks 的 URL 体系，
   // 保证 permalink 页的 og:url 与实际地址一致（plugins 里的 transformHead 不会被 VitePress 调用）
   transformHead: ({ pageData }) => buildHead(pageData, SITE_URL, DOCS_ROOT),
+  // 预览站：所有页面注入「预览版」角标，方便和正式站区分；正文仍可正常点击/阅读
+  transformHtml(html) {
+    if (!IS_PREVIEW) return html
+    const badge = `<a class="na-preview-badge" data-pagefind-ignore href="${SITE_URL}/" target="_blank" rel="noopener" aria-label="这是预览版本，点击返回正式站">预览版 · 非正式发布</a><style>.na-preview-badge{position:fixed;left:16px;bottom:16px;z-index:2147483647;display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#f59e0b;color:#111827;font:600 12px/1.4 var(--vp-font-family-base,system-ui,sans-serif);text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:.92}.na-preview-badge:hover{opacity:1}@media print{.na-preview-badge{display:none}}</style>`
+    return html.replace('</body>', `${badge}</body>`)
+  },
   // 页面全部写完后检查 KaTeX 是否产出错误块（插件本身不会中断构建，见 plugins/mathGuard.js）
   buildEnd: katexGuard(),
   cleanUrls: true,

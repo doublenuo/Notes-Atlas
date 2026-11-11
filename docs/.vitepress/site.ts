@@ -16,6 +16,13 @@ export const SITE_URL = 'https://blogs.lovetulin.cn'
  */
 export const BASE = (process.env.VITEPRESS_BASE ?? '/').replace(/\/?$/, '/') || '/';
 
+/**
+ * 预览构建标记：`.github/workflows/preview.yml` 会设置
+ * `VITEPRESS_PREVIEW=1` 且 `VITEPRESS_BASE=/preview/`。
+ * 用途：预览站加 noindex、关闭统计/分析，并注入「预览版本」角标。
+ */
+export const IS_PREVIEW = process.env.VITEPRESS_PREVIEW === '1'
+
 /** 站点名，用于 og:site_name / 标题后缀。 */
 export const SITE_NAME = "Weno's Blog"
 
