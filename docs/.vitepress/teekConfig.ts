@@ -169,7 +169,13 @@ export const teekConfig = defineTeekConfig({
   comment: {
     provider: "twikoo",
     options: {
-      envId: process.env.VITE_TWIKOO_ENV_ID ?? process.env.TWIKOO_ENV_ID ?? localEnv.VITE_TWIKOO_ENV_ID ?? localEnv.TWIKOO_ENV_ID ?? "",
+      envId:
+        process.env.VITE_TWIKOO_ENV_ID ??
+        process.env.TWIKOO_ENV_ID ??
+        localEnv.VITE_TWIKOO_ENV_ID ??
+        localEnv.TWIKOO_ENV_ID ??
+        // 本地 .env 没有配置时回退到线上 Twikoo，保证留言板/文章评论区可用
+        "https://comments.lovetulin.cn",
       // 前端版本必须与云函数保持一致；all.min 包含 CloudBase SDK。
       version: "2.0.17",
       jsLink: "https://cdn.jsdelivr.net/npm/twikoo@{version}/dist/twikoo.all.min.js",

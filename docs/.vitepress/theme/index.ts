@@ -23,6 +23,7 @@ import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
 import FriendLinksPage from "./components/FriendLinksPage.vue";
+import GuestbookPage from "./components/GuestbookPage.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 import ReloadPrompt from "./components/ReloadPrompt.vue";
 
@@ -113,6 +114,11 @@ export default {
       const isLinksPage = computed(
         () => (page.value.frontmatter as { links?: boolean } | undefined)?.links === true,
       );
+      // frontmatter.guestbook === true 的页面（/guestbook）由自绘留言板接管，
+      // 评论也走组件内自己的 Twikoo 请求，不再渲染 Teek 默认评论区
+      const isGuestbookPage = computed(
+        () => (page.value.frontmatter as { guestbook?: boolean } | undefined)?.guestbook === true,
+      );
       let ribbonActive = false;
       // 记录当前是否已渲染，防止 start 重复调用：initRibbon 在 canvas 已存在时会返回空清理函数，
       // 会覆盖掉真正的清理函数，导致后续 stop 无法移除 canvas
@@ -186,7 +192,13 @@ export default {
         // 朋友圈时间线（frontmatter.moments === true 时生效）
         // 友链页（frontmatter.links === true 时生效）
         "page-top": () =>
-          isMomentsPage.value ? h(MomentsTimeline) : isLinksPage.value ? h(FriendLinksPage) : null,
+          isMomentsPage.value
+            ? h(MomentsTimeline)
+            : isLinksPage.value
+              ? h(FriendLinksPage)
+              : isGuestbookPage.value
+                ? h(GuestbookPage)
+                : null,
         // PWA：新版本 / 离线就绪提示（组件内部SSR安全，仅在客户端注册 SW）
         "layout-bottom": () => h(ReloadPrompt),
         "not-found": () => h(NotFound),
