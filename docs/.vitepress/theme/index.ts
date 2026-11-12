@@ -25,6 +25,9 @@ import MomentsTimeline from "./components/MomentsTimeline.vue";
 import FriendLinksPage from "./components/FriendLinksPage.vue";
 import GuestbookPage from "./components/GuestbookPage.vue";
 import RiskLinkPage from "./components/RiskLinkPage.vue";
+import ReadingNotesPage from "./components/ReadingNotesPage.vue";
+import YearReviewPage from "./components/YearReviewPage.vue";
+import ProjectsPage from "./components/ProjectsPage.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 import ReloadPrompt from "./components/ReloadPrompt.vue";
 
@@ -120,6 +123,18 @@ export default {
       const isGuestbookPage = computed(
         () => (page.value.frontmatter as { guestbook?: boolean } | undefined)?.guestbook === true,
       );
+      // 读书笔记 / 年终总结：frontmatter 标记为 true 的页面由自绘落地页接管，
+      // 两页都不再渲染文章头部、打赏、编辑链接和无关的「最近更新」列表。
+      const isReadingNotesPage = computed(
+        () => (page.value.frontmatter as { readingNotes?: boolean } | undefined)?.readingNotes === true,
+      );
+      const isYearReviewPage = computed(
+        () => (page.value.frontmatter as { yearReview?: boolean } | undefined)?.yearReview === true,
+      );
+      // 项目实践（/projects）由自绘项目档案页接管，避免显示文章头、打赏和无关的「最近更新」
+      const isProjectsPage = computed(
+        () => (page.value.frontmatter as { projects?: boolean } | undefined)?.projects === true,
+      );
       let ribbonActive = false;
       // 记录当前是否已渲染，防止 start 重复调用：initRibbon 在 canvas 已存在时会返回空清理函数，
       // 会覆盖掉真正的清理函数，导致后续 stop 无法移除 canvas
@@ -201,7 +216,13 @@ export default {
               ? h(FriendLinksPage)
               : isGuestbookPage.value
                 ? h(GuestbookPage)
-                : null,
+                : isReadingNotesPage.value
+                  ? h(ReadingNotesPage)
+                  : isYearReviewPage.value
+                    ? h(YearReviewPage)
+                    : isProjectsPage.value
+                      ? h(ProjectsPage)
+                      : null,
         // PWA：新版本 / 离线就绪提示（组件内部SSR安全，仅在客户端注册 SW）
         "layout-bottom": () => h(ReloadPrompt),
         "not-found": () => h(NotFound),
