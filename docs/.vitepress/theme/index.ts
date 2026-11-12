@@ -22,6 +22,7 @@ import "katex/dist/katex.min.css"; // 数学公式（构建期 KaTeX 输出，�
 import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
+import FriendLinksPage from "./components/FriendLinksPage.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 import ReloadPrompt from "./components/ReloadPrompt.vue";
 
@@ -107,6 +108,11 @@ export default {
       const isMomentsPage = computed(
         () => (page.value.frontmatter as { moments?: boolean } | undefined)?.moments === true,
       );
+      // frontmatter.links === true 的页面（友链 /contact）在 page-top 挂载友链页组件，
+      // 页面 md 只保留 frontmatter，数据在 data/friendLinks.ts 中维护
+      const isLinksPage = computed(
+        () => (page.value.frontmatter as { links?: boolean } | undefined)?.links === true,
+      );
       let ribbonActive = false;
       // 记录当前是否已渲染，防止 start 重复调用：initRibbon 在 canvas 已存在时会返回空清理函数，
       // 会覆盖掉真正的清理函数，导致后续 stop 无法移除 canvas
@@ -178,7 +184,9 @@ export default {
         // 分类/标签页同样使用 teek 首页布局，必须只在真正的站点首页渲染。
         "teek-home-after": () => (isHomePage.value ? h("h2", { class: "home-quotes-heading" }, "一些句子") : null),
         // 朋友圈时间线（frontmatter.moments === true 时生效）
-        "page-top": () => (isMomentsPage.value ? h(MomentsTimeline) : null),
+        // 友链页（frontmatter.links === true 时生效）
+        "page-top": () =>
+          isMomentsPage.value ? h(MomentsTimeline) : isLinksPage.value ? h(FriendLinksPage) : null,
         // PWA：新版本 / 离线就绪提示（组件内部SSR安全，仅在客户端注册 SW）
         "layout-bottom": () => h(ReloadPrompt),
         "not-found": () => h(NotFound),

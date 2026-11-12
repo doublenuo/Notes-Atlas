@@ -144,3 +144,7 @@ admin/server/.state/
 
 # brainstorming visual companion
 .superpowers/
+
+# 站点静态数据（友链等）：仅放行自己的配置，不影响 datasets 忽略规则
+!docs/.vitepress/data/
+!docs/.vitepress/data/friendLinks.ts
