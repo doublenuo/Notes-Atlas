@@ -24,6 +24,7 @@ import ArticleSponsor from "./components/ArticleSponsor.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
 import FriendLinksPage from "./components/FriendLinksPage.vue";
 import GuestbookPage from "./components/GuestbookPage.vue";
+import RiskLinkPage from "./components/RiskLinkPage.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 import ReloadPrompt from "./components/ReloadPrompt.vue";
 
@@ -189,6 +190,8 @@ export default {
         // VitePress 默认 features（index.md 里的书摘卡片）一个章节入口。
         // 分类/标签页同样使用 teek 首页布局，必须只在真正的站点首页渲染。
         "teek-home-after": () => (isHomePage.value ? h("h2", { class: "home-quotes-heading" }, "一些句子") : null),
+        // 外链安全提示页（frontmatter.riskLinkPage === true）由自定义页面接管样式
+        "teek-risk-link-page": () => h(RiskLinkPage),
         // 朋友圈时间线（frontmatter.moments === true 时生效）
         // 友链页（frontmatter.links === true 时生效）
         "page-top": () =>

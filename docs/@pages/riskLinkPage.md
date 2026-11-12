@@ -7,8 +7,7 @@ layout: false
 riskLinkPage: true
 logo: /tx.jpg
 name: Weno's Blog
-desc: 即将离开 Weno's Blog，请注意财产安全
-linkIllegal: 链接安全性校验中，请稍后 ...
+desc: 你即将离开 Weno's Blog，请确认目标地址可信，注意财产安全。
+linkIllegal: 目标地址缺失或格式不正确，已阻止跳转。
 article: false
 ---
-		
