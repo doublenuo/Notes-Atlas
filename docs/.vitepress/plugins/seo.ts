@@ -176,7 +176,10 @@ function buildSitemap(docsRoot, outDir) {
     const page = readPage(docsRoot, p.rel);
     // 空壳文章不进 sitemap（判定与 buildHead 的 noindex 同源，见 isPlaceholderPage）
     if (isPlaceholderPage(p.rel, page.data, page.content)) continue;
-    const loc = `${SITE_URL}/${p.url === 'index' ? '' : p.url}`.replace(/\/+$/, '') + '/';
+    // 首页保留根路径那一个斜杠；其余页面**不带**尾斜杠。
+    // 站内链接（VitePress cleanUrls）和部署侧 Caddy 的可访问地址都是 /xxx 形态，
+    // 给 <loc> 补尾斜杠会让 sitemap 里的每条 URL 都先吃一次 301（旧配置下直接 404）。
+    const loc = p.url === 'index' ? `${SITE_URL}/` : `${SITE_URL}/${p.url}`;
     const mod = lastmod(docsRoot, p.rel, page.data);
     urls.push(`  <url>\n    <loc>${escapeXml(loc)}</loc>${mod ? `\n    <lastmod>${mod}</lastmod>` : ''}\n  </url>`);
   }
@@ -223,8 +226,11 @@ function urlByRel(docsRoot) {
       const rewrites = buildRewrites(pages);
       for (const p of pages) {
         const clean = String(p.url).replace(/^\/+|\/+$/g, '');
-        // 首页映射到 /，其余补尾斜杠
-        const url = clean === 'index' ? '/' : '/' + clean + '/';
+        // 首页映射到 /，其余不带尾斜杠。
+        // 曾经这里给非首页补尾斜杠，于是 canonical / og:url 写的是 /moments/，而
+        // VitePress 产物是扁平的 moments.html、服务器只认 /moments —— 规范地址
+        // 指向了一个 404（或 301 中转），sitemap 里几百条 URL 同病。
+        const url = clean === 'index' ? '/' : '/' + clean;
         const rewritten = rewrites(p.rel);
         const norm = (k) => String(k ?? '').replace(/^\/+/, '');
         urlBy.set(norm(p.rel), url);
@@ -460,7 +466,7 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
         '@type': 'ListItem',
         position: i + 2,
         name,
-        item: siteUrl + '/' + segments.slice(0, i + 1).join('/') + '/',
+        item: siteUrl + '/' + segments.slice(0, i + 1).join('/'),
       });
     });
     tags.push([

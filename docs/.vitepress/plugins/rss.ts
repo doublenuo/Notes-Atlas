@@ -70,7 +70,9 @@ function buildRss(docsRoot: string) {
     .map((page) => {
       const article = readArticle(docsRoot, page.rel);
       if (!article) return null;
-      const link = `${SITE_URL}/${page.url.replace(/^\/+|\/+$/g, '')}/`;
+      // 不带尾斜杠：与 canonical / 站内链接同形。服务器对 /xxx/ 做 301 去斜杠，
+      // 订阅器里的链接若带斜杠，每次点开都要多一跳。
+      const link = `${SITE_URL}/${page.url.replace(/^\/+|\/+$/g, '')}`;
       return {
         date: article.date,
         xml: `    <item>
