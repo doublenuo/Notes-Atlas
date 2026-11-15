@@ -23,6 +23,13 @@ export const BASE = (process.env.VITEPRESS_BASE ?? '/').replace(/\/?$/, '/') || 
  */
 export const IS_PREVIEW = process.env.VITEPRESS_PREVIEW === '1'
 
+/**
+ * GitHub Pages 镜像构建标记：`.github/workflows/deploy.yml` 会设置
+ * `VITEPRESS_PAGES=1` 且 `VITEPRESS_BASE=/Notes-Atlas/`。
+ * GitHub Pages 无法共享主站 Cookie，因此镜像站改用 giscus，主站仍用 Twikoo。
+ */
+export const IS_PAGES = process.env.VITEPRESS_PAGES === '1'
+
 /** 站点名，用于 og:site_name / 标题后缀。 */
 export const SITE_NAME = "Weno's Blog"
 

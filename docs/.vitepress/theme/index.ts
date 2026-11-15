@@ -30,8 +30,16 @@ import YearReviewPage from "./components/YearReviewPage.vue";
 import ProjectsPage from "./components/ProjectsPage.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 import ReloadPrompt from "./components/ReloadPrompt.vue";
+import AuthNav from "./auth/AuthNav.vue";
+import AuthDialog from "./auth/AuthDialog.vue";
+import CommentAuth from "./auth/CommentAuth.vue";
+import GiscusNotice from "./auth/GiscusNotice.vue";
+import { initAuth } from "./auth/useAuth";
 
 import { useData, useRoute } from "vitepress";
+
+// 浏览器端只认 Vite 注入的变量，避免把 config.ts / site.ts 的 process.env 带进客户端。
+const IS_PAGES = import.meta.env.VITE_IS_PAGES === "1";
 
 // 贡献图（含 echarts）只在归档页的 slot 渲染时才拉取对应 chunk，避免全站预加载 ~365KB gzip
 const ContributeChart = defineAsyncComponent(() => import("./components/ContributeChart.vue"));
@@ -52,6 +60,7 @@ import "./styles/banner-mobile.scss"; // 手机端首页 Banner 网格壁纸变�
 import "./styles/banner-feature-card.scss"; // 首页 Banner 特性区卡片化（须在主题 CSS 之后）
 import "./styles/mobile-home.scss"; // 手机端首页/分类/标签/归档：信息密度与响应式布局（须在主题 CSS 之后）
 import "./styles/print.scss"; // 打印样式：导出 PDF 时只输出正文（须在主题 CSS 之后）
+import "./styles/auth.scss"; // 评论登录入口/弹窗/身份卡，以及 Twikoo 表单的登录门禁
 
 export default {
   extends: Teek,
@@ -96,6 +105,7 @@ export default {
         bannerMediaQuery = window.matchMedia("(max-width: 768px)");
         syncBannerDescStyle();
         bannerMediaQuery.addEventListener("change", syncBannerDescStyle);
+        if (!IS_PAGES) void initAuth();
       });
       onBeforeUnmount(() => {
         bannerMediaQuery?.removeEventListener("change", syncBannerDescStyle);
@@ -207,6 +217,15 @@ export default {
         "teek-home-after": () => (isHomePage.value ? h("h2", { class: "home-quotes-heading" }, "一些句子") : null),
         // 外链安全提示页（frontmatter.riskLinkPage === true）由自定义页面接管样式
         "teek-risk-link-page": () => h(RiskLinkPage),
+        // 导航栏登录/账号入口；登录弹窗挂在 layout-bottom，避免嵌套在导航 DOM 里
+        "nav-bar-content-after": () => (IS_PAGES ? null : h(AuthNav)),
+        // 主站文章评论区顶部显示登录身份；留言板/朋友圈使用各自的卡片。
+        // Pages 镜像走 giscus，不请求主站登录接口，只在缺少配置时给出提示。
+        "teek-comment-before": () => {
+          if (IS_PAGES) return h(GiscusNotice);
+          if (isGuestbookPage.value || isMomentsPage.value) return null;
+          return h(CommentAuth);
+        },
         // 朋友圈时间线（frontmatter.moments === true 时生效）
         // 友链页（frontmatter.links === true 时生效）
         "page-top": () =>
@@ -224,7 +243,7 @@ export default {
                       ? h(ProjectsPage)
                       : null,
         // PWA：新版本 / 离线就绪提示（组件内部SSR安全，仅在客户端注册 SW）
-        "layout-bottom": () => h(ReloadPrompt),
+        "layout-bottom": () => (IS_PAGES ? h(ReloadPrompt) : [h(ReloadPrompt), h(AuthDialog)]),
         "not-found": () => h(NotFound),
       });
     },

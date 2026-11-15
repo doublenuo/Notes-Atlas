@@ -1,0 +1,27 @@
+services:
+  auth-gateway:
+    build: .
+    image: notes-atlas-auth-gateway:latest
+    container_name: notes-atlas-auth-gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "8787"
+      DATABASE_PATH: /data/auth.db
+      TWIKOO_UPSTREAM: http://host.docker.internal:8080
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ./data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

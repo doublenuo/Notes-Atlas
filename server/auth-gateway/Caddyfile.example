@@ -1,0 +1,17 @@
+# 合并进现有 Caddyfile；不要整份替换。
+blogs.lovetulin.cn {
+	handle /api/auth/* {
+		reverse_proxy 127.0.0.1:8787
+	}
+	handle /twikoo-api* {
+		reverse_proxy 127.0.0.1:8787
+	}
+	# 其余保持原有静态站点配置，例如：
+	# root * /opt/blogs
+	# file_server
+	# try_files {path} {path}.html {path}/index.html
+}
+
+comments.lovetulin.cn {
+	reverse_proxy 127.0.0.1:8787
+}

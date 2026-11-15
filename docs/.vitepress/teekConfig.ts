@@ -7,7 +7,7 @@ import { loadEnv } from "vite";
 // this imported theme config, so load the local env file explicitly.
 const localEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
 import { imageUrl } from "./plugins/imageSource.js";
-import { BANNER_IMAGE_URL, BASE, IS_PREVIEW } from "./site";
+import { BANNER_IMAGE_URL, BASE, IS_PAGES, IS_PREVIEW } from "./site";
 
 const formatNumericTitle = (value: unknown) => {
   const text = String(value ?? "").trim();
@@ -166,33 +166,68 @@ export const teekConfig = defineTeekConfig({
       defaultValue: true,
     },
   },
-  comment: {
-    provider: "twikoo",
-    options: {
-      envId:
-        process.env.VITE_TWIKOO_ENV_ID ??
-        process.env.TWIKOO_ENV_ID ??
-        localEnv.VITE_TWIKOO_ENV_ID ??
-        localEnv.TWIKOO_ENV_ID ??
-        // 本地 .env 没有配置时回退到线上 Twikoo，保证留言板/文章评论区可用
-        "https://comments.lovetulin.cn",
-      // 前端版本必须与云函数保持一致；all.min 包含 CloudBase SDK。
-      version: "2.0.17",
-      jsLink: "https://cdn.jsdelivr.net/npm/twikoo@{version}/dist/twikoo.all.min.js",
-      lang: "zh-CN",
-      katex: {
-        // 正文的 KaTeX 样式已由 theme/index.ts 全局引入（katex.min.css），
-        // 评论区只需 katex.min.js / auto-render 提供 window.katex 与 renderMathInElement。
-        // 这里用空 data URI 阻止组件再注入一份 CDN CSS：旧版 0.12 的 CSS 会覆盖正文
-        // 0.16 的字体度量，让文章里的公式在评论挂载后发生重排。
-        cssLink: "data:text/css,",
-        coreJsLink: "https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.js",
-        coreJsIntegrity: "sha384-CwjPRVHTvLiMBFjEoij+QZViMV5rhTOIp7CJzl24JEqpRDA1sJFHVXXLURktbYYp",
-        renderJsLink: "https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/contrib/auto-render.min.js",
-        renderJsIntegrity: "sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz",
+  comment: IS_PAGES
+    ? {
+        provider: "giscus",
+        options: {
+          repo: process.env.VITE_GISCUS_REPO ?? localEnv.VITE_GISCUS_REPO ?? "",
+          repoId: process.env.VITE_GISCUS_REPO_ID ?? localEnv.VITE_GISCUS_REPO_ID ?? "",
+          category: process.env.VITE_GISCUS_CATEGORY ?? localEnv.VITE_GISCUS_CATEGORY ?? "",
+          categoryId:
+            process.env.VITE_GISCUS_CATEGORY_ID ?? localEnv.VITE_GISCUS_CATEGORY_ID ?? "",
+          mapping: "pathname",
+          strict: "0",
+          reactionsEnabled: "1",
+          emitMetadata: "0",
+          inputPosition: "top",
+          lang: "zh-CN",
+          loading: "lazy",
+        },
+      }
+    : {
+        provider: "twikoo",
+        options: {
+          // 同源网关：Cookie 随请求自动发送，未登录/未验证邮箱的提交由网关拒绝。
+          // Twikoo 客户端只接受绝对 URL，开发环境用 Vite proxy 指向本地网关。
+          envId:
+            process.env.VITE_TWIKOO_ENV_ID ??
+            process.env.TWIKOO_ENV_ID ??
+            localEnv.VITE_TWIKOO_ENV_ID ??
+            localEnv.TWIKOO_ENV_ID ??
+            (process.env.NODE_ENV === "development"
+              ? "http://localhost:5173/twikoo-api"
+              : "https://blogs.lovetulin.cn/twikoo-api"),
+          // 前端版本必须与云函数保持一致；all.min 包含 CloudBase SDK。
+          version: "2.0.17",
+          jsLink: "https://cdn.jsdelivr.net/npm/twikoo@{version}/dist/twikoo.all.min.js",
+          lang: "zh-CN",
+          // 第一道客户端门禁：未登录时抛出可读错误并唤起登录弹窗；
+          // 网关仍会以会话身份覆盖 nick/mail，前端的值不可信。
+          onSubmit: async (twikooData: { nick?: string; mail?: string }) => {
+            const user = (globalThis as { __WENO_AUTH_USER__?: { nick?: string; email?: string } })
+              .__WENO_AUTH_USER__;
+            if (!user) {
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("weno:auth-required"));
+              }
+              throw new Error("请先登录后评论");
+            }
+            twikooData.nick = user.nick;
+            twikooData.mail = user.email;
+          },
+          katex: {
+            // 正文的 KaTeX 样式已由 theme/index.ts 全局引入（katex.min.css），
+            // 评论区只需 katex.min.js / auto-render 提供 window.katex 与 renderMathInElement。
+            // 这里用空 data URI 阻止组件再注入一份 CDN CSS：旧版 0.12 的 CSS 会覆盖正文
+            // 0.16 的字体度量，让文章里的公式在评论挂载后发生重排。
+            cssLink: "data:text/css,",
+            coreJsLink: "https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.js",
+            coreJsIntegrity: "sha384-CwjPRVHTvLiMBFjEoij+QZViMV5rhTOIp7CJzl24JEqpRDA1sJFHVXXLURktbYYp",
+            renderJsLink: "https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/contrib/auto-render.min.js",
+            renderJsIntegrity: "sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz",
+          },
+        },
       },
-    }
-  },
   // appreciation: {
   //   position: "doc-after-popper",
   //   options: {

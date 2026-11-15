@@ -62,7 +62,6 @@ jobs:
 
       - name: Build preview site
         env:
-          VITE_TWIKOO_ENV_ID: ${{ secrets.TWIKOO_ENV_ID }}
           VITEPRESS_BASE: /preview/
           VITEPRESS_PREVIEW: '1'
         run: pnpm docs:build

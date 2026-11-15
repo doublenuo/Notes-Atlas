@@ -14,7 +14,7 @@ import { siteDataOptimize } from './plugins/siteDataOptimize'
 import { docAnalysisEmbed } from './plugins/docAnalysisEmbed'
 import { seo, buildHead } from './plugins/seo'
 import { rss } from './plugins/rss'
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE, IS_PREVIEW } from './site'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, BASE, IS_PAGES, IS_PREVIEW } from './site'
 import { zhihuIcon, cnbIcon, emailIcon } from './socialIcons'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 
@@ -41,6 +41,13 @@ export default withPwa(defineConfig({
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}favicon-32.png` }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` }],
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
+    // 主站/预览站评论需要登录：在首屏 CSS 解析前标记 pending，避免 Twikoo 异步挂载时
+    // 匿名用户短暂看到可提交表单（initAuth 完成后会移除）。Pages 镜像用 giscus，不需要。
+    ...(IS_PAGES ? [] : [[
+      'script',
+      {},
+      'document.documentElement.classList.add("auth-pending")',
+    ]] as any),
     // PWA 安装后浏览器 UI 的主色；manifest 由 withPwa 自动生成并注入 <link rel="manifest">，
     // theme-color 只在启用 pwaAssets 时才自动注入，这里显式声明。
     ['meta', { name: 'theme-color', content: '#ffffff' }],
@@ -241,6 +248,17 @@ export default withPwa(defineConfig({
     },
     // 开发服务器优化
     server: {
+      // 本地联调 auth-gateway：同源请求转发到 127.0.0.1:8787，Cookie/Origin 行为与生产一致。
+      proxy: {
+        '/api': {
+          target: 'http://127.0.0.1:8787',
+          changeOrigin: false,
+        },
+        '/twikoo-api': {
+          target: 'http://127.0.0.1:8787',
+          changeOrigin: false,
+        },
+      },
       warmup: {
         clientFiles: ['./**/*.md'],
       },

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
 import { withBase, useData } from 'vitepress'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useAuth } from '../auth/useAuth'
 
 type Moment = {
   /** 文件名（不含 .md），用作评论归属的稳定 ID */
@@ -279,9 +280,7 @@ const MOMENTS_COMMENT_PATH = '/moments'
  * 线上评论服务地址。正常构建会从 teekConfig.comment.options.envId 注入；
  * 本地 .env 没有该变量时回退到这里，保证 dev 下也能联调评论。
  */
-const FALLBACK_TWIKOO_ENDPOINT = 'https://comments.lovetulin.cn'
-const TWIKOO_TOKEN_KEY = 'moments-twikoo-token'
-const NICKNAME_KEY = 'moments-nickname'
+const FALLBACK_TWIKOO_ENDPOINT = 'https://blogs.lovetulin.cn/twikoo-api'
 const COMMENT_MARKER_RE = /^\[\[moment:([^\]]+)\]\]\s*/
 
 const twikooEndpoint = computed(() => {
@@ -292,18 +291,7 @@ const twikooEndpoint = computed(() => {
   return typeof envId === 'string' && envId ? envId : FALLBACK_TWIKOO_ENDPOINT
 })
 
-let accessToken = ''
 let configReady = false
-
-const readAccessToken = () => {
-  if (accessToken) return accessToken
-  try {
-    accessToken = localStorage.getItem(TWIKOO_TOKEN_KEY) || ''
-  } catch {
-    // ignore
-  }
-  return accessToken
-}
 
 const twikooCall = async (
   event: string,
@@ -311,7 +299,6 @@ const twikooCall = async (
 ): Promise<{
   code?: number
   message?: string
-  accessToken?: string
   id?: string
   data?: TwikooComment[]
 }> => {
@@ -326,7 +313,6 @@ const twikooCall = async (
     body: JSON.stringify({
       event,
       envId: endpoint,
-      accessToken: readAccessToken(),
       ...payload,
     }),
   })
@@ -338,17 +324,7 @@ const twikooCall = async (
   const result = (await response.json()) as {
     code?: number
     message?: string
-    accessToken?: string
-    data?: TwikooComment[]
-  }
-
-  if (typeof result.accessToken === 'string' && result.accessToken) {
-    accessToken = result.accessToken
-    try {
-      localStorage.setItem(TWIKOO_TOKEN_KEY, accessToken)
-    } catch {
-      // ignore
-    }
+      data?: TwikooComment[]
   }
 
   if (typeof result.code === 'number' && result.code !== 0) {
@@ -418,55 +394,55 @@ const loadComments = async () => {
 // ---------------------------------------------------------------------------
 // 评论输入
 // ---------------------------------------------------------------------------
+const { user, openLogin } = useAuth()
 const composerId = ref<string | null>(null)
 const composerText = ref('')
-const nickname = ref('')
 const submittingId = ref('')
 const composerError = ref('')
 const composerTextInput = ref<HTMLInputElement | null>(null)
-const composerNickInput = ref<HTMLInputElement | null>(null)
+const pendingMomentId = ref<string | null>(null)
 const setComposerText = (el: unknown) => { composerTextInput.value = (el as HTMLInputElement | null) ?? null }
-const setComposerNick = (el: unknown) => { composerNickInput.value = (el as HTMLInputElement | null) ?? null }
 
 const openComposer = async (moment: Moment) => {
+  if (!user.value) {
+    pendingMomentId.value = moment.id
+    openLogin('登录后即可评论')
+    return
+  }
+  pendingMomentId.value = null
   composerId.value = moment.id
   composerText.value = ''
   composerError.value = ''
-  if (!nickname.value) {
-    try {
-      nickname.value = localStorage.getItem(NICKNAME_KEY) || ''
-    } catch {
-      // ignore
-    }
-  }
   await nextTick()
-  if (!nickname.value) composerNickInput.value?.focus()
-  else composerTextInput.value?.focus()
+  composerTextInput.value?.focus()
 }
+
+// 登录成功后自动回到刚才想评论的那条朋友圈，不用再点一次
+watch(user, async (current) => {
+  if (!current || !pendingMomentId.value) return
+  const id = pendingMomentId.value
+  pendingMomentId.value = null
+  const moment = moments.value.find((item) => item.id === id)
+  if (moment) await openComposer(moment)
+})
 
 const closeComposer = () => {
   composerId.value = null
   composerError.value = ''
 }
 
-const saveNickname = (value: string) => {
-  try {
-    localStorage.setItem(NICKNAME_KEY, value)
-  } catch {
-    // ignore
-  }
-}
-
 const submitComment = async (moment: Moment) => {
   if (submittingId.value) return
 
-  const text = composerText.value.trim()
-  const nick = nickname.value.trim()
-
-  if (!nick) {
-    composerError.value = '请先填写昵称'
+  const current = user.value
+  if (!current) {
+    openLogin('登录后即可评论')
     return
   }
+
+  const text = composerText.value.trim()
+  const nick = current.nick
+
   if (!text) {
     composerError.value = '写点什么再发送吧'
     return
@@ -480,7 +456,7 @@ const submitComment = async (moment: Moment) => {
     const result = await twikooCall('COMMENT_SUBMIT', {
       url: MOMENTS_COMMENT_PATH,
       nick,
-      mail: '',
+      mail: current.email,
       comment: `[[moment:${moment.id}]] ${text}`,
       ua: navigator.userAgent,
     })
@@ -497,7 +473,6 @@ const submitComment = async (moment: Moment) => {
       ...commentsByMoment.value,
       [moment.id]: [...commentsFor(moment.id), optimistic],
     }
-    saveNickname(nick)
     composerText.value = ''
     composerId.value = null
     void loadComments()
@@ -512,11 +487,6 @@ const lightbox = ref<string | null>(null)
 
 onMounted(() => {
   loadLikes()
-  try {
-    nickname.value = localStorage.getItem(NICKNAME_KEY) || ''
-  } catch {
-    // ignore
-  }
   void loadComments()
 })
 </script>
@@ -677,16 +647,10 @@ onMounted(() => {
         </div>
 
         <form v-if="composerId === moment.id" class="moment-composer" @submit.prevent="submitComment(moment)">
+          <div class="moment-composer__identity">
+            以 <strong>{{ user?.nick }}</strong> 评论 · 邮箱已验证
+          </div>
           <div class="moment-composer__row">
-            <input
-              v-model="nickname"
-              :ref="setComposerNick"
-              class="moment-composer__nick"
-              type="text"
-              maxlength="20"
-              placeholder="昵称"
-              aria-label="昵称"
-            />
             <input
               :ref="setComposerText"
               v-model="composerText"
@@ -1228,13 +1192,22 @@ onMounted(() => {
   background: var(--vp-c-bg-soft);
 }
 
+.moment-composer__identity {
+  margin: 0 2px 7px;
+  color: var(--vp-c-text-3);
+  font-size: 11px;
+}
+
+.moment-composer__identity strong {
+  color: var(--vp-c-text-2);
+}
+
 .moment-composer__row {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.moment-composer__nick,
 .moment-composer__text {
   min-width: 0;
   padding: 6px 10px;
@@ -1248,14 +1221,8 @@ onMounted(() => {
   transition: border-color 0.2s ease;
 }
 
-.moment-composer__nick:focus,
 .moment-composer__text:focus {
   border-color: var(--vp-c-brand-1);
-}
-
-.moment-composer__nick {
-  flex: 0 0 76px;
-  width: 76px;
 }
 
 .moment-composer__text {
@@ -1406,11 +1373,6 @@ onMounted(() => {
   .moment-action {
     min-height: 30px;
     padding: 5px 5px;
-  }
-
-  .moment-composer__nick {
-    flex-basis: 66px;
-    width: 66px;
   }
 
   .moment-composer__send {
