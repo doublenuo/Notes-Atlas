@@ -185,8 +185,15 @@ function createEmbedRule(md, resolveNote) {
     md.block.parse(
       note.content,
       md,
-      // 每层新建 env 与栈数组：递归绝不回写外层，兄弟嵌入各自独立栈
-      { ...state.env, naEmbedStack: [...stack, found.absPath] },
+      // 每层新建 env 与栈数组：递归绝不回写外层，兄弟嵌入各自独立栈。
+      // footnotes 例外：必须与外层共用同一对象，嵌入笔记里的 [^n]: 定义才能被外层
+      // footnote_tail 收拢到文末；否则 footnote_reference_open/close 残留，
+      // 渲染成 <> / </>，Vue 模板报 "End tag name was expected" 直接中断构建。
+      {
+        ...state.env,
+        footnotes: (state.env.footnotes ??= { refs: {} }),
+        naEmbedStack: [...stack, found.absPath],
+      },
       embedded
     );
     for (const t of embedded) state.tokens.push(t);

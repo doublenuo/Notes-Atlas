@@ -73,6 +73,15 @@ test("真实库集成：Multi-Loco 嵌入（组会页实际用法）", async () 
   assert.match(html, /<h2[^>]*>Multi-Loco: Unifying/, "H1 应降级为 H2 且文本锚定正确");
 });
 
+test("嵌入：脚注定义不残留空标签，统一收拢到文末脚注区", async () => {
+  const md = await makeMd(VAULT);
+  const html = md.render("![[Footnote]]");
+  assert.ok(!html.includes("<>"), "不应残留 <> 空标签：" + html);
+  assert.ok(html.includes('class="footnote-ref"'), "嵌入内的 [^1] 应渲染为上标引用");
+  assert.ok(html.includes('class="footnotes"'), "文末应生成脚注区");
+  assert.ok(html.includes("脚注定义内容"), "脚注定义应保留");
+});
+
 test("嵌入：围栏内 # 注释不被降级，外部标题照常降级", async () => {
   const md = await makeMd(VAULT);
   const html = md.render("![[Fence]]");
