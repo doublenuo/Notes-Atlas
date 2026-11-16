@@ -98,11 +98,11 @@ jobs:
       - name: Verify preview is live and noindexed
         run: |
           for path in /preview/ /preview/about /preview/sitemap.xml; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "https://blogs.lovetulin.cn$path")
+            code=$(curl -sL -o /dev/null -w '%{http_code}' "https://blogs.lovetulin.cn$path")
             echo "$path -> $code"
             [ "$code" = "200" ] || { echo "preview health check failed: $path"; exit 1; }
           done
-          curl -s https://blogs.lovetulin.cn/preview/ | grep -q 'noindex, nofollow' \
+          curl -sL https://blogs.lovetulin.cn/preview/ | grep -q 'noindex, nofollow' \
             || { echo "preview page is missing noindex"; exit 1; }
 
       - name: Write job summary
