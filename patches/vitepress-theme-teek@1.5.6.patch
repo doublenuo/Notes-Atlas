@@ -1,5 +1,22 @@
+diff --git a/es/components/theme/ArchivesPage/src/index.vue2.mjs b/es/components/theme/ArchivesPage/src/index.vue2.mjs
+index 824261a74dbdbcdabbb123eea8ea639a1886e81e..994a2ec632b3192fdb4f7aaca13ca3cdc34c69ba 100644
+--- a/es/components/theme/ArchivesPage/src/index.vue2.mjs
++++ b/es/components/theme/ArchivesPage/src/index.vue2.mjs
+@@ -126,7 +126,11 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+                           (openBlock(true), createElementBlock(
+                             Fragment,
+                             null,
+-                            renderList(monthPosts, (p, month) => {
++                            // 月份 key 为补零字符串：10/11/12 会被 JS 当作数组索引提前升序枚举，
++                            // 01-09 则按插入顺序排在后面，导致 10月/11月 跑到 09月 前面。
++                            // 显式按月份数字倒序枚举，不依赖对象键顺序。
++                            renderList(Object.keys(monthPosts).sort((a, b) => Number(b) - Number(a)), (month) => {
++                              const p = monthPosts[month];
+                               return openBlock(), createElementBlock(
+                                 Fragment,
+                                 { key: month },
 diff --git a/es/components/theme/CommentTwikoo/src/index.vue2.mjs b/es/components/theme/CommentTwikoo/src/index.vue2.mjs
-index aedfb68f0c7a975fc3870046d771a14583d5baa0..d1c54f5308ba86ca75105af99e2a0ef469958577 100644
+index aedfb68f0c7a975fc3870046d771a14583d5baa0..7d111ed3ae0eb6f2c6b8ef21dccff2de8701c55c 100644
 --- a/es/components/theme/CommentTwikoo/src/index.vue2.mjs
 +++ b/es/components/theme/CommentTwikoo/src/index.vue2.mjs
 @@ -27,18 +27,45 @@ var _sfc_main = /* @__PURE__ */ defineComponent({

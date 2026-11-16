@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   vitepress-theme-teek@1.5.6:
-    hash: 7f3568426c10b1b88bb1e7e8ded559cc8a61db51be7153f93c3076f05abe9cf2
+    hash: ee13e41e46b39e92fd865912a6fef3c0506beb6f84572f779377c2b4ebf96f08
     path: patches/vitepress-theme-teek@1.5.6.patch
 
 importers:
@@ -64,7 +64,7 @@ importers:
         version: 0.4.27(pagefind@1.6.0)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3)(terser@5.51.2))(vue@3.5.33)
       vitepress-theme-teek:
         specifier: ^1.5.6
-        version: 1.5.6(patch_hash=7f3568426c10b1b88bb1e7e8ded559cc8a61db51be7153f93c3076f05abe9cf2)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3)(terser@5.51.2))(vue@3.5.33)
+        version: 1.5.6(patch_hash=ee13e41e46b39e92fd865912a6fef3c0506beb6f84572f779377c2b4ebf96f08)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3)(terser@5.51.2))(vue@3.5.33)
       vue:
         specifier: 3.5.33
         version: 3.5.33
@@ -6754,7 +6754,7 @@ snapshots:
       picocolors: 1.1.1
       vitepress: 1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3)(terser@5.51.2)
 
-  vitepress-theme-teek@1.5.6(patch_hash=7f3568426c10b1b88bb1e7e8ded559cc8a61db51be7153f93c3076f05abe9cf2)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3)(terser@5.51.2))(vue@3.5.33):
+  vitepress-theme-teek@1.5.6(patch_hash=ee13e41e46b39e92fd865912a6fef3c0506beb6f84572f779377c2b4ebf96f08)(vitepress@1.6.4(@algolia/client-search@5.51.0)(@types/node@26.6.4)(markdown-it-mathjax3@4.3.2)(postcss@8.5.10)(sass-embedded@1.99.0)(sass@1.99.0)(search-insights@2.17.3)(terser@5.51.2))(vue@3.5.33):
     dependencies:
       '@iconify/vue': 4.3.0(vue@3.5.33)
       gray-matter: 4.0.3
