@@ -25,6 +25,13 @@ html.auth-logged-in #twikoo .tk-meta-input {
   margin-left: 8px;
 }
 
+/* 桌面端把账号入口排到主题增强按钮之后，保证头像始终在最右侧 */
+@media (min-width: 769px) {
+  .VPNavBar .content-body > .weno-auth-nav {
+    order: 1;
+  }
+}
+
 .weno-auth-nav__skeleton {
   display: inline-block;
   width: 52px;
