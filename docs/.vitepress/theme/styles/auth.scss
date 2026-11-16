@@ -31,6 +31,19 @@ html.auth-logged-in #twikoo .tk-meta-input {
     order: 1;
   }
 
+  /* 与左侧主题设置按钮之间加一条细分隔线 */
+  html.auth-logged-in .VPNavBar .content-body > .weno-auth-nav::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -5px;
+    width: 1px;
+    height: 20px;
+    background: var(--vp-c-divider);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
   .weno-auth-nav__name {
     display: none;
   }
