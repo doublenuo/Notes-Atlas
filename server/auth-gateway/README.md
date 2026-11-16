@@ -88,6 +88,7 @@ Twikoo 的 `8080` 端口不要暴露公网；安全组只放行 80/443。
 
 ### GitHub OAuth App
 
+- 必须在 **Settings → Developer settings → OAuth Apps** 创建，不要创建 GitHub App：GitHub App 的 `scope` 不生效，且需要单独授予 Email addresses 权限，否则 `/user/emails` 返回 403。
 - Homepage URL：`https://blogs.lovetulin.cn`
 - Authorization callback URL：`https://blogs.lovetulin.cn/api/auth/github/callback`
 - 把 Client ID / Client Secret 写入服务器 `.env`；

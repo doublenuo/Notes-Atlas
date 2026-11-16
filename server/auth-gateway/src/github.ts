@@ -60,7 +60,10 @@ export class GithubClient {
       signal: AbortSignal.timeout(15_000),
     });
     if (!response.ok) {
-      throw new GithubError(`GitHub API 请求失败（${response.status}）`);
+      const detail = await response.text().catch(() => '');
+      throw new GithubError(
+        `GitHub API 请求失败（${response.status} ${path}）${detail ? `：${detail.slice(0, 240)}` : ''}`,
+      );
     }
     return response.json();
   }
