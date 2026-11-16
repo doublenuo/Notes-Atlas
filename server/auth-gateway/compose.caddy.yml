@@ -1,0 +1,12 @@
+# 当 Caddy 与 Twikoo 已通过外部 Docker 网络 caddy-network 互联时使用：
+#   docker compose -f compose.yml -f compose.caddy.yml up -d --build
+services:
+  auth-gateway:
+    environment:
+      TWIKOO_UPSTREAM: http://twikoo:8080
+    networks:
+      - caddy-network
+
+networks:
+  caddy-network:
+    external: true

@@ -63,6 +63,14 @@ docker compose logs -f
 
 容器内监听 `0.0.0.0:8787`，但 compose 只把端口发布到宿主机 `127.0.0.1:8787`。数据库位于 `./data/auth.db`，不要提交到 Git。
 
+如果 Caddy 和 Twikoo 已经位于同一个外部 Docker 网络（例如 `caddy-network`），使用：
+
+```bash
+docker compose -f compose.yml -f compose.caddy.yml up -d --build
+```
+
+此时网关通过 `http://twikoo:8080` 访问 Twikoo，不需要把 8080 暴露到宿主机；Caddy 中也应写 `reverse_proxy auth-gateway:8787`，而不是 `127.0.0.1:8787`。
+
 Caddy 参考 `Caddyfile.example`，把其中两条路由合并进现有站点配置：
 
 - `blogs.lovetulin.cn`：`/api/auth/*` 与 `/twikoo-api*` 反代到 `127.0.0.1:8787`，其余仍由静态文件服务；
