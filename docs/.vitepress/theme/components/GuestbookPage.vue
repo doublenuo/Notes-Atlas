@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useData, withBase } from 'vitepress'
+import { maskEmail } from '../auth/client'
+import { useAuth } from '../auth/useAuth'
 
 interface TwikooComment {
   id?: string
@@ -48,18 +50,15 @@ interface WallComment {
 interface TwikooResponse {
   code?: number
   message?: string
-  accessToken?: string
   data?: TwikooComment[] | { url?: string }
   count?: number
 }
 
 const { theme } = useData()
+const { user, ready: authReady, openLogin } = useAuth()
 
-const FALLBACK_TWIKOO_ENDPOINT = 'https://comments.lovetulin.cn'
+const FALLBACK_TWIKOO_ENDPOINT = 'https://blogs.lovetulin.cn/twikoo-api'
 const COMMENT_URL = '/guestbook'
-const TOKEN_KEY = 'guestbook-twikoo-token'
-const NICK_KEY = 'guestbook-nick'
-const MAIL_KEY = 'guestbook-mail'
 const WEBSITE_KEY = 'guestbook-website'
 const MAX_COMMENT = 1000
 const MAX_IMAGES = 4
@@ -73,18 +72,7 @@ const twikooEndpoint = computed(() => {
   return typeof envId === 'string' && envId ? envId : FALLBACK_TWIKOO_ENDPOINT
 })
 
-let accessToken = ''
 let configReady = false
-
-const readToken = () => {
-  if (accessToken) return accessToken
-  try {
-    accessToken = localStorage.getItem(TOKEN_KEY) || ''
-  } catch {
-    // ignore
-  }
-  return accessToken
-}
 
 const twikooCall = async (
   event: string,
@@ -99,7 +87,6 @@ const twikooCall = async (
     body: JSON.stringify({
       event,
       envId: endpoint,
-      accessToken: readToken(),
       ...payload,
     }),
   })
@@ -107,15 +94,6 @@ const twikooCall = async (
   if (!response.ok) throw new Error(`留言服务返回 ${response.status}`)
 
   const result = (await response.json()) as TwikooResponse
-
-  if (typeof result.accessToken === 'string' && result.accessToken) {
-    accessToken = result.accessToken
-    try {
-      localStorage.setItem(TOKEN_KEY, accessToken)
-    } catch {
-      // ignore
-    }
-  }
 
   if (typeof result.code === 'number' && result.code !== 0) {
     throw new Error(result.message || '留言服务暂不可用')
@@ -145,91 +123,9 @@ const decodeText = (input: string) => {
     .trim()
 }
 
-// 轻量 MD5：仅用于把 QQ 邮箱转成 WeAvatar 可识别的哈希，避免在评论里暴露 QQ 号
-const md5 = (input: string): string => {
-  const bytes = new TextEncoder().encode(input)
-  const length = bytes.length
-  const bitLength = length * 8
-  const padded = new Uint8Array((((length + 8) >> 6) + 1) * 64)
-  padded.set(bytes)
-  padded[length] = 0x80
-
-  const view = new DataView(padded.buffer)
-  view.setUint32(padded.length - 8, bitLength >>> 0, true)
-  view.setUint32(padded.length - 4, Math.floor(bitLength / 0x100000000), true)
-
-  const shifts = [
-    7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-    5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
-    4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-    6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
-  ]
-  const constants = new Uint32Array(64)
-  for (let i = 0; i < 64; i += 1) {
-    constants[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 2 ** 32)
-  }
-
-  let a0 = 0x67452301
-  let b0 = 0xefcdab89
-  let c0 = 0x98badcfe
-  let d0 = 0x10325476
-
-  for (let offset = 0; offset < padded.length; offset += 64) {
-    const words = new Uint32Array(16)
-    for (let i = 0; i < 16; i += 1) words[i] = view.getUint32(offset + i * 4, true)
-
-    let a = a0
-    let b = b0
-    let c = c0
-    let d = d0
-
-    for (let i = 0; i < 64; i += 1) {
-      let f: number
-      let g: number
-      if (i < 16) {
-        f = (b & c) | (~b & d)
-        g = i
-      } else if (i < 32) {
-        f = (d & b) | (~d & c)
-        g = (5 * i + 1) % 16
-      } else if (i < 48) {
-        f = b ^ c ^ d
-        g = (3 * i + 5) % 16
-      } else {
-        f = c ^ (b | ~d)
-        g = (7 * i) % 16
-      }
-
-      const sum = (f + a + constants[i] + words[g]) >>> 0
-      a = d
-      d = c
-      c = b
-      b = (b + ((sum << shifts[i]) | (sum >>> (32 - shifts[i])))) >>> 0
-    }
-
-    a0 = (a0 + a) >>> 0
-    b0 = (b0 + b) >>> 0
-    c0 = (c0 + c) >>> 0
-    d0 = (d0 + d) >>> 0
-  }
-
-  return [a0, b0, c0, d0]
-    .flatMap((value) => {
-      const bytes = [
-        value & 0xff,
-        (value >>> 8) & 0xff,
-        (value >>> 16) & 0xff,
-        (value >>> 24) & 0xff,
-      ]
-      return bytes.map((byte) => byte.toString(16).padStart(2, '0'))
-    })
-    .join('')
-}
-
 const weavatarUrl = (hash: string, size = 80) =>
   `https://weavatar.com/avatar/${hash}?d=mp&s=${size}`
 
-const QQ_MD5_RE = /\[\/\/\]:\s*#\s*\(qqmd5:([a-f0-9]{32})\)\s*/i
 
 const safeHttpUrl = (value: string) => {
   const raw = value.trim()
@@ -284,14 +180,12 @@ const loadError = ref('')
 const toWallComment = (raw: TwikooComment, parentId = '', rootId = ''): WallComment | null => {
   if (raw.isSpam) return null
   const rawComment = String(raw.comment || '')
-  const qqHash = rawComment.match(QQ_MD5_RE)?.[1] || ''
-  const segments = parseComment(rawComment.replace(QQ_MD5_RE, ''))
+  const segments = parseComment(rawComment)
   if (!segments.length) return null
 
   const id = String(raw.id || `${raw.created || 0}-${raw.nick || ''}`)
   const mailMd5 = String(raw.mailMd5 || '')
-  const avatar = String(raw.avatar || '')
-    || (qqHash ? weavatarUrl(qqHash) : mailMd5 ? weavatarUrl(mailMd5) : '')
+  const avatar = String(raw.avatar || '') || (mailMd5 ? weavatarUrl(mailMd5) : '')
 
   return {
     id,
@@ -397,37 +291,20 @@ const metaDevice = (comment: { os: string; browser: string }) => {
   return normalizeOs(comment.os) || normalizeBrowser(comment.browser) || '未知设备'
 }
 
-const nickname = ref('')
-const mail = ref('')
 const website = ref('')
 const content = ref('')
 const submitting = ref(false)
 const uploading = ref(false)
 const formError = ref('')
 const formSuccess = ref('')
-const qqAvatarFailed = ref(false)
 const attachments = ref<{ url: string; name: string }[]>([])
 const lightbox = ref<{ url: string; alt: string } | null>(null)
-const nicknameInput = ref<HTMLInputElement | null>(null)
-const mailInput = ref<HTMLInputElement | null>(null)
 const websiteInput = ref<HTMLInputElement | null>(null)
 const contentInput = ref<HTMLTextAreaElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 let successTimer: ReturnType<typeof setTimeout> | undefined
 
-const qqNumber = computed(() => {
-  const match = mail.value.trim().match(/^([1-9][0-9]{4,10})@qq\.com$/i)
-  return match?.[1] || ''
-})
-
-const qqAvatar = computed(() =>
-  qqNumber.value ? `https://thirdqq.qlogo.cn/g?b=sdk&nk=${qqNumber.value}&s=140` : '',
-)
-
-const onMailInput = () => {
-  formError.value = ''
-  qqAvatarFailed.value = false
-}
+const maskedEmail = computed(() => (user.value ? maskEmail(user.value.email) : ''))
 
 const emojis = ['👋', '😊', '💡', '❤️', '🎉', '🌿']
 
@@ -528,27 +405,18 @@ const openLightbox = (url: string, alt: string) => {
 const submitComment = async () => {
   if (submitting.value) return
 
-  const nick = nickname.value.trim()
-  const email = mail.value.trim()
+  const current = user.value
+  if (!current) {
+    openLogin('登录后即可留言')
+    return
+  }
+
+  const nick = current.nick
+  const email = current.email
   const site = normalizeWebsite(website.value)
   const text = content.value.trim()
 
   formSuccess.value = ''
-  if (!nick) {
-    formError.value = '先留个昵称吧，方便我回复你。'
-    nicknameInput.value?.focus()
-    return
-  }
-  if (!email) {
-    formError.value = '留下邮箱吧，用于生成头像（不会公开）。'
-    mailInput.value?.focus()
-    return
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    formError.value = '邮箱格式好像不太对。'
-    mailInput.value?.focus()
-    return
-  }
   if (website.value.trim() && !site) {
     formError.value = '网址格式好像不太对，试试 https://example.com。'
     websiteInput.value?.focus()
@@ -572,9 +440,7 @@ const submitComment = async () => {
     const imageMarkdown = attachments.value
       .map((item) => `![${item.name.replace(/[\[\]]/g, ' ')}](${item.url})`)
       .join('\n')
-    const qqHash = qqNumber.value ? md5(email.toLowerCase()) : ''
-    const qqMarker = qqHash ? `[//]: # (qqmd5:${qqHash})` : ''
-    const commentBody = [qqMarker, text, imageMarkdown].filter(Boolean).join('\n\n')
+    const commentBody = [text, imageMarkdown].filter(Boolean).join('\n\n')
 
     await twikooCall('COMMENT_SUBMIT', {
       url: COMMENT_URL,
@@ -586,8 +452,6 @@ const submitComment = async () => {
     })
 
     try {
-      localStorage.setItem(NICK_KEY, nick)
-      localStorage.setItem(MAIL_KEY, email)
       localStorage.setItem(WEBSITE_KEY, site)
     } catch {
       // ignore
@@ -614,12 +478,28 @@ const replyError = ref('')
 const replying = ref(false)
 const replyInput = ref<HTMLTextAreaElement | null>(null)
 
+const pendingReply = ref<WallComment | null>(null)
+
 const openReply = (comment: WallComment) => {
+  if (!user.value) {
+    pendingReply.value = comment
+    openLogin('登录后即可回复')
+    return
+  }
+  pendingReply.value = null
   replyTarget.value = comment
   replyText.value = ''
   replyError.value = ''
   void nextTick(() => replyInput.value?.focus())
 }
+
+watch(user, (current) => {
+  if (current && pendingReply.value) {
+    const target = pendingReply.value
+    pendingReply.value = null
+    openReply(target)
+  }
+})
 
 const cancelReply = () => {
   replyTarget.value = null
@@ -631,23 +511,17 @@ const submitReply = async () => {
   const target = replyTarget.value
   if (!target || replying.value) return
 
-  const nick = nickname.value.trim()
-  const email = mail.value.trim()
+  const current = user.value
+  if (!current) {
+    openLogin('登录后即可回复')
+    return
+  }
+
+  const nick = current.nick
+  const email = current.email
   const text = replyText.value.trim()
 
   replyError.value = ''
-  if (!nick) {
-    replyError.value = '先留个昵称吧。'
-    return
-  }
-  if (!email) {
-    replyError.value = '留下邮箱吧，用于生成头像（不会公开）。'
-    return
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    replyError.value = '邮箱格式好像不太对。'
-    return
-  }
   if (!text) {
     replyError.value = '写点什么再发送吧。'
     return
@@ -656,9 +530,7 @@ const submitReply = async () => {
   replying.value = true
   try {
     await ensureConfig()
-    const qqHash = qqNumber.value ? md5(email.toLowerCase()) : ''
-    const qqMarker = qqHash ? `[//]: # (qqmd5:${qqHash})` : ''
-    const commentBody = [qqMarker, text].filter(Boolean).join('\n\n')
+    const commentBody = text
 
     await twikooCall('COMMENT_SUBMIT', {
       url: COMMENT_URL,
@@ -672,8 +544,6 @@ const submitReply = async () => {
     })
 
     try {
-      localStorage.setItem(NICK_KEY, nick)
-      localStorage.setItem(MAIL_KEY, email)
       localStorage.setItem(WEBSITE_KEY, normalizeWebsite(website.value))
     } catch {
       // ignore
@@ -695,8 +565,6 @@ const onKeydown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   try {
-    nickname.value = localStorage.getItem(NICK_KEY) || ''
-    mail.value = localStorage.getItem(MAIL_KEY) || ''
     website.value = localStorage.getItem(WEBSITE_KEY) || ''
   } catch {
     // ignore
@@ -775,35 +643,33 @@ onBeforeUnmount(() => {
           <div class="guestbook-form-head">
             <p class="guestbook-eyebrow">LEAVE A NOTE</p>
             <h2 id="guestbook-form-title">写点什么</h2>
-            <p>昵称和网址会显示在留言墙，邮箱不会公开。</p>
+            <p>登录后即可留言；昵称会显示在留言墙，邮箱不会公开。</p>
           </div>
 
-          <form class="guestbook-form" novalidate @submit.prevent="submitComment">
+          <div v-if="!authReady" class="guestbook-auth-state" role="status">
+            正在检查登录状态…
+          </div>
+          <div v-else-if="!user" class="guestbook-auth-card">
+            <div>
+              <strong>登录后留言</strong>
+              <p>使用 GitHub 或邮箱验证码登录，一次登录即可在全站评论。</p>
+            </div>
+            <button type="button" class="guestbook-submit" @click="openLogin('登录后即可留言')">
+              登录
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+
+          <form v-else class="guestbook-form" novalidate @submit.prevent="submitComment">
+            <div class="guestbook-identity">
+              <span class="guestbook-identity__avatar" aria-hidden="true">{{ user.nick.slice(0, 1) }}</span>
+              <div>
+                <strong>以 {{ user.nick }} 留言</strong>
+                <p>{{ maskedEmail }} · 邮箱已验证</p>
+              </div>
+            </div>
+
             <div class="guestbook-fields">
-              <label class="guestbook-field">
-                <span>昵称 <em>*</em></span>
-                <input
-                  ref="nicknameInput"
-                  v-model="nickname"
-                  type="text"
-                  maxlength="20"
-                  autocomplete="nickname"
-                  placeholder="怎么称呼你？"
-                  @input="formError = ''"
-                />
-              </label>
-              <label class="guestbook-field">
-                <span>邮箱 <em>*</em></span>
-                <input
-                  ref="mailInput"
-                  v-model="mail"
-                  type="email"
-                  maxlength="100"
-                  autocomplete="email"
-                  placeholder="不公开，用于头像"
-                  @input="onMailInput"
-                />
-              </label>
               <label class="guestbook-field">
                 <span>网址</span>
                 <input
@@ -816,15 +682,6 @@ onBeforeUnmount(() => {
                   @input="formError = ''"
                 />
               </label>
-              <p v-if="qqAvatar && !qqAvatarFailed" class="guestbook-qq-hint">
-                <img
-                  :src="qqAvatar"
-                  alt=""
-                  referrerpolicy="no-referrer"
-                  @error="qqAvatarFailed = true"
-                />
-                已识别 QQ 邮箱，将使用这个头像
-              </p>
             </div>
 
             <label class="guestbook-field guestbook-field--message">
@@ -903,7 +760,7 @@ onBeforeUnmount(() => {
             <p v-if="formSuccess" class="guestbook-form__success" role="status">{{ formSuccess }}</p>
           </form>
 
-          <p class="guestbook-form__note">邮箱只用于生成头像，不会公开展示；网址会显示在昵称旁。请保持友善。</p>
+          <p class="guestbook-form__note">邮箱仅用于评论身份验证，不会公开；网址会显示在昵称旁。请保持友善。</p>
         </section>
       </div>
 
@@ -1061,38 +918,29 @@ onBeforeUnmount(() => {
                   <span>回复 <strong>@{{ replyTarget.nick }}</strong></span>
                   <button type="button" @click="cancelReply">取消</button>
                 </div>
-                <div v-if="!nickname.trim() || !mail.trim()" class="guestbook-reply-form__identity">
-                  <input
-                    v-model="nickname"
-                    type="text"
-                    maxlength="20"
-                    autocomplete="nickname"
-                    placeholder="昵称 *"
+                <div v-if="!user" class="guestbook-reply-form__login">
+                  登录状态已失效，请重新登录后再回复。
+                  <button type="button" @click="openLogin('登录后即可回复')">登录</button>
+                </div>
+                <template v-else>
+                  <div class="guestbook-reply-form__identity-note">
+                    以 <strong>{{ user.nick }}</strong> 回复 · 邮箱已验证
+                  </div>
+                  <textarea
+                    ref="replyInput"
+                    v-model="replyText"
+                    :maxlength="MAX_COMMENT"
+                    rows="3"
+                    :placeholder="`回复 @${replyTarget.nick}…`"
                     @input="replyError = ''"
                   />
-                  <input
-                    v-model="mail"
-                    type="email"
-                    maxlength="100"
-                    autocomplete="email"
-                    placeholder="邮箱 *（不公开）"
-                    @input="onMailInput"
-                  />
-                </div>
-                <textarea
-                  ref="replyInput"
-                  v-model="replyText"
-                  :maxlength="MAX_COMMENT"
-                  rows="3"
-                  :placeholder="`回复 @${replyTarget.nick}…`"
-                  @input="replyError = ''"
-                />
-                <div class="guestbook-reply-form__bottom">
-                  <span>{{ replyText.length }} / {{ MAX_COMMENT }}</span>
-                  <button type="submit" :disabled="replying">
-                    {{ replying ? '发送中…' : '发送回复' }}
-                  </button>
-                </div>
+                  <div class="guestbook-reply-form__bottom">
+                    <span>{{ replyText.length }} / {{ MAX_COMMENT }}</span>
+                    <button type="submit" :disabled="replying">
+                      {{ replying ? '发送中…' : '发送回复' }}
+                    </button>
+                  </div>
+                </template>
                 <p v-if="replyError" class="guestbook-form__error" role="alert">{{ replyError }}</p>
               </form>
             </div>
@@ -1379,6 +1227,84 @@ onBeforeUnmount(() => {
   gap: 10px;
 }
 
+.guestbook-form > .guestbook-fields {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.guestbook-auth-state {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 13px;
+  color: var(--vp-c-text-2);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.guestbook-auth-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--vp-c-brand-1) 4%, var(--vp-c-bg));
+}
+
+.guestbook-auth-card strong {
+  color: var(--vp-c-text-1);
+  font-size: 13.5px;
+}
+
+.guestbook-auth-card p {
+  margin: 5px 0 0;
+  color: var(--vp-c-text-3);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.guestbook-auth-card .guestbook-submit {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.guestbook-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--vp-c-brand-1) 4%, var(--vp-c-bg));
+}
+
+.guestbook-identity__avatar {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--vp-c-brand-1);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  place-items: center;
+}
+
+.guestbook-identity strong {
+  display: block;
+  color: var(--vp-c-text-1);
+  font-size: 12.5px;
+}
+
+.guestbook-identity p {
+  margin: 3px 0 0;
+  color: var(--vp-c-text-3);
+  font-size: 10.5px;
+}
+
 .guestbook-field {
   display: grid;
   gap: 6px;
@@ -1522,6 +1448,40 @@ onBeforeUnmount(() => {
 .guestbook-form__success {
   background: color-mix(in srgb, #22c55e 10%, transparent);
   color: #15803d;
+}
+
+.guestbook-reply-form__identity-note {
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--vp-c-brand-1) 5%, var(--vp-c-bg));
+  color: var(--vp-c-text-3);
+  font-size: 11px;
+}
+
+.guestbook-reply-form__identity-note strong {
+  color: var(--vp-c-text-2);
+}
+
+.guestbook-reply-form__login {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--vp-c-brand-1) 5%, var(--vp-c-bg));
+  color: var(--vp-c-text-3);
+  font-size: 11px;
+}
+
+.guestbook-reply-form__login button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--vp-c-brand-1);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
 }
 
 .guestbook-form__note {
@@ -1913,22 +1873,7 @@ onBeforeUnmount(() => {
   transform: scale(1.015);
 }
 
-.guestbook-qq-hint {
-  display: flex;
-  grid-column: 1 / -1;
-  gap: 7px;
-  align-items: center;
-  margin: 0;
-  color: var(--vp-c-text-3);
-  font-size: 11.5px;
-}
 
-.guestbook-qq-hint img {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-}
 
 .guestbook-attachments {
   display: flex;
@@ -2195,6 +2140,15 @@ onBeforeUnmount(() => {
   .guestbook-submit {
     order: 3;
     flex: 0 0 100%;
+    width: 100%;
+  }
+
+  .guestbook-auth-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .guestbook-auth-card .guestbook-submit {
     width: 100%;
   }
 

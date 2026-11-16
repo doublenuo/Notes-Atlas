@@ -141,6 +141,7 @@ docs/public/admin/
 admin/server/.env
 admin/server/.state/
 !admin/server/.env.example
+!server/auth-gateway/.env.example
 
 # brainstorming visual companion
 .superpowers/

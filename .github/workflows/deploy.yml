@@ -46,8 +46,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build VitePress site
-        env:
-          VITE_TWIKOO_ENV_ID: ${{ secrets.TWIKOO_ENV_ID }}
         run: pnpm docs:build
 
       # 用 rsync over SSH 增量发布(不用 scp-action):
@@ -80,10 +78,16 @@ jobs:
 
       - name: Build site for GitHub Pages
         env:
-          VITE_TWIKOO_ENV_ID: ${{ secrets.TWIKOO_ENV_ID }}
+          VITEPRESS_BASE: /Notes-Atlas/
+          VITEPRESS_PAGES: '1'
+          VITE_IS_PAGES: '1'
+          VITE_GISCUS_REPO: ${{ vars.GISCUS_REPO }}
+          VITE_GISCUS_REPO_ID: ${{ vars.GISCUS_REPO_ID }}
+          VITE_GISCUS_CATEGORY: ${{ vars.GISCUS_CATEGORY }}
+          VITE_GISCUS_CATEGORY_ID: ${{ vars.GISCUS_CATEGORY_ID }}
         run: |
           rm -rf docs/.vitepress/dist
-          VITEPRESS_BASE=/Notes-Atlas/ pnpm docs:build
+          pnpm docs:build
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
