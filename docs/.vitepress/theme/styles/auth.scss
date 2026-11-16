@@ -31,12 +31,16 @@ html.auth-logged-in #twikoo .tk-meta-input {
     order: 1;
   }
 
-  /* 与左侧主题设置按钮之间加一条细分隔线 */
+  /* 与左侧主题设置按钮保持对称间距，并加一条细分隔线 */
+  html.auth-logged-in .VPNavBar .content-body > .tk-theme-enhance {
+    transform: translateX(-4px);
+  }
+
   html.auth-logged-in .VPNavBar .content-body > .weno-auth-nav::before {
     content: '';
     position: absolute;
     top: 50%;
-    left: -5px;
+    left: -6px;
     width: 1px;
     height: 20px;
     background: var(--vp-c-divider);
