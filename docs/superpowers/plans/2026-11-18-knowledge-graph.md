@@ -4,7 +4,7 @@ title: 2026-11-18-knowledge-graph
 ---
 # 知识网络（反向链接与相关笔记）实现计划
 
-> **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
+> **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [x]`）语法来跟踪进度。
 
 **目标：** 构建期为每篇正文页生成「相关笔记」与「被引用」，通过 `transformPageData` 注入页面数据，在文末 `doc-after` 插槽 SSR 渲染，零客户端请求。
 
@@ -37,7 +37,7 @@ title: 2026-11-18-knowledge-graph
 - 创建：`docs/.vitepress/plugins/knowledgeGraph.ts`
 - 创建：`tests/knowledge-graph.test.mjs`
 
-- [ ] **步骤 1：编写失败的测试**
+- [x] **步骤 1：编写失败的测试**
 
 创建 `tests/knowledge-graph.test.mjs`：
 
@@ -76,13 +76,13 @@ test("ownProseLength：剔除独立行嵌入后计数", () => {
 });
 ```
 
-- [ ] **步骤 2：运行测试验证失败**
+- [x] **步骤 2：运行测试验证失败**
 
 运行：`node --test tests/knowledge-graph.test.mjs`
 
 预期：FAIL，`ERR_MODULE_NOT_FOUND`（`knowledgeGraph.ts` 不存在）。
 
-- [ ] **步骤 3：编写最少实现**
+- [x] **步骤 3：编写最少实现**
 
 创建 `docs/.vitepress/plugins/knowledgeGraph.ts`：
 
@@ -148,13 +148,13 @@ export function ownProseLength(src: string): number {
 }
 ```
 
-- [ ] **步骤 4：运行测试验证通过**
+- [x] **步骤 4：运行测试验证通过**
 
 运行：`node --test tests/knowledge-graph.test.mjs`
 
 预期：PASS（5 个测试）。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add docs/.vitepress/plugins/knowledgeGraph.ts tests/knowledge-graph.test.mjs
@@ -170,7 +170,7 @@ git commit -m "feat: 添加知识网络链接扫描工具"
 - 修改：`docs/.vitepress/permalinks.ts:101`
 - 修改：`tests/knowledge-graph.test.mjs`（替换 import、加 helper 与反链测试）
 
-- [ ] **步骤 1：追加失败的测试**
+- [x] **步骤 1：追加失败的测试**
 
 把 `tests/knowledge-graph.test.mjs` 顶部的 import 替换为：
 
@@ -300,13 +300,13 @@ test("buildKnowledgeGraph：无关系页面返回空结构", () => {
 });
 ```
 
-- [ ] **步骤 2：运行测试验证失败**
+- [x] **步骤 2：运行测试验证失败**
 
 运行：`node --test tests/knowledge-graph.test.mjs`
 
 预期：FAIL，`buildKnowledgeGraph is not a function` 或模块导出缺失。
 
-- [ ] **步骤 3：实现元数据与反链**
+- [x] **步骤 3：实现元数据与反链**
 
 在 `docs/.vitepress/permalinks.ts:101` 把：
 
@@ -490,13 +490,13 @@ function build(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
 
 > 说明：本任务先交付反链，`related` 暂时为空数组；任务 3 用 TDD 补上相关度评分。
 
-- [ ] **步骤 4：运行测试验证通过**
+- [x] **步骤 4：运行测试验证通过**
 
 运行：`node --test tests/knowledge-graph.test.mjs`
 
 预期：PASS（12 个测试）。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add docs/.vitepress/permalinks.ts docs/.vitepress/plugins/knowledgeGraph.ts tests/knowledge-graph.test.mjs
@@ -511,7 +511,7 @@ git commit -m "feat: 构建知识网络反链索引"
 - 修改：`docs/.vitepress/plugins/knowledgeGraph.ts`（追加 `rankRelated` 并接入 `build`）
 - 修改：`tests/knowledge-graph.test.mjs`（追加相关笔记测试）
 
-- [ ] **步骤 1：追加失败的测试**
+- [x] **步骤 1：追加失败的测试**
 
 在 `tests/knowledge-graph.test.mjs` 末尾追加：
 
@@ -578,13 +578,13 @@ test("buildKnowledgeGraph：相关笔记最多 5 条", () => {
 });
 ```
 
-- [ ] **步骤 2：运行测试验证失败**
+- [x] **步骤 2：运行测试验证失败**
 
 运行：`node --test tests/knowledge-graph.test.mjs`
 
 预期：FAIL，新增的 5 个测试因 `related` 恒为空而失败。
 
-- [ ] **步骤 3：实现评分**
+- [x] **步骤 3：实现评分**
 
 在 `docs/.vitepress/plugins/knowledgeGraph.ts` 的 `toNoteRef` 之后、`buildKnowledgeGraph` 之前插入：
 
@@ -673,13 +673,13 @@ function rankRelated(meta: PageMeta, candidates: PageMeta[], tagDf: Map<string, 
   return graph;
 ```
 
-- [ ] **步骤 4：运行测试验证通过**
+- [x] **步骤 4：运行测试验证通过**
 
 运行：`node --test tests/knowledge-graph.test.mjs`
 
 预期：PASS（33 个测试）。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add docs/.vitepress/plugins/knowledgeGraph.ts tests/knowledge-graph.test.mjs
@@ -695,7 +695,7 @@ git commit -m "feat: 计算相关笔记并输出可解释原因"
 - 修改：`docs/.vitepress/config.ts:27-28`（建图）
 - 修改：`docs/.vitepress/config.ts:88-94`（注册钩子）
 
-- [ ] **步骤 1：接入**
+- [x] **步骤 1：接入**
 
 在 `docs/.vitepress/config.ts` 的 `permalinks` import 之后加：
 
@@ -721,7 +721,7 @@ const KNOWLEDGE = buildKnowledgeGraph(DOCS_ROOT, PAGES)
   },
 ```
 
-- [ ] **步骤 2：验证真实库索引规模**
+- [x] **步骤 2：验证真实库索引规模**
 
 运行：
 
@@ -742,13 +742,13 @@ console.log({
 
 预期：`pages: 362`；`withBacklinks` > 0；`withRelated` 为数百；无异常抛出。数值记入 PR 说明。
 
-- [ ] **步骤 3：验证构建通过**
+- [x] **步骤 3：验证构建通过**
 
 运行：`pnpm docs:build`
 
 预期：构建成功（exit 0），无 `[knowledgeGraph]` 告警。
 
-- [ ] **步骤 4：验证页面数据已注入**
+- [x] **步骤 4：验证页面数据已注入**
 
 运行：
 
@@ -758,7 +758,7 @@ grep -rl 'connections' docs/.vitepress/dist/assets --include='*.js' | head -5
 
 预期：能列出若干 `.md.<hash>.js` 页面 chunk。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add docs/.vitepress/config.ts
@@ -774,7 +774,7 @@ git commit -m "feat: 将知识网络索引注入页面数据"
 - 修改：`docs/.vitepress/theme/index.ts:23`（import）
 - 修改：`docs/.vitepress/theme/index.ts:214`（插槽）
 
-- [ ] **步骤 1：创建组件**
+- [x] **步骤 1：创建组件**
 
 创建 `docs/.vitepress/theme/components/ArticleConnections.vue`：
 
@@ -910,7 +910,7 @@ const hrefOf = (item: NoteRef) => withBase(item.url)
 </style>
 ```
 
-- [ ] **步骤 2：注册到插槽**
+- [x] **步骤 2：注册到插槽**
 
 在 `docs/.vitepress/theme/index.ts:23` 的 `import ArticleSponsor from "./components/ArticleSponsor.vue";` 之后加：
 
@@ -925,7 +925,7 @@ import ArticleConnections from "./components/ArticleConnections.vue";
         "doc-after": () => h(ArticleConnections),
 ```
 
-- [ ] **步骤 3：构建并验证 SSR 输出**
+- [x] **步骤 3：构建并验证 SSR 输出**
 
 运行：`pnpm docs:build`
 
@@ -938,13 +938,13 @@ grep -rl 'na-knowledge' docs/.vitepress/dist --include='*.html' | head -3
 
 预期：数量 > 100；随便挑一个打开，HTML 中能看到「相关笔记」与链接，而不是仅存在于 JS 里。
 
-- [ ] **步骤 4：全量测试**
+- [x] **步骤 4：全量测试**
 
 运行：`pnpm test`
 
 预期：全部 PASS，无回归。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add docs/.vitepress/theme/components/ArticleConnections.vue docs/.vitepress/theme/index.ts
@@ -958,7 +958,7 @@ git commit -m "feat: 文末展示相关笔记与被引用"
 **文件：**
 - 只读验证，必要时修 bug
 
-- [ ] **步骤 1：确认空关系页面不输出 DOM**
+- [x] **步骤 1：确认空关系页面不输出 DOM**
 
 在 `grep -rl 'na-knowledge'` 的结果里找一个使用了 `layout: page` 的功能页（如 `dist/articles.html`）：
 
@@ -968,7 +968,7 @@ grep -c 'na-knowledge' docs/.vitepress/dist/articles.html
 
 预期：`0`。
 
-- [ ] **步骤 2：确认反链页面种类齐全**
+- [x] **步骤 2：确认反链页面种类齐全**
 
 ```bash
 grep -rl '被引用' docs/.vitepress/dist --include='*.html' | head -5
@@ -976,15 +976,15 @@ grep -rl '被引用' docs/.vitepress/dist --include='*.html' | head -5
 
 预期：能列出实际有反链的页面；再对比任务 4 步骤 2 的 `withBacklinks` 数量。
 
-- [ ] **步骤 3：确认无 hydration 报错**
+- [x] **步骤 3：确认无 hydration 报错**
 
 运行 `pnpm docs:dev`，打开一个含「相关笔记」的页面，浏览器控制台应无 hydration mismatch 警告。检查完关闭 dev server。
 
-- [ ] **步骤 4：确认构建体积与耗时没有异常增长**
+- [x] **步骤 4：确认构建体积与耗时没有异常增长**
 
 对比构建输出总大小（改动前 43MB 左右），新增应小于 1MB。
 
-- [ ] **步骤 5：如有修复则 Commit**
+- [x] **步骤 5：如有修复则 Commit**
 
 ```bash
 git add -A
