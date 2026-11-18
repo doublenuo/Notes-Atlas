@@ -118,6 +118,10 @@ Twikoo 的 `8080` 端口不要暴露公网；安全组只放行 80/443。
 - 生产日志不记录验证码、邮箱或 token；仅 `SMTP_DRY_RUN=true` 的本地调试会打印邮箱与验证码。
 - 管理员也走统一登录，不使用 Twikoo admin token 旁路。
 
+## Twikoo 反垃圾配置
+
+所有评论者都已经过网关登录与邮箱验证，Twikoo 自身的 Akismet 自动反垃圾应当关闭（`AKISMET_KEY` 置空）。否则 Akismet 可能把正常回复——尤其是短回复或连续回复——标记为 `isSpam`，而 Twikoo 的访客 `COMMENT_GET` 会过滤垃圾评论，表现就像“回复没有保存”。网关不会绕过 Twikoo 的垃圾标记；重新启用 Akismet 前，必须验证回复仍对其他访客可见。
+
 ## 备份与升级
 
 ```bash
