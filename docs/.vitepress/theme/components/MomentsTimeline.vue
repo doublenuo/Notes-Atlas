@@ -35,15 +35,23 @@ type TwikooComment = {
   created?: number
   master?: boolean
   isSpam?: boolean
+  ruser?: string
+  pid?: string
+  rid?: string
+  replies?: TwikooComment[]
 }
 
 type MomentComment = {
   id: string
+  momentId: string
   nick: string
   avatar: string
   text: string
   created: number
   master: boolean
+  rootId: string
+  replyTo: string
+  replies: MomentComment[]
 }
 
 const props = withDefaults(
@@ -346,7 +354,37 @@ const commentsByMoment = ref<Record<string, MomentComment[]>>({})
 const commentsError = ref('')
 
 const commentsFor = (id: string) => commentsByMoment.value[id] ?? []
-const commentCount = (id: string) => commentsFor(id).length
+const commentCount = (id: string) =>
+  commentsFor(id).reduce((total, comment) => total + 1 + comment.replies.length, 0)
+
+const toMomentComment = (
+  raw: TwikooComment,
+  rootId = '',
+  fallbackReplyTo = '',
+): MomentComment | null => {
+  if (raw.isSpam) return null
+  const rawText = String(raw.comment || '')
+  const marker = rawText.match(COMMENT_MARKER_RE)
+  if (!marker) return null
+
+  const momentId = marker[1]
+  const text = rawText.slice(marker[0].length).trim()
+  if (!text) return null
+
+  const id = String(raw.id || `${momentId}-${raw.created || 0}-${raw.nick || ''}`)
+  return {
+    id,
+    momentId,
+    nick: String(raw.nick || '访客'),
+    avatar: String(raw.avatar || ''),
+    text,
+    created: Number(raw.created) || 0,
+    master: Boolean(raw.master),
+    rootId: rootId || id,
+    replyTo: String(raw.ruser || fallbackReplyTo),
+    replies: [],
+  }
+}
 
 const loadComments = async () => {
   commentsError.value = ''
@@ -362,32 +400,38 @@ const loadComments = async () => {
     const grouped: Record<string, MomentComment[]> = {}
     const seen = new Set<string>()
 
-    for (const raw of result.data ?? []) {
-      if (raw.isSpam) continue
-      const rawText = String(raw.comment || '')
-      const marker = rawText.match(COMMENT_MARKER_RE)
-      if (!marker) continue
-
-      const momentId = marker[1]
-      const text = rawText.slice(marker[0].length).trim()
-      if (!text) continue
-
-      const key = String(raw.id || `${momentId}-${raw.created || 0}-${raw.nick || ''}`)
-      if (seen.has(key)) continue
-      seen.add(key)
-
-      if (!grouped[momentId]) grouped[momentId] = []
-      grouped[momentId].push({
-        id: key,
-        nick: String(raw.nick || '访客'),
-        avatar: String(raw.avatar || ''),
-        text,
-        created: Number(raw.created) || 0,
-        master: Boolean(raw.master),
-      })
+    const appendReplies = (
+      parentRaw: TwikooComment,
+      root: MomentComment,
+      fallbackReplyTo: string,
+    ) => {
+      for (const childRaw of Array.isArray(parentRaw.replies) ? parentRaw.replies : []) {
+        const child = toMomentComment(childRaw, root.id, fallbackReplyTo)
+        if (!child || seen.has(child.id)) continue
+        seen.add(child.id)
+        root.replies.push(child)
+        appendReplies(childRaw, root, child.nick)
+      }
     }
 
-    Object.values(grouped).forEach((list) => list.sort((a, b) => a.created - b.created))
+    for (const raw of result.data ?? []) {
+      if (raw.isSpam) continue
+      const comment = toMomentComment(raw)
+      if (!comment || seen.has(comment.id)) continue
+      seen.add(comment.id)
+
+      // 顶层评论的 rootId 就是自身；其 replies 统一挂在根评论下，回复的回复也拍平展示
+      comment.rootId = comment.id
+      appendReplies(raw, comment, comment.nick)
+
+      if (!grouped[comment.momentId]) grouped[comment.momentId] = []
+      grouped[comment.momentId].push(comment)
+    }
+
+    Object.values(grouped).forEach((list) => {
+      list.sort((a, b) => a.created - b.created)
+      list.forEach((item) => item.replies.sort((a, b) => a.created - b.created))
+    })
     commentsByMoment.value = grouped
   } catch (error) {
     commentsError.value = error instanceof Error ? error.message : '评论加载失败'
@@ -404,33 +448,68 @@ const submittingId = ref('')
 const composerError = ref('')
 const composerTextInput = ref<HTMLInputElement | null>(null)
 const pendingMomentId = ref<string | null>(null)
+const replyTarget = ref<MomentComment | null>(null)
+const pendingReply = ref<{ momentId: string; comment: MomentComment } | null>(null)
 const setComposerText = (el: unknown) => { composerTextInput.value = (el as HTMLInputElement | null) ?? null }
 
-const openComposer = async (moment: Moment) => {
-  if (!user.value) {
-    pendingMomentId.value = moment.id
-    openLogin('登录后即可评论')
-    return
-  }
-  pendingMomentId.value = null
-  composerId.value = moment.id
-  composerText.value = ''
-  composerError.value = ''
+const focusComposer = async () => {
   await nextTick()
   composerTextInput.value?.focus()
 }
 
-// 登录成功后自动回到刚才想评论的那条朋友圈，不用再点一次
-watch(user, async (current) => {
-  if (!current || !pendingMomentId.value) return
-  const id = pendingMomentId.value
+const openComposer = async (moment: Moment) => {
+  if (!user.value) {
+    pendingMomentId.value = moment.id
+    pendingReply.value = null
+    openLogin('登录后即可评论')
+    return
+  }
   pendingMomentId.value = null
-  const moment = moments.value.find((item) => item.id === id)
-  if (moment) await openComposer(moment)
+  pendingReply.value = null
+  replyTarget.value = null
+  composerId.value = moment.id
+  composerText.value = ''
+  composerError.value = ''
+  await focusComposer()
+}
+
+const openReply = async (moment: Moment, comment: MomentComment) => {
+  if (!user.value) {
+    pendingReply.value = { momentId: moment.id, comment }
+    pendingMomentId.value = null
+    openLogin('登录后即可回复')
+    return
+  }
+  pendingMomentId.value = null
+  pendingReply.value = null
+  replyTarget.value = comment
+  composerId.value = moment.id
+  composerText.value = ''
+  composerError.value = ''
+  await focusComposer()
+}
+
+// 登录成功后自动回到刚才想评论/回复的那条朋友圈
+watch(user, async (current) => {
+  if (!current) return
+  if (pendingMomentId.value) {
+    const id = pendingMomentId.value
+    pendingMomentId.value = null
+    const moment = moments.value.find((item) => item.id === id)
+    if (moment) await openComposer(moment)
+    return
+  }
+  if (pendingReply.value) {
+    const { momentId, comment } = pendingReply.value
+    pendingReply.value = null
+    const moment = moments.value.find((item) => item.id === momentId)
+    if (moment) await openReply(moment, comment)
+  }
 })
 
 const closeComposer = () => {
   composerId.value = null
+  replyTarget.value = null
   composerError.value = ''
 }
 
@@ -439,12 +518,13 @@ const submitComment = async (moment: Moment) => {
 
   const current = user.value
   if (!current) {
-    openLogin('登录后即可评论')
+    openLogin(replyTarget.value ? '登录后即可回复' : '登录后即可评论')
     return
   }
 
   const text = composerText.value.trim()
   const nick = current.nick
+  const target = replyTarget.value
 
   if (!text) {
     composerError.value = '写点什么再发送吧'
@@ -462,23 +542,42 @@ const submitComment = async (moment: Moment) => {
       mail: current.email,
       comment: `[[moment:${moment.id}]] ${text}`,
       ua: navigator.userAgent,
+      ...(target ? { pid: target.rootId || target.id, rid: target.id } : {}),
     })
 
     // 先乐观插入，避免评论服务刷新稍慢时输入框关闭却看不到新评论
+    const id = String(result.id || `local-${Date.now()}`)
     const optimistic: MomentComment = {
-      id: String(result.id || `local-${Date.now()}`),
+      id,
+      momentId: moment.id,
       nick,
       avatar: current.avatarUrl || '',
       text,
       created: Date.now(),
       master: false,
+      rootId: target ? target.rootId || target.id : id,
+      replyTo: target?.nick || '',
+      replies: [],
     }
-    commentsByMoment.value = {
-      ...commentsByMoment.value,
-      [moment.id]: [...commentsFor(moment.id), optimistic],
+
+    if (target) {
+      const rootId = target.rootId || target.id
+      commentsByMoment.value = {
+        ...commentsByMoment.value,
+        [moment.id]: commentsFor(moment.id).map((item) =>
+          item.id === rootId ? { ...item, replies: [...item.replies, optimistic] } : item,
+        ),
+      }
+    } else {
+      commentsByMoment.value = {
+        ...commentsByMoment.value,
+        [moment.id]: [...commentsFor(moment.id), optimistic],
+      }
     }
+
     composerText.value = ''
     composerId.value = null
+    replyTarget.value = null
     void loadComments()
   } catch (error) {
     composerError.value = error instanceof Error ? error.message : '发送失败，请稍后重试'
@@ -651,15 +750,50 @@ onMounted(() => {
               />
               <span class="moment-comment__name">{{ comment.nick }}</span>
               <span v-if="comment.master" class="moment-comment__master">博主</span>
+              <span v-if="comment.replyTo" class="moment-comment__to">回复 @{{ comment.replyTo }}</span>
               <span class="moment-comment__sep">：</span>
               <span class="moment-comment__text">{{ comment.text }}</span>
+              <button
+                type="button"
+                class="moment-comment__reply"
+                :aria-label="`回复 ${comment.nick}`"
+                @click="openReply(moment, comment)"
+              >回复</button>
+
+              <ul v-if="comment.replies.length" class="moment-comment__replies" aria-label="回复">
+                <li
+                  v-for="reply in comment.replies"
+                  :key="reply.id"
+                  class="moment-comment moment-comment--reply"
+                >
+                  <img
+                    v-if="reply.avatar"
+                    class="moment-comment__avatar"
+                    :src="reply.avatar"
+                    alt=""
+                    loading="lazy"
+                  />
+                  <span class="moment-comment__name">{{ reply.nick }}</span>
+                  <span v-if="reply.master" class="moment-comment__master">博主</span>
+                  <span v-if="reply.replyTo" class="moment-comment__to">回复 @{{ reply.replyTo }}</span>
+                  <span class="moment-comment__sep">：</span>
+                  <span class="moment-comment__text">{{ reply.text }}</span>
+                  <button
+                    type="button"
+                    class="moment-comment__reply"
+                    :aria-label="`回复 ${reply.nick}`"
+                    @click="openReply(moment, reply)"
+                  >回复</button>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
 
         <form v-if="composerId === moment.id" class="moment-composer" @submit.prevent="submitComment(moment)">
           <div class="moment-composer__identity">
-            以 <strong>{{ user?.nick }}</strong> 评论 · 邮箱已验证
+            以 <strong>{{ user?.nick }}</strong>
+            {{ replyTarget ? `回复 ${replyTarget.nick}` : '评论' }} · 邮箱已验证
           </div>
           <div class="moment-composer__row">
             <input
@@ -668,7 +802,7 @@ onMounted(() => {
               class="moment-composer__text"
               type="text"
               maxlength="500"
-              :placeholder="`评论 ${props.name}…`"
+              :placeholder="replyTarget ? `回复 ${replyTarget.nick}…` : `评论 ${props.name}…`"
               aria-label="评论内容"
             />
             <button
@@ -1207,6 +1341,44 @@ onMounted(() => {
   white-space: pre-wrap;
 }
 
+.moment-comment__to {
+  margin-left: 4px;
+  color: var(--moments-name-color);
+  font-size: 12px;
+}
+
+.moment-comment__reply {
+  margin-left: 5px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--vp-c-text-3);
+  font: inherit;
+  font-size: 11px;
+  line-height: inherit;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.moment-comment__reply:hover,
+.moment-comment__reply:focus-visible {
+  color: var(--vp-c-brand-1);
+  opacity: 1;
+}
+
+.moment-comment__replies {
+  margin: 2px 0 4px 23px;
+  padding: 1px 0 1px 8px;
+  border-left: 1px solid var(--vp-c-divider);
+  list-style: none;
+}
+
+.moment-comment__replies .moment-comment {
+  margin: 2px 0;
+  font-size: 12.5px;
+}
+
 .moment-composer {
   margin-top: 8px;
   padding: 8px;
@@ -1290,6 +1462,12 @@ onMounted(() => {
   font: inherit;
   font-size: 12px;
   cursor: pointer;
+}
+
+@media (hover: none) {
+  .moment-comment__reply {
+    opacity: 1;
+  }
 }
 
 .moments-end {
