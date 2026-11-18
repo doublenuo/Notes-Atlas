@@ -56,9 +56,14 @@ html.auth-logged-in #twikoo .tk-meta-input {
     padding: 2px;
   }
 
-  /* 未登录的“登录”按钮收窄到和头像相近的宽度，保证能放进最右侧 */
+  /* 未登录的“登录”按钮与主题按钮保持接近的宽度和呼吸感；
+     登录按钮加宽后会让导航内容多占 15px，匿名态把站点标题左移，避免右侧被裁切 */
+  html.auth-ready:not(.auth-logged-in) .VPNavBarTitle {
+    margin-left: -15px;
+  }
+
   html.auth-ready:not(.auth-logged-in) .weno-auth-nav__login {
-    padding: 5px 6px;
+    padding: 5px 13px;
   }
 }
 
