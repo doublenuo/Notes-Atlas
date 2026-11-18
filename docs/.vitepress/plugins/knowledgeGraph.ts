@@ -164,6 +164,54 @@ function toNoteRef(meta: PageMeta): NoteRef {
   return { rel: meta.rel, url: meta.url, title: meta.title, section: meta.section };
 }
 
+/** 共同标签里 df 最小的那个（IDF 最高），用于 reason 文案 */
+function rarestTag(tags: string[], tagDf: Map<string, number>): string {
+  return tags
+    .slice()
+    .sort((a, b) => (tagDf.get(a) ?? 1) - (tagDf.get(b) ?? 1) || a.localeCompare(b))[0];
+}
+
+/**
+ * 相关度：4×直接引用 + Σ 1/ln(1+df) + 2×同分类 + 1.5×同目录 + 0.5×同分区
+ * 入选门槛：直接引用 / 共同标签 / 同目录 至少一项；候选必须自有正文 >100 字。
+ */
+function rankRelated(meta: PageMeta, candidates: PageMeta[], tagDf: Map<string, number>): RelatedNote[] {
+  const scored: { score: number; meta: PageMeta; reason: string }[] = [];
+
+  for (const cand of candidates) {
+    if (cand.rel === meta.rel) continue;
+    const outgoing = meta.links.has(cand.rel);
+    const incoming = cand.links.has(meta.rel);
+    const direct = Number(outgoing) + Number(incoming);
+    const sharedTags = meta.tags.filter((tag) => cand.tags.includes(tag));
+    const sameDir = meta.dir === cand.dir;
+    if (direct === 0 && sharedTags.length === 0 && !sameDir) continue;
+
+    let score = 4 * direct;
+    for (const tag of sharedTags) score += 1 / Math.log(1 + (tagDf.get(tag) ?? 1));
+    if (meta.categories.some((name) => cand.categories.includes(name))) score += 2;
+    if (sameDir) score += 1.5;
+    if (meta.rel.split("/")[0] === cand.rel.split("/")[0]) score += 0.5;
+
+    const reason = direct === 2
+      ? "互相引用"
+      : outgoing
+        ? "本页引用"
+        : incoming
+          ? "引用了本页"
+          : sharedTags.length
+            ? `共同标签：${rarestTag(sharedTags, tagDf)}`
+            : "同目录";
+    scored.push({ score, meta: cand, reason });
+  }
+
+  scored.sort((a, b) =>
+    b.score - a.score ||
+    compareDate(a.meta.date, b.meta.date) ||
+    a.meta.title.localeCompare(b.meta.title, "zh-CN"));
+  return scored.slice(0, 5).map(({ meta: cand, reason }) => ({ ...toNoteRef(cand), reason }));
+}
+
 export function buildKnowledgeGraph(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
   try {
     // 统一为绝对根：相对 docsRoot 下 path.join 会重复拼根，令 ../ 目标静默丢失
@@ -239,6 +287,12 @@ function build(root: string, pages: PageInfo[]): Map<string, Connections> {
     }
   }
 
+  const tagDf = new Map<string, number>();
+  for (const meta of metas.values()) {
+    for (const tag of meta.tags) tagDf.set(tag, (tagDf.get(tag) ?? 0) + 1);
+  }
+  const candidates = [...metas.values()].filter((meta) => meta.isArticle && meta.ownProse > 100);
+
   const graph = new Map<string, Connections>();
   for (const meta of metas.values()) {
     const sources = (backlinkSources.get(meta.rel) ?? [])
@@ -247,7 +301,10 @@ function build(root: string, pages: PageInfo[]): Map<string, Connections> {
         (a, b) =>
           compareDate(a.date, b.date) || (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0),
       );
-    graph.set(meta.rel, { backlinks: sources.map(toNoteRef), related: [] });
+    const related = meta.isArticle && meta.body.trim()
+      ? rankRelated(meta, candidates, tagDf)
+      : [];
+    graph.set(meta.rel, { backlinks: sources.map(toNoteRef), related });
   }
   return graph;
 }

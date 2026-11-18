@@ -310,3 +310,64 @@ test("EMPTY_CONNECTIONS：外层与两个数组都冻结", () => {
     TypeError,
   );
 });
+
+test("buildKnowledgeGraph：相关候选剔除自有正文不足 100 字的页面", () => {
+  const { graph } = makeVault({
+    "02.学习笔记/A.md": note("A", PROSE, { tags: ["强化学习"] }),
+    "02.学习笔记/组会.md": note("组会", "![[A]]", { tags: ["强化学习"] }),
+    "02.学习笔记/B.md": note("B", PROSE, { tags: ["强化学习"] }),
+  });
+  const relatedRels = graph.get("02.学习笔记/A.md").related.map((item) => item.rel);
+  assert.ok(relatedRels.includes("02.学习笔记/B.md"));
+  assert.ok(!relatedRels.includes("02.学习笔记/组会.md"));
+});
+
+test("buildKnowledgeGraph：共同标签按 IDF 加权，罕见标签优先", () => {
+  const { graph } = makeVault({
+    "03.其他/Main.md": note("Main", PROSE, { tags: ["大", "罕见"] }),
+    "03.其他/Rare.md": note("Rare", PROSE, { tags: ["罕见"] }),
+    "03.其他/Big1.md": note("Big1", PROSE, { tags: ["大"] }),
+    "03.其他/Big2.md": note("Big2", PROSE, { tags: ["大"] }),
+    "03.其他/Big3.md": note("Big3", PROSE, { tags: ["大"] }),
+    "03.其他/Big4.md": note("Big4", PROSE, { tags: ["大"] }),
+  });
+  const related = graph.get("03.其他/Main.md").related;
+  assert.equal(related[0].rel, "03.其他/Rare.md");
+  assert.equal(related[0].reason, "共同标签：罕见");
+});
+
+test("buildKnowledgeGraph：reason 优先级 互相引用 > 本页引用 > 引用了本页 > 共同标签 > 同目录", () => {
+  const { graph } = makeVault({
+    "02.学习笔记/A.md": note("A", `${PROSE}\n\n[[B]] [[F]]`, { tags: ["强化学习"] }),
+    "02.学习笔记/B.md": note("B", `${PROSE}\n\n[[A]]`, { tags: ["强化学习"] }),
+    "02.学习笔记/C.md": note("C", PROSE, { tags: ["强化学习"] }),
+    "02.学习笔记/D.md": note("D", PROSE),
+    "02.学习笔记/E.md": note("E", `${PROSE}\n\n[[A]]`),
+    "02.学习笔记/其他/F.md": note("F", PROSE),
+  });
+  const reasons = Object.fromEntries(
+    graph.get("02.学习笔记/A.md").related.map((item) => [item.rel, item.reason]),
+  );
+  assert.equal(reasons["02.学习笔记/B.md"], "互相引用");
+  assert.equal(reasons["02.学习笔记/其他/F.md"], "本页引用");
+  assert.equal(reasons["02.学习笔记/E.md"], "引用了本页");
+  assert.equal(reasons["02.学习笔记/C.md"], "共同标签：强化学习");
+  assert.equal(reasons["02.学习笔记/D.md"], "同目录");
+});
+
+test("buildKnowledgeGraph：section 取顶层与末级目录并去序号", () => {
+  const { graph } = makeVault({
+    "02.学习笔记/T.md": note("T", PROSE, { tags: ["强化学习"] }),
+    "02.学习笔记/06.强化学习基础/Deep.md": note("Deep", PROSE, { tags: ["强化学习"] }),
+  });
+  assert.equal(graph.get("02.学习笔记/T.md").related[0].section, "学习笔记 · 强化学习基础");
+});
+
+test("buildKnowledgeGraph：相关笔记最多 5 条", () => {
+  const files = { "02.学习笔记/T.md": note("T", PROSE, { tags: ["强化学习"] }) };
+  for (let i = 1; i <= 7; i += 1) {
+    files[`02.学习笔记/P${i}.md`] = note(`P${i}`, PROSE, { tags: ["强化学习"] });
+  }
+  const { graph } = makeVault(files);
+  assert.equal(graph.get("02.学习笔记/T.md").related.length, 5);
+});
