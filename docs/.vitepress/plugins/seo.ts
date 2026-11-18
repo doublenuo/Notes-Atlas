@@ -174,6 +174,8 @@ function buildSitemap(docsRoot, outDir) {
   const urls = [];
   for (const p of pages) {
     const page = readPage(docsRoot, p.rel);
+    // 页面通过 frontmatter 显式声明 noindex 时同样不进 sitemap（如 /profile 个人中心）
+    if (page.data.noindex === true) continue;
     // 空壳文章不进 sitemap（判定与 buildHead 的 noindex 同源，见 isPlaceholderPage）
     if (isPlaceholderPage(p.rel, page.data, page.content)) continue;
     // 首页保留根路径那一个斜杠；其余页面**不带**尾斜杠。
@@ -373,6 +375,8 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
   const isArticle = !isHome && !is404 && !isRiskLink && published !== null && fm.article !== false;
   // 只有 frontmatter、没有正文的占位文章：不收录（补正文后自动恢复，见 isPlaceholderPage）
   const isPlaceholder = isPlaceholderPage(diskRel, fm, content);
+  // 页面可显式声明 noindex（如 /profile 个人中心）：允许抓取链接，但不收录
+  const isNoindex = fm.noindex === true;
 
   // 404 不该进索引，否则搜索引擎会收录不存在的路径
   const robots =
@@ -380,7 +384,7 @@ export function buildHead(pageData, siteUrl = SITE_URL, docsRoot = DEFAULT_DOCS_
       ? 'noindex, nofollow'
       : IS_PREVIEW
         ? 'noindex, nofollow'
-        : isPlaceholder
+        : isNoindex || isPlaceholder
           ? 'noindex, follow'
           : 'index, follow, max-image-preview:large';
 

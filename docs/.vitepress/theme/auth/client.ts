@@ -5,6 +5,8 @@ export interface AuthUser {
   emailVerified: boolean
   avatarUrl: string | null
   isAdmin: boolean
+  /** 注册时间，Unix 秒 */
+  createdAt: number
 }
 
 interface ApiErrorBody {

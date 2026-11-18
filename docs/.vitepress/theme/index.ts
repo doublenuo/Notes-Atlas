@@ -28,6 +28,7 @@ import RiskLinkPage from "./components/RiskLinkPage.vue";
 import ReadingNotesPage from "./components/ReadingNotesPage.vue";
 import YearReviewPage from "./components/YearReviewPage.vue";
 import ProjectsPage from "./components/ProjectsPage.vue";
+import ProfilePage from "./components/ProfilePage.vue";
 import ScrollDownArrow from "./components/ScrollDownArrow.vue";
 import ReloadPrompt from "./components/ReloadPrompt.vue";
 import AuthNav from "./auth/AuthNav.vue";
@@ -145,6 +146,10 @@ export default {
       const isProjectsPage = computed(
         () => (page.value.frontmatter as { projects?: boolean } | undefined)?.projects === true,
       );
+      // 个人中心（/profile）由自绘账号页接管，未登录时展示登录引导
+      const isProfilePage = computed(
+        () => (page.value.frontmatter as { profile?: boolean } | undefined)?.profile === true,
+      );
       let ribbonActive = false;
       // 记录当前是否已渲染，防止 start 重复调用：initRibbon 在 canvas 已存在时会返回空清理函数，
       // 会覆盖掉真正的清理函数，导致后续 stop 无法移除 canvas
@@ -241,7 +246,9 @@ export default {
                     ? h(YearReviewPage)
                     : isProjectsPage.value
                       ? h(ProjectsPage)
-                      : null,
+                      : isProfilePage.value
+                        ? h(ProfilePage)
+                        : null,
         // PWA：新版本 / 离线就绪提示（组件内部SSR安全，仅在客户端注册 SW）
         "layout-bottom": () => (IS_PAGES ? h(ReloadPrompt) : [h(ReloadPrompt), h(AuthDialog)]),
         "not-found": () => h(NotFound),

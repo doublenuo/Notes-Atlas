@@ -293,9 +293,13 @@ describe('auth gateway', () => {
       body: JSON.stringify({ nick: '  新昵称  ' }),
     });
     expect(response.status).toBe(200);
-    const data = (await response.json()) as { user: { nick: string; email: string } };
+    const data = (await response.json()) as {
+      user: { nick: string; email: string; createdAt: number };
+    };
     expect(data.user.nick).toBe('新昵称');
     expect(data.user.email).toBe('alice@example.com');
+    expect(Number.isInteger(data.user.createdAt)).toBe(true);
+    expect(data.user.createdAt).toBeGreaterThan(0);
   });
 
   it('rate limits a second code request for the same email', async () => {

@@ -34,6 +34,7 @@ interface PublicUser {
   emailVerified: true;
   avatarUrl: string | null;
   isAdmin: boolean;
+  createdAt: number;
 }
 
 const emailSchema = z.object({
@@ -81,6 +82,7 @@ function publicUser(user: User, config: AppConfig): PublicUser {
     emailVerified: true,
     avatarUrl: user.avatarUrl,
     isAdmin: isAdminEmail(user.email, config.adminEmails),
+    createdAt: user.createdAt,
   };
 }
 
