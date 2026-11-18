@@ -21,6 +21,7 @@ import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加
 import "katex/dist/katex.min.css"; // 数学公式（构建期 KaTeX 输出，字体由 Vite 自托管）
 import ArticleExportPdf from "./components/ArticleExportPdf.vue";
 import ArticleSponsor from "./components/ArticleSponsor.vue";
+import ArticleConnections from "./components/ArticleConnections.vue";
 import MomentsTimeline from "./components/MomentsTimeline.vue";
 import FriendLinksPage from "./components/FriendLinksPage.vue";
 import GuestbookPage from "./components/GuestbookPage.vue";
@@ -212,6 +213,8 @@ export default {
         "teek-theme-enhance-bottom": () => h(ThemeConfig, { onChange: handleThemeConfigChange }),
         // 放在「在 GitHub 上编辑此页面」和「最后更新于」之前
         "doc-footer-before": () => h(ArticleSponsor),
+        // 正文之后、页脚/评论区之前：相关笔记与被引用
+        "doc-after": () => h(ArticleConnections),
         // 「分享此页面」右侧的「导出 PDF」按钮
         "teek-article-share-after": () => h(ArticleExportPdf),
         // 首页 Banner 特性区下方的「向下滚动」箭头（点击平滑滚动到内容区）
