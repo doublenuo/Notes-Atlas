@@ -30,3 +30,50 @@ test("ownProseLength：剔除独立行嵌入后计数", () => {
   const prose = "正文".repeat(60);
   assert.equal(ownProseLength(`![[A]]\n${prose}`), 120);
 });
+
+test("extractWikiLinks：三反引号围栏排除，未闭合围栏延续到文末", () => {
+  assert.deepEqual(extractWikiLinks("```\n[[A]]\n```"), []);
+  assert.deepEqual(extractWikiLinks("```\n[[A]]"), []);
+  assert.deepEqual(extractWikiLinks("```md\n[[A]]\n```\n[[B]]"), ["B"]);
+});
+
+test("extractWikiLinks：~~~ 围栏同样排除，闭栏长度不足仍视为围栏内", () => {
+  assert.deepEqual(extractWikiLinks("~~~\n[[A]]\n~~~"), []);
+  assert.deepEqual(extractWikiLinks("````\n[[A]]\n```\n[[A]]"), []);
+  assert.deepEqual(extractWikiLinks("````\n[[A]]\n````\n[[B]]"), ["B"]);
+});
+
+test("extractWikiLinks：info string 含反引号不算围栏", () => {
+  assert.deepEqual(extractWikiLinks("```js`\n[[A]]"), ["A"]);
+});
+
+test("extractWikiLinks：独立嵌入缩进 0/1/3 计入，4 空格不计", () => {
+  for (const spaces of [0, 1, 3]) {
+    assert.deepEqual(extractWikiLinks(" ".repeat(spaces) + "![[A]]"), ["A"]);
+  }
+  assert.deepEqual(extractWikiLinks("    ![[A]]"), []);
+});
+
+test("extractWikiLinks：行中/尾随嵌入不计，缩进行内链接仍提取", () => {
+  assert.deepEqual(extractWikiLinks("![[A]] 尾随"), []);
+  assert.deepEqual(extractWikiLinks("前 ![[A]]"), []);
+  assert.deepEqual(extractWikiLinks("前 [[A]] 后"), ["A"]);
+  assert.deepEqual(extractWikiLinks("    [[A]]"), ["A"]);
+});
+
+test("extractWikiLinks：反引号 run 必须等长配对", () => {
+  assert.deepEqual(extractWikiLinks("`[[Alpha]]``"), ["Alpha"]);
+  assert.deepEqual(extractWikiLinks("``[[Alpha]]```"), ["Alpha"]);
+  assert.deepEqual(extractWikiLinks("``[[Alpha]]``"), []);
+});
+
+test("ownProseLength：缩进边界与行中嵌入计入正文", () => {
+  assert.equal(ownProseLength("   ![[A]]"), 0);
+  assert.equal(ownProseLength("    ![[A]]"), 6);
+  assert.equal(ownProseLength("前 ![[A]] 后"), 10);
+});
+
+test("extractWikiLinks：CRLF 换行的围栏同样排除", () => {
+  assert.deepEqual(extractWikiLinks("```\r\n[[A]]\r\n```"), []);
+  assert.deepEqual(extractWikiLinks("```\r\n[[A]]\r\n```\r\n[[B]]"), ["B"]);
+});
