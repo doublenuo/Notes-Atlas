@@ -5,6 +5,7 @@ import { teekConfig } from './teekConfig'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { collectPages, buildRewrites, buildSidebar } from './permalinks'
+import { buildKnowledgeGraph, EMPTY_CONNECTIONS } from './plugins/knowledgeGraph'
 import { obsidianEmbed } from './plugins/obsidianEmbed.js'
 import { math } from './plugins/math.js'
 import { katexGuard } from './plugins/mathGuard.js'
@@ -22,6 +23,9 @@ const DOCS_ROOT = fileURLToPath(new URL('..', import.meta.url))
 
 // 有 permalink 的用它；没有的用文档标题派生 slug。详见 ./permalinks.ts
 const PAGES = collectPages(DOCS_ROOT)
+
+// 知识网络：构建期算一次，随页面数据 SSR 下发。失败时返回空 Map，不影响构建。
+const KNOWLEDGE = buildKnowledgeGraph(DOCS_ROOT, PAGES)
 
 // withPwa 返回 Promise<UserConfigExport>；VitePress 在 resolveConfigExtends 里会 await 配置导出。
 // 它会链式包装 transformHead / buildEnd（不会覆盖 SEO head 与 katexGuard），
@@ -80,6 +84,13 @@ export default withPwa(defineConfig({
     if (!IS_PREVIEW) return html
     const badge = `<a class="na-preview-badge" data-pagefind-ignore href="${SITE_URL}/" target="_blank" rel="noopener" aria-label="这是预览版本，点击返回正式站">预览版 · 非正式发布</a><style>.na-preview-badge{position:fixed;left:16px;bottom:16px;z-index:2147483647;display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#f59e0b;color:#111827;font:600 12px/1.4 var(--vp-font-family-base,system-ui,sans-serif);text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:.92}.na-preview-badge:hover{opacity:1}@media print{.na-preview-badge{display:none}}</style>`
     return html.replace('</body>', `${badge}</body>`)
+  },
+  // 知识网络：没有关系的页面也写入空结构，保证客户端读取时类型稳定
+  transformPageData(pageData) {
+    // 开 rewrites 后 relativePath 已是改写后的目标路径，filePath 才是磁盘源路径，
+    // 与 KNOWLEDGE 的 key（PAGES 的 rel）同一口径；filePath 为空（虚拟页）时退回 relativePath。
+    const rel = pageData.filePath || pageData.relativePath
+    return { connections: KNOWLEDGE.get(rel) ?? EMPTY_CONNECTIONS }
   },
   // 页面全部写完后检查 KaTeX 是否产出错误块（插件本身不会中断构建，见 plugins/mathGuard.js）
   buildEnd: katexGuard(),
