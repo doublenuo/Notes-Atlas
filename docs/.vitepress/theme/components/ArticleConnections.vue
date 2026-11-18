@@ -26,7 +26,7 @@ const hrefOf = (item: NoteRef) => withBase(item.url)
 </script>
 
 <template>
-  <nav v-if="related.length || backlinks.length" class="na-knowledge" aria-label="知识网络">
+  <nav v-if="related.length || backlinks.length" class="na-knowledge no-print" aria-label="知识网络">
     <section v-if="related.length" class="na-knowledge__section">
       <h2 class="na-knowledge__title">相关笔记</h2>
       <ul class="na-knowledge__list">
@@ -104,6 +104,7 @@ const hrefOf = (item: NoteRef) => withBase(item.url)
 .na-knowledge__link {
   color: var(--vp-c-brand-1);
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .na-knowledge__link:hover {
@@ -113,6 +114,7 @@ const hrefOf = (item: NoteRef) => withBase(item.url)
 .na-knowledge__meta {
   font-size: 12px;
   color: var(--vp-c-text-3);
+  overflow-wrap: anywhere;
 }
 
 .na-knowledge__more {

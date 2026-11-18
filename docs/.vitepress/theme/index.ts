@@ -213,7 +213,7 @@ export default {
         "teek-theme-enhance-bottom": () => h(ThemeConfig, { onChange: handleThemeConfigChange }),
         // 放在「在 GitHub 上编辑此页面」和「最后更新于」之前
         "doc-footer-before": () => h(ArticleSponsor),
-        // 正文之后、页脚/评论区之前：相关笔记与被引用
+        // VPDocFooter（编辑链接/最后更新/上下页）之后、评论区之前：相关笔记与被引用
         "doc-after": () => h(ArticleConnections),
         // 「分享此页面」右侧的「导出 PDF」按钮
         "teek-article-share-after": () => h(ArticleExportPdf),
