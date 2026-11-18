@@ -98,7 +98,7 @@ export interface PageInfo {
  * 必须带分隔符才剥（第3章 / 3D打印 这类非序号开头的名字不受影响）；
  * 剥完为空（理论上不存在「01.」这种目录）时回退原名。
  */
-function stripOrdinal(name: string) {
+export function stripOrdinal(name: string) {
   return name.replace(/^\d+\s*[.．、_-]+\s*/, '') || name;
 }
 
