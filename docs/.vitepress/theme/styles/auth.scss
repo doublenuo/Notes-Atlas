@@ -22,7 +22,8 @@ html.auth-logged-in #twikoo .tk-meta-input {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-left: 8px;
+  margin-left: 15px;
+  margin-right: 15px;
 }
 
 /* 桌面端登录后只显示头像，并把账号入口排到主题增强按钮之后 */
@@ -64,6 +65,7 @@ html.auth-logged-in #twikoo .tk-meta-input {
 
   html.auth-ready:not(.auth-logged-in) .weno-auth-nav__login {
     padding: 5px 13px;
+    margin-left: 10px;
   }
 }
 
