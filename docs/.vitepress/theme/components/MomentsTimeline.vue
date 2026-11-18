@@ -30,6 +30,7 @@ type Moment = {
 type TwikooComment = {
   id?: string
   nick?: string
+  avatar?: string
   comment?: string
   created?: number
   master?: boolean
@@ -39,6 +40,7 @@ type TwikooComment = {
 type MomentComment = {
   id: string
   nick: string
+  avatar: string
   text: string
   created: number
   master: boolean
@@ -378,6 +380,7 @@ const loadComments = async () => {
       grouped[momentId].push({
         id: key,
         nick: String(raw.nick || '访客'),
+        avatar: String(raw.avatar || ''),
         text,
         created: Number(raw.created) || 0,
         master: Boolean(raw.master),
@@ -465,6 +468,7 @@ const submitComment = async (moment: Moment) => {
     const optimistic: MomentComment = {
       id: String(result.id || `local-${Date.now()}`),
       nick,
+      avatar: current.avatarUrl || '',
       text,
       created: Date.now(),
       master: false,
@@ -638,6 +642,13 @@ onMounted(() => {
 
           <ul v-if="commentsFor(moment.id).length" class="moment-comments" aria-label="评论">
             <li v-for="comment in commentsFor(moment.id)" :key="comment.id" class="moment-comment">
+              <img
+                v-if="comment.avatar"
+                class="moment-comment__avatar"
+                :src="comment.avatar"
+                alt=""
+                loading="lazy"
+              />
               <span class="moment-comment__name">{{ comment.nick }}</span>
               <span v-if="comment.master" class="moment-comment__master">博主</span>
               <span class="moment-comment__sep">：</span>
@@ -1157,6 +1168,17 @@ onMounted(() => {
   margin: 1px 0;
   color: var(--vp-c-text-1);
   overflow-wrap: anywhere;
+}
+
+.moment-comment__avatar {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: -3px;
+  background: var(--vp-c-bg-soft);
 }
 
 .moment-comment__name {
