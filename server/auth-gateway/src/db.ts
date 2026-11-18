@@ -176,6 +176,15 @@ export class AuthDb {
     return row ? toUser(row) : null;
   }
 
+  listUserAvatars(): Array<{ email: string; avatarUrl: string }> {
+    const rows = this.raw
+      .prepare(
+        "SELECT email, avatar_url FROM users WHERE avatar_url IS NOT NULL AND avatar_url <> ''",
+      )
+      .all() as Array<{ email: string; avatar_url: string }>;
+    return rows.map((row) => ({ email: row.email, avatarUrl: row.avatar_url }));
+  }
+
   createUser(input: {
     email: string;
     nick: string;

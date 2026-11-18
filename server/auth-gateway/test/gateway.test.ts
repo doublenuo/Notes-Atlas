@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { AppConfig } from '../src/config.js';
@@ -92,6 +93,7 @@ interface Harness {
 function createHarness(options: {
   emails?: Array<{ email: string; primary: boolean; verified: boolean }>;
   config?: Partial<AppConfig>;
+  twikooResponder?: (input: string | URL | Request, init?: RequestInit) => Response;
 } = {}): Harness {
   const db = new AuthDb(':memory:');
   const config: AppConfig = { ...BASE_CONFIG, ...options.config };
@@ -105,6 +107,7 @@ function createHarness(options: {
   const upstream: Array<{ url: string; init?: RequestInit }> = [];
   const twikooFetch = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
     upstream.push({ url: String(input), init });
+    if (options.twikooResponder) return options.twikooResponder(input, init);
     return Response.json({ ok: true, event: 'GET_CONFIG' });
   };
   const app = createApp({
@@ -210,6 +213,52 @@ describe('auth gateway', () => {
     });
     expect(publicRead.status).toBe(200);
     expect(current.upstream).toHaveLength(1);
+  });
+
+  it('adds the GitHub avatar to public comment responses without overriding custom avatars', async () => {
+    const avatar = 'https://avatars.githubusercontent.com/u/12345?v=4';
+    const mailMd5 = createHash('sha256').update('alice@example.com').digest('hex');
+    current = createHarness({
+      twikooResponder: () =>
+        Response.json({
+          code: 0,
+          data: [
+            {
+              id: 'comment-1',
+              nick: 'alice-gh',
+              mailMd5,
+              comment: 'hello',
+              replies: [{ id: 'reply-1', nick: 'alice-gh', mailMd5, comment: 'reply' }],
+            },
+            {
+              id: 'comment-2',
+              nick: 'alice-gh',
+              mailMd5,
+              avatar: 'https://example.com/custom.png',
+              comment: 'custom',
+            },
+          ],
+        }),
+    });
+    current.db.createUser({
+      email: 'alice@example.com',
+      nick: 'alice-gh',
+      avatarUrl: avatar,
+      now: current.clock.now(),
+    });
+
+    const response = await current.app.request('/twikoo-api', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ event: 'COMMENT_GET', url: '/post' }),
+    });
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      data: Array<{ avatar?: string; replies?: Array<{ avatar?: string }> }>;
+    };
+    expect(payload.data[0]?.avatar).toBe(avatar);
+    expect(payload.data[0]?.replies?.[0]?.avatar).toBe(avatar);
+    expect(payload.data[1]?.avatar).toBe('https://example.com/custom.png');
   });
 
   it('revokes submissions immediately after logout', async () => {

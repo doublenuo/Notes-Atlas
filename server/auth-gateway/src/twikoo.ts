@@ -1,8 +1,11 @@
+import { createHash } from 'node:crypto';
 import type { Context } from 'hono';
 import type { AppConfig } from './config.js';
+import type { AuthDb } from './db.js';
 import type { SessionService } from './session.js';
 
 interface TwikooDeps {
+  db: AuthDb;
   config: AppConfig;
   sessions: SessionService;
   fetchImpl?: typeof fetch;
@@ -16,6 +19,47 @@ function isJsonObject(value: unknown): value is JsonObject {
 
 function isJsonContentType(value: string | undefined): boolean {
   return Boolean(value && value.toLowerCase().includes('application/json'));
+}
+
+function hashHex(algorithm: 'sha256' | 'md5', value: string): string {
+  return createHash(algorithm).update(value).digest('hex');
+}
+
+function safeAvatarUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Twikoo 只会在评论里保存邮箱哈希，不会保存 GitHub 头像。
+ * 这里把登录用户的头像映射到邮箱哈希，并在 COMMENT_GET 响应里补上 avatar。
+ */
+function avatarMap(db: AuthDb): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const { email, avatarUrl } of db.listUserAvatars()) {
+    const avatar = safeAvatarUrl(avatarUrl);
+    if (!avatar) continue;
+    const normalized = email.trim().toLowerCase();
+    map.set(hashHex('sha256', normalized), avatar);
+    map.set(hashHex('md5', normalized), avatar);
+  }
+  return map;
+}
+
+function decorateCommentAvatars(value: unknown, avatars: Map<string, string>): void {
+  if (!Array.isArray(value)) return;
+  for (const item of value) {
+    if (!isJsonObject(item)) continue;
+    const mailMd5 = typeof item.mailMd5 === 'string' ? item.mailMd5.toLowerCase() : '';
+    const avatar = mailMd5 ? avatars.get(mailMd5) : undefined;
+    if (avatar && !item.avatar) item.avatar = avatar;
+    if (Array.isArray(item.replies)) decorateCommentAvatars(item.replies, avatars);
+  }
 }
 
 function copyResponseHeaders(response: Response): Record<string, string> {
@@ -38,7 +82,7 @@ export function createTwikooProxy(
   deps: TwikooDeps,
   stripApiPrefix: boolean,
 ): (c: Context) => Promise<Response> {
-  const { config, sessions } = deps;
+  const { db, config, sessions } = deps;
   const fetchImpl = deps.fetchImpl ?? fetch;
 
   return async (c) => {
@@ -116,7 +160,18 @@ export function createTwikooProxy(
       if (response.status === 204 || response.status === 304) {
         return c.body(null, response.status as 204, responseHeaders);
       }
-      const responseBody = await response.arrayBuffer();
+      let responseBody = await response.arrayBuffer();
+      if (event === 'COMMENT_GET' && response.ok) {
+        try {
+          const payload = JSON.parse(new TextDecoder().decode(responseBody)) as unknown;
+          if (isJsonObject(payload) && Array.isArray(payload.data)) {
+            decorateCommentAvatars(payload.data, avatarMap(db));
+            responseBody = new TextEncoder().encode(JSON.stringify(payload)).buffer;
+          }
+        } catch {
+          // 上游返回非 JSON 时保持原响应，不影响评论读取。
+        }
+      }
       return c.body(responseBody, response.status as 200, responseHeaders);
     } catch (error) {
       console.error(
