@@ -1,3 +1,7 @@
+---
+date: 2026-11-18 22:43:18
+title: 2026-11-18-knowledge-graph
+---
 # 知识网络（反向链接与相关笔记）实现计划
 
 > **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
@@ -477,7 +481,7 @@ function build(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
   for (const meta of metas.values()) {
     const sources = (backlinkSources.get(meta.rel) ?? [])
       .slice()
-      .sort((a, b) => compareDate(a.date, b.date) || a.rel.localeCompare(b.rel));
+      .sort((a, b) => compareDate(a.date, b.date) || (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0));
     graph.set(meta.rel, { backlinks: sources.map(toNoteRef), related: [] });
   }
   return graph;
@@ -660,7 +664,7 @@ function rankRelated(meta: PageMeta, candidates: PageMeta[], tagDf: Map<string, 
   for (const meta of metas.values()) {
     const sources = (backlinkSources.get(meta.rel) ?? [])
       .slice()
-      .sort((a, b) => compareDate(a.date, b.date) || a.rel.localeCompare(b.rel));
+      .sort((a, b) => compareDate(a.date, b.date) || (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0));
     const related = meta.isArticle && meta.body.trim()
       ? rankRelated(meta, candidates, tagDf)
       : [];
@@ -673,7 +677,7 @@ function rankRelated(meta: PageMeta, candidates: PageMeta[], tagDf: Map<string, 
 
 运行：`node --test tests/knowledge-graph.test.mjs`
 
-预期：PASS（17 个测试）。
+预期：PASS（33 个测试）。
 
 - [ ] **步骤 5：Commit**
 
@@ -687,9 +691,9 @@ git commit -m "feat: 计算相关笔记并输出可解释原因"
 ## 任务 4：接入 config 的 transformPageData
 
 **文件：**
-- 修改：`docs/.vitepress/config.ts:10`（import）
-- 修改：`docs/.vitepress/config.ts:24-25`（建图）
-- 修改：`docs/.vitepress/config.ts:85`（注册钩子）
+- 修改：`docs/.vitepress/config.ts:8`（import）
+- 修改：`docs/.vitepress/config.ts:27-28`（建图）
+- 修改：`docs/.vitepress/config.ts:88-94`（注册钩子）
 
 - [ ] **步骤 1：接入**
 
@@ -711,7 +715,9 @@ const KNOWLEDGE = buildKnowledgeGraph(DOCS_ROOT, PAGES)
 ```ts
   // 知识网络：没有关系的页面也写入空结构，保证客户端读取时类型稳定
   transformPageData(pageData) {
-    return { connections: KNOWLEDGE.get(pageData.relativePath) ?? EMPTY_CONNECTIONS }
+    // rewrites 下 relativePath 是目标路径，filePath 才是磁盘源路径
+    const rel = pageData.filePath || pageData.relativePath
+    return { connections: KNOWLEDGE.get(rel) ?? EMPTY_CONNECTIONS }
   },
 ```
 
@@ -734,7 +740,7 @@ console.log({
 "
 ```
 
-预期：`pages: 365` 左右；`withBacklinks` > 0；`withRelated` 为数百；无异常抛出。数值记入 PR 说明。
+预期：`pages: 362`；`withBacklinks` > 0；`withRelated` 为数百；无异常抛出。数值记入 PR 说明。
 
 - [ ] **步骤 3：验证构建通过**
 
@@ -801,7 +807,7 @@ const hrefOf = (item: NoteRef) => withBase(item.url)
 </script>
 
 <template>
-  <nav v-if="related.length || backlinks.length" class="na-knowledge" aria-label="知识网络">
+  <nav v-if="related.length || backlinks.length" class="na-knowledge no-print" aria-label="知识网络">
     <section v-if="related.length" class="na-knowledge__section">
       <h2 class="na-knowledge__title">相关笔记</h2>
       <ul class="na-knowledge__list">
@@ -879,6 +885,7 @@ const hrefOf = (item: NoteRef) => withBase(item.url)
 .na-knowledge__link {
   color: var(--vp-c-brand-1);
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .na-knowledge__link:hover {
@@ -888,6 +895,7 @@ const hrefOf = (item: NoteRef) => withBase(item.url)
 .na-knowledge__meta {
   font-size: 12px;
   color: var(--vp-c-text-3);
+  overflow-wrap: anywhere;
 }
 
 .na-knowledge__more {
@@ -913,7 +921,7 @@ import ArticleConnections from "./components/ArticleConnections.vue";
 在 `docs/.vitepress/theme/index.ts:214` 的 `"doc-footer-before": () => h(ArticleSponsor),` 之后加：
 
 ```ts
-        // 正文之后、页脚/评论区之前：相关笔记与被引用
+        // VPDocFooter（编辑链接/最后更新/上下页）之后、评论区之前：相关笔记与被引用
         "doc-after": () => h(ArticleConnections),
 ```
 
@@ -997,4 +1005,4 @@ git commit -m "fix: 修正知识网络展示的边界问题"
 | §6 注入 | 任务 4 `transformPageData` |
 | §7 组件 | 任务 5 `ArticleConnections.vue` |
 | §8 失败与边界 | 任务 2 空壳页、任务 1 代码块、任务 6 冒烟 |
-| §9 测试 | 任务 1–3 的 17 个单测 + 任务 4–6 构建验证 |
+| §9 测试 | 任务 1–3 的 33 个单测 + 任务 4–6 构建验证 |

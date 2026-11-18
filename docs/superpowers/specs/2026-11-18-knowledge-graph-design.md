@@ -1,3 +1,7 @@
+---
+date: 2026-11-18 22:36:02
+title: 2026-11-18-knowledge-graph-design
+---
 # 知识网络：反向链接与相关笔记设计
 
 - 日期：2026-11-18
@@ -33,7 +37,7 @@
 - 相关技术事实：
   - `docs/.vitepress/permalinks.ts:133` 的 `collectPages(srcDir)` 已有 `PageInfo { rel, url, title, dir }`，URL 无前导斜杠；
   - `docs/.vitepress/plugins/obsidianEmbed.js` 的 `createResolver(docsRoot)` 返回 `resolveNote(target, hostPath) → { absPath, relPath } | null`；
-  - teek 的 `doc-after` 插槽位于正文之后、页脚与评论区之前（`node_modules/vitepress-theme-teek/es/components/theme/Layout/src/index.vue2.mjs:410`）；
+  - teek 的 `doc-after` 插槽渲染在 `VPDocFooter`（编辑链接/最后更新/上下页 pager）之后、teek 最近更新卡片与评论区之前（VitePress `VPDoc.vue:54-57`；teek `Layout/src/index.vue2.mjs:410`）；
   - VitePress 会把 `transformPageData` 的返回值合并进 `pageData`，再经 `injectPageDataCode` 序列化进页面模块（`node_modules/vitepress/dist/node/chunk-D3CUZ4fa.js:36726`、`:36765`），客户端可用 `useData().page` 读取。
 
 ### 关键约束
@@ -54,7 +58,7 @@ config.ts 加载
   │     ├─ resolveNote 命中 → relPath → PageInfo
   │     └─ 生成 { backlinks, related }
   └─ transformPageData(pageData)
-        └─ pageData.connections = GRAPH[relativePath]
+        └─ pageData.connections = GRAPH[filePath || relativePath]
 
 VitePress 构建
   └─ 每页 __pageData 内含 connections → SSR 渲染
@@ -207,16 +211,17 @@ export function buildKnowledgeGraph(
 ```ts
 transformPageData(pageData) {
   return {
-    connections: KNOWLEDGE.get(pageData.relativePath) ?? EMPTY_CONNECTIONS,
+    // rewrites 下 relativePath 是目标路径，filePath 才是磁盘源路径
+    connections: KNOWLEDGE.get(pageData.filePath || pageData.relativePath) ?? EMPTY_CONNECTIONS,
   }
 }
 ```
 
-- `pageData.relativePath` 是相对 `srcDir` 的源路径，与 `PageInfo.rel` 同口径。
+- `pageData.filePath` 是相对 `srcDir` 的磁盘源路径，与 `PageInfo.rel` 同口径；本站开了 rewrites，`relativePath` 是改写后的目标路径，**不能**作为索引 key（实测 362 页中 361 页会取不到）。`filePath` 为空（虚拟页）时退回 `relativePath`，取不到则用 `EMPTY_CONNECTIONS`。
 - 不修改 frontmatter，避免污染 teek 的文章列表、RSS 等消费方。
 - dev 与 build 走同一条路径；索引在配置加载时计算一次，**dev 下新增/删除链接需要重启**，与 `obsidianEmbed` 的文件清单索引行为一致。
 
-体积预估：每页最多 5 条相关 + 若干反链，约 0.6–1.5KB，365 页合计新增不到 0.5MB 构建产物。
+体积预估：每页最多 5 条相关 + 若干反链，约 0.6–1.5KB，362 个内容页合计新增约 0.47MB 构建产物。
 
 ## 7. 展示组件
 
@@ -232,7 +237,7 @@ transformPageData(pageData) {
 ### 7.2 结构
 
 ```vue
-<nav v-if="related.length || backlinks.length" class="na-knowledge" aria-label="知识网络">
+<nav v-if="related.length || backlinks.length" class="na-knowledge no-print" aria-label="知识网络">
   <section v-if="related.length">
     <h2 class="na-knowledge__title">相关笔记</h2>
     <ul class="na-knowledge__list">
@@ -265,7 +270,8 @@ transformPageData(pageData) {
 ```ts
 const page = useData().page
 const connections = computed<Connections>(() =>
-  (page.value as any).connections ?? { backlinks: [], related: [] },
+  (page.value as unknown as { connections?: Connections }).connections
+  ?? { backlinks: [], related: [] },
 )
 const related = computed(() => connections.value.related)
 const backlinks = computed(() => connections.value.backlinks)
@@ -280,7 +286,8 @@ const visibleBacklinks = computed(() => backlinks.value.slice(0, 5))
 - scoped CSS，复用 teek/VitePress 变量：`--vp-c-divider`、`--vp-c-bg-soft`、`--vp-c-text-1/2`、`--vp-c-brand-1`；
 - 与正文之间用 `margin-top: 32px` + 顶部分隔线区分；
 - 列表项：标题一行，元信息（分区、原因）一行，小字号、弱化颜色；
-- 移动端单列；不做折叠动画。
+- 移动端单列；不做折叠动画；链接与元信息用 `overflow-wrap: anywhere` 防止长标题溢出；
+- 该区块是导航性信息，加全局 `no-print` 类，打印/PDF 导出时隐藏，保持「只导出正文」的既有约定。
 
 ## 8. 失败与边界
 
