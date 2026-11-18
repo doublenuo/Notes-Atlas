@@ -23,6 +23,7 @@ interface AuthDeps {
   sessions: SessionService;
   emailService: EmailService;
   github: GithubClient;
+  fetchImpl?: typeof fetch;
   now?: () => number;
 }
 
@@ -101,8 +102,10 @@ function errorResponse(c: Context, error: unknown): Response {
 
 export function createAuthRouter(deps: AuthDeps): Hono {
   const { db, config, sessions, emailService, github } = deps;
+  const fetchImpl = deps.fetchImpl ?? fetch;
   const now = deps.now ?? nowSeconds;
   const app = new Hono();
+  const qqAvatarCache = new Map<string, { at: number; type: string; body: ArrayBuffer }>();
 
   app.use(
     '*',
@@ -123,6 +126,39 @@ export function createAuthRouter(deps: AuthDeps): Hono {
       }
     }
     await next();
+  });
+
+  app.get('/avatar/qq/:uin', async (c) => {
+    const uin = c.req.param('uin');
+    if (!/^[1-9][0-9]{4,10}$/.test(uin)) {
+      return c.json({ error: 'not_found', message: '头像不存在' }, 404);
+    }
+
+    const cached = qqAvatarCache.get(uin);
+    if (cached && cached.at > Date.now() - 24 * 60 * 60 * 1000) {
+      c.header('content-type', cached.type);
+      c.header('cache-control', 'public, max-age=86400');
+      return c.body(cached.body);
+    }
+
+    try {
+      const response = await fetchImpl(`https://q1.qlogo.cn/g?b=qq&nk=${uin}&s=160`, {
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!response.ok) return c.json({ error: 'avatar_unavailable', message: '头像暂时不可用' }, 502);
+      const body = await response.arrayBuffer();
+      if (body.byteLength === 0 || body.byteLength > 1024 * 1024) {
+        return c.json({ error: 'avatar_unavailable', message: '头像暂时不可用' }, 502);
+      }
+      const type = response.headers.get('content-type') ?? 'image/jpeg';
+      if (qqAvatarCache.size > 500) qqAvatarCache.clear();
+      qqAvatarCache.set(uin, { at: Date.now(), type, body });
+      c.header('content-type', type);
+      c.header('cache-control', 'public, max-age=86400');
+      return c.body(body);
+    } catch {
+      return c.json({ error: 'avatar_unavailable', message: '头像暂时不可用' }, 502);
+    }
   });
 
   app.get('/me', (c) => {

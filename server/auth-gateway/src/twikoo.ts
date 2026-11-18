@@ -27,6 +27,7 @@ function hashHex(algorithm: 'sha256' | 'md5', value: string): string {
 
 function safeAvatarUrl(value: unknown): string | null {
   if (typeof value !== 'string') return null;
+  if (value.startsWith('/api/auth/avatar/qq/')) return value;
   try {
     const url = new URL(value);
     return url.protocol === 'https:' ? url.href : null;

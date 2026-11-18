@@ -265,7 +265,7 @@ describe('auth gateway', () => {
     current = createHarness();
     await loginWithEmail(current, '2095672353@qq.com');
     const user = current.db.findUserByEmail('2095672353@qq.com');
-    expect(user?.avatarUrl).toBe('https://q1.qlogo.cn/g?b=qq&nk=2095672353&s=160');
+    expect(user?.avatarUrl).toBe('/api/auth/avatar/qq/2095672353');
   });
 
   it('revokes submissions immediately after logout', async () => {

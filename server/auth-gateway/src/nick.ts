@@ -44,7 +44,7 @@ const QQ_MAIL_RE = /^([1-9][0-9]{4,10})@(?:qq|vip\.qq)\.com$/;
 export function qqAvatarUrl(email: string): string | null {
   const match = QQ_MAIL_RE.exec(email.trim().toLowerCase());
   if (!match) return null;
-  return `https://q1.qlogo.cn/g?b=qq&nk=${match[1]}&s=160`;
+  return `/api/auth/avatar/qq/${match[1]}`;
 }
 
 export function defaultNickFromEmail(email: string): string {

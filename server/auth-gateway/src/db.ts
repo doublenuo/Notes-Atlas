@@ -178,7 +178,9 @@ export class AuthDb {
 
   listUsersWithoutAvatar(): Array<{ id: number; email: string }> {
     return this.raw
-      .prepare("SELECT id, email FROM users WHERE avatar_url IS NULL OR avatar_url = ''")
+      .prepare(
+        "SELECT id, email FROM users WHERE avatar_url IS NULL OR avatar_url = '' OR avatar_url LIKE 'https://q1.qlogo.cn/%' OR avatar_url LIKE 'https://q2.qlogo.cn/%'",
+      )
       .all() as Array<{ id: number; email: string }>;
   }
 
