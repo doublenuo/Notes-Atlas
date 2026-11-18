@@ -142,45 +142,86 @@ html.auth-logged-in #twikoo .tk-meta-input {
 
 .weno-auth-nav__menu {
   position: absolute;
-  top: calc(100% + 9px);
+  top: calc(100% + 10px);
   right: 0;
   z-index: 70;
-  width: 272px;
-  padding: 14px;
+  width: 252px;
+  padding: 8px;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--vp-c-bg);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.18);
 }
 
 .weno-auth-nav__identity {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 2px 2px 12px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 12px;
   border-bottom: 1px solid var(--vp-c-divider);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.weno-auth-nav__menu-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--vp-c-brand-soft, rgba(52, 81, 178, 0.14));
+}
+
+.weno-auth-nav__menu-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vp-c-brand-1);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.weno-auth-nav__identity-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .weno-auth-nav__identity strong {
+  overflow: hidden;
   color: var(--vp-c-text-1);
-  font-size: 14px;
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.weno-auth-nav__identity span {
-  color: var(--vp-c-text-2);
-  font-size: 12px;
+.weno-auth-nav__identity-main span {
+  overflow: hidden;
+  color: var(--vp-c-text-3);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .weno-auth-nav__verified {
-  color: var(--vp-c-success-1, #2f9e44) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--vp-c-success-soft, rgba(47, 158, 68, 0.12));
+  color: var(--vp-c-success-1, #2f9e44);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .weno-auth-nav__item {
-  display: block;
+  display: flex;
   width: 100%;
+  align-items: center;
   border: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   padding: 9px 10px;
   background: transparent;
   color: var(--vp-c-text-1);
@@ -197,9 +238,6 @@ html.auth-logged-in #twikoo .tk-meta-input {
 .weno-auth-nav__edit label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  color: var(--vp-c-text-2);
-  font-size: 12px;
 }
 
 .weno-auth-nav__nick-input {
@@ -216,13 +254,6 @@ html.auth-logged-in #twikoo .tk-meta-input {
 .weno-auth-nav__nick-input:focus {
   border-color: var(--vp-c-brand-1);
   box-shadow: 0 0 0 3px var(--vp-c-brand-soft, rgba(52, 81, 178, 0.12));
-}
-
-.weno-auth-nav__hint {
-  margin: 6px 0 0;
-  color: var(--vp-c-text-3);
-  font-size: 11px;
-  line-height: 1.5;
 }
 
 .weno-auth-nav__error {
@@ -267,37 +298,42 @@ html.auth-logged-in #twikoo .tk-meta-input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: rgba(15, 23, 42, 0.52);
-  backdrop-filter: blur(6px);
+  padding: 24px;
+  background: rgba(10, 15, 28, 0.58);
+  backdrop-filter: blur(10px) saturate(120%);
   animation: weno-auth-fade-in 0.18s ease;
 }
 
 .weno-auth-dialog {
   position: relative;
-  width: min(440px, 100%);
+  width: min(404px, 100%);
   max-height: min(680px, calc(100vh - 40px));
   overflow: auto;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 20px;
-  padding: 28px;
-  background: var(--vp-c-bg);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28);
+  border: 1px solid color-mix(in srgb, var(--vp-c-divider) 82%, var(--vp-c-brand-1));
+  border-radius: 24px;
+  padding: 28px 28px 22px;
+  background:
+    radial-gradient(120% 72% at 50% -12%, var(--vp-c-brand-soft, rgba(52, 81, 178, 0.12)), transparent 62%),
+    var(--vp-c-bg);
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, 0.34),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
 }
 
 .weno-auth-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--vp-c-text-2);
-  font-size: 24px;
+  color: var(--vp-c-text-3);
+  font-size: 22px;
   line-height: 1;
   cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .weno-auth-close:hover {
@@ -306,159 +342,178 @@ html.auth-logged-in #twikoo .tk-meta-input {
 }
 
 .weno-auth-head {
-  padding-right: 24px;
+  padding-right: 20px;
 }
 
-.weno-auth-eyebrow {
-  margin: 0 0 6px;
-  color: var(--vp-c-brand-1);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+.weno-auth-brand {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: linear-gradient(140deg, var(--vp-c-brand-1), #8b5cf6);
+  color: #fff;
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--vp-c-brand-1) 34%, transparent);
+}
+
+.weno-auth-brand svg {
+  width: 24px;
+  height: 24px;
 }
 
 .weno-auth-head h2 {
   margin: 0;
   color: var(--vp-c-text-1);
-  font-size: 24px;
-  line-height: 1.25;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.weno-auth-head p:last-child {
-  margin: 8px 0 0;
+.weno-auth-subtitle {
+  margin: 6px 0 0;
   color: var(--vp-c-text-2);
   font-size: 13px;
-  line-height: 1.65;
-}
-
-.weno-auth-reason {
-  margin: 14px 0 0;
-  border-left: 3px solid var(--vp-c-brand-1);
-  padding: 7px 10px;
-  background: var(--vp-c-brand-soft, rgba(52, 81, 178, 0.08));
-  color: var(--vp-c-text-1);
-  font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .weno-auth-tabs {
   display: flex;
-  gap: 4px;
-  margin: 20px 0 18px;
-  padding: 3px;
-  border-radius: 10px;
+  gap: 3px;
+  margin: 22px 0 18px;
+  padding: 4px;
+  border-radius: 12px;
   background: var(--vp-c-bg-soft);
 }
 
 .weno-auth-tabs button {
+  display: flex;
   flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   padding: 8px 10px;
   background: transparent;
   color: var(--vp-c-text-2);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.weno-auth-tabs button svg {
+  width: 15px;
+  height: 15px;
 }
 
 .weno-auth-tabs button.is-active {
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .weno-auth-pane {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 12px;
 }
 
 .weno-auth-github {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 10px;
   width: 100%;
+  min-height: 48px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px 14px;
-  background: #24292f;
+  background: linear-gradient(180deg, #2b3138, #1d2228);
   color: #fff;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 650;
   cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .weno-auth-github:hover {
-  background: #32383f;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.26);
 }
 
 .weno-auth-github svg {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
 }
 
-.weno-auth-hint {
-  margin: 0;
-  color: var(--vp-c-text-3);
-  font-size: 12px;
-  line-height: 1.6;
-  text-align: center;
+.weno-auth-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .weno-auth-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.weno-auth-field > span {
-  color: var(--vp-c-text-2);
-  font-size: 12px;
-  font-weight: 600;
 }
 
 .weno-auth-field input {
   width: 100%;
+  min-height: 46px;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 9px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 0 14px;
   background: var(--vp-c-bg-soft);
   color: var(--vp-c-text-1);
   font-size: 14px;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.weno-auth-field input::placeholder {
+  color: var(--vp-c-text-3);
 }
 
 .weno-auth-field input:focus {
   border-color: var(--vp-c-brand-1);
-  box-shadow: 0 0 0 3px var(--vp-c-brand-soft, rgba(52, 81, 178, 0.12));
+  background: var(--vp-c-bg);
+  box-shadow: 0 0 0 4px var(--vp-c-brand-soft, rgba(52, 81, 178, 0.12));
 }
 
 .weno-auth-field input:disabled {
-  opacity: 0.75;
+  opacity: 0.72;
 }
 
 .weno-auth-code-row {
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: end;
+  align-items: center;
   gap: 10px;
+}
+
+.weno-auth-code-row input {
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
 }
 
 .weno-auth-resend,
 .weno-auth-change-email {
   border: 0;
-  padding: 0 2px;
+  padding: 4px 2px;
   background: transparent;
   color: var(--vp-c-brand-1);
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-}
-
-.weno-auth-resend {
-  padding-bottom: 10px;
 }
 
 .weno-auth-resend:disabled {
@@ -468,52 +523,61 @@ html.auth-logged-in #twikoo .tk-meta-input {
 
 .weno-auth-change-email {
   align-self: center;
+  font-weight: 500;
 }
 
 .weno-auth-submit {
   width: 100%;
+  min-height: 46px;
+  margin-top: 2px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 11px 14px;
   background: var(--vp-c-brand-1);
   color: #fff;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 650;
   cursor: pointer;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--vp-c-brand-1) 24%, transparent);
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .weno-auth-submit:hover {
-  opacity: 0.92;
+  opacity: 0.94;
+  transform: translateY(-1px);
 }
 
 .weno-auth-submit:disabled {
-  opacity: 0.6;
+  opacity: 0.58;
   cursor: wait;
+  transform: none;
 }
 
 .weno-auth-success {
   margin: 0;
   color: var(--vp-c-success-1, #2f9e44);
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.55;
+  text-align: center;
 }
 
 .weno-auth-alert {
   margin: 0;
   border: 1px solid var(--vp-c-danger-soft, rgba(211, 51, 51, 0.24));
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 10px;
+  padding: 9px 11px;
   background: var(--vp-c-danger-soft, rgba(211, 51, 51, 0.08));
   color: var(--vp-c-danger-1, #d33);
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .weno-auth-privacy {
-  margin: 18px 0 0;
+  margin: 16px 0 0;
   color: var(--vp-c-text-3);
   font-size: 11px;
-  line-height: 1.6;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .weno-auth-toast {
@@ -568,36 +632,60 @@ html.auth-logged-in #twikoo .tk-meta-input {
 .weno-comment-auth__card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  padding: 14px 16px;
-  background: var(--vp-c-bg-soft);
+  border-radius: 14px;
+  padding: 13px 14px;
+  background:
+    linear-gradient(120deg, var(--vp-c-brand-soft, rgba(52, 81, 178, 0.08)), transparent 62%),
+    var(--vp-c-bg-soft);
+}
+
+.weno-comment-auth__icon {
+  display: inline-flex;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-brand-1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.weno-comment-auth__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.weno-comment-auth__copy {
+  min-width: 0;
+  flex: 1;
 }
 
 .weno-comment-auth__card strong {
   display: block;
   color: var(--vp-c-text-1);
-  font-size: 14px;
+  font-size: 13.5px;
 }
 
 .weno-comment-auth__card p {
-  margin: 4px 0 0;
-  color: var(--vp-c-text-2);
-  font-size: 12px;
-  line-height: 1.55;
+  margin: 2px 0 0;
+  color: var(--vp-c-text-3);
+  font-size: 11.5px;
+  line-height: 1.45;
 }
 
 .weno-comment-auth__card button {
   flex: 0 0 auto;
   border: 0;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border-radius: 999px;
+  padding: 7px 15px;
   background: var(--vp-c-brand-1);
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 650;
   cursor: pointer;
 }
 
@@ -620,6 +708,11 @@ html.auth-logged-in #twikoo .tk-meta-input {
   font-weight: 700;
 }
 
+.weno-comment-auth__avatar--img {
+  object-fit: cover;
+  background: var(--vp-c-bg-soft);
+}
+
 .weno-comment-auth__identity strong {
   display: block;
   color: var(--vp-c-text-1);
@@ -628,7 +721,7 @@ html.auth-logged-in #twikoo .tk-meta-input {
 
 .weno-comment-auth__identity span:last-child {
   display: block;
-  margin-top: 2px;
+  margin-top: 1px;
   color: var(--vp-c-text-3);
   font-size: 11px;
 }
@@ -665,17 +758,20 @@ html.auth-logged-in #twikoo .tk-meta-input {
     display: none;
   }
 
-  .weno-auth-nav__selector {
-    margin-left: 4px;
-  }
 
   .weno-auth-dialog {
-    padding: 22px 18px;
-    border-radius: 16px;
+    padding: 24px 20px 20px;
+    border-radius: 20px;
+  }
+
+  .weno-auth-brand {
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
   }
 
   .weno-auth-head h2 {
-    font-size: 21px;
+    font-size: 23px;
   }
 
   .weno-comment-auth__card {

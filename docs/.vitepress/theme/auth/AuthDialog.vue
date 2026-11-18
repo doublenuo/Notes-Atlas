@@ -95,7 +95,7 @@ async function sendCode() {
     const result = await sendEmailCode(address)
     email.value = address
     codeSent.value = true
-    formMessage.value = `验证码已发送到 ${address}，10 分钟内有效。`
+    formMessage.value = '验证码已发送'
     startCooldown(result.retryAfter ?? 60)
     await nextTick()
     panel.value?.querySelector<HTMLInputElement>('input[inputmode="numeric"]')?.focus()
@@ -200,12 +200,23 @@ onBeforeUnmount(() => {
           </button>
 
           <header class="weno-auth-head">
-            <p class="weno-auth-eyebrow">MEMBERS ONLY</p>
-            <h2 id="weno-auth-title">登录后继续</h2>
-            <p>一次登录，全站评论通用。邮箱只用于身份验证，不会公开。</p>
+            <div class="weno-auth-brand" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 2.8l1.9 5.3 5.3 1.9-5.3 1.9L12 17.2l-1.9-5.3L4.8 10l5.3-1.9L12 2.8Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M18.8 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"
+                  fill="currentColor"
+                  opacity="0.65"
+                />
+              </svg>
+            </div>
+            <h2 id="weno-auth-title">登录</h2>
+            <p class="weno-auth-subtitle">{{ loginReason || '一次登录，全站通用' }}</p>
           </header>
 
-          <p v-if="loginReason" class="weno-auth-reason">{{ loginReason }}</p>
           <p v-if="authError" class="weno-auth-alert" role="alert">{{ authError }}</p>
 
           <div class="weno-auth-tabs" role="tablist" aria-label="登录方式">
@@ -216,6 +227,12 @@ onBeforeUnmount(() => {
               :class="{ 'is-active': loginTab === 'github' }"
               @click="switchTab('github')"
             >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.9-2.78.62-3.37-1.21-3.37-1.21-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.85.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 6.84c.85 0 1.71.12 2.51.36 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.06.36.32.68.95.68 1.92 0 1.39-.01 2.51-.01 2.85 0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"
+                />
+              </svg>
               GitHub
             </button>
             <button
@@ -225,7 +242,18 @@ onBeforeUnmount(() => {
               :class="{ 'is-active': loginTab === 'email' }"
               @click="switchTab('email')"
             >
-              邮箱验证码
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7" />
+                <path
+                  d="m4 7 8 6 8-6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              邮箱
             </button>
           </div>
 
@@ -239,19 +267,19 @@ onBeforeUnmount(() => {
               </svg>
               使用 GitHub 登录
             </button>
-            <p class="weno-auth-hint">只接受 GitHub 账号中已验证的邮箱，登录后邮箱会锁定。</p>
           </div>
 
           <form v-else class="weno-auth-pane" role="tabpanel" @submit.prevent="submitEmail">
             <label class="weno-auth-field">
-              <span>邮箱</span>
+              <span class="weno-auth-sr-only">邮箱地址</span>
               <input
                 ref="emailInput"
                 v-model="email"
                 type="email"
                 inputmode="email"
                 autocomplete="email"
-                placeholder="you@example.com"
+                placeholder="邮箱地址"
+                aria-label="邮箱地址"
                 :disabled="codeSent"
                 @input="formError = ''"
               />
@@ -259,14 +287,15 @@ onBeforeUnmount(() => {
 
             <div v-if="codeSent" class="weno-auth-code-row">
               <label class="weno-auth-field">
-                <span>验证码</span>
+                <span class="weno-auth-sr-only">6 位验证码</span>
                 <input
                   v-model="code"
                   type="text"
                   inputmode="numeric"
                   autocomplete="one-time-code"
                   maxlength="6"
-                  placeholder="6 位数字"
+                  placeholder="6 位验证码"
+                  aria-label="6 位验证码"
                   @input="formError = ''"
                 />
               </label>
@@ -276,7 +305,7 @@ onBeforeUnmount(() => {
                 :disabled="cooldown > 0 || sending"
                 @click="sendCode"
               >
-                {{ cooldown > 0 ? `${cooldown}s 后重发` : '重新发送' }}
+                {{ cooldown > 0 ? `${cooldown}s` : '重发' }}
               </button>
             </div>
 
@@ -284,7 +313,7 @@ onBeforeUnmount(() => {
             <p v-if="formError" class="weno-auth-alert" role="alert">{{ formError }}</p>
 
             <button class="weno-auth-submit" type="submit" :disabled="sending || verifying">
-              {{ verifying ? '登录中…' : codeSent ? '登录' : sending ? '发送中…' : '发送验证码' }}
+              {{ verifying ? '登录中…' : codeSent ? '登录' : sending ? '发送中…' : '继续' }}
             </button>
             <button
               v-if="codeSent"
@@ -292,13 +321,11 @@ onBeforeUnmount(() => {
               type="button"
               @click="changeEmail"
             >
-              换一个邮箱
+              换个邮箱
             </button>
           </form>
 
-          <p class="weno-auth-privacy">
-            继续即表示你同意：邮箱仅用于评论身份验证与头像，不会在评论区公开展示。
-          </p>
+          <p class="weno-auth-privacy">邮箱仅用于身份验证</p>
         </section>
     </div>
   </Teleport>

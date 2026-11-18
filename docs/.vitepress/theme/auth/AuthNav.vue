@@ -143,24 +143,38 @@ onBeforeUnmount(() => {
       <Transition name="weno-auth-pop">
         <div v-if="menuOpen" class="weno-auth-nav__menu" role="menu">
           <div class="weno-auth-nav__identity">
-            <strong>{{ user.nick }}</strong>
-            <span>{{ maskedEmail }}</span>
-            <span class="weno-auth-nav__verified">邮箱已验证</span>
+            <img
+              v-if="avatar"
+              class="weno-auth-nav__menu-avatar"
+              :src="avatar"
+              alt=""
+              referrerpolicy="no-referrer"
+              @error="avatarFailed = true"
+            />
+            <span v-else class="weno-auth-nav__menu-avatar weno-auth-nav__menu-avatar--fallback">
+              {{ initials }}
+            </span>
+            <div class="weno-auth-nav__identity-main">
+              <strong>{{ user.nick }}</strong>
+              <span>{{ maskedEmail }}</span>
+            </div>
+            <span class="weno-auth-nav__verified" title="邮箱已验证" aria-label="邮箱已验证">✓</span>
           </div>
 
           <form v-if="editMode" class="weno-auth-nav__edit" @submit.prevent="saveNick">
             <label>
-              <span>新昵称</span>
+              <span class="weno-auth-sr-only">昵称</span>
               <input
                 v-model="nickDraft"
                 class="weno-auth-nav__nick-input"
                 type="text"
                 maxlength="20"
                 autocomplete="nickname"
+                placeholder="昵称"
+                aria-label="昵称"
                 @input="saveError = ''"
               />
             </label>
-            <p class="weno-auth-nav__hint">1–20 个字符，只影响之后的新评论。</p>
             <p v-if="saveError" class="weno-auth-nav__error" role="alert">{{ saveError }}</p>
             <div class="weno-auth-nav__edit-actions">
               <button type="button" :disabled="saving" @click="editMode = false">取消</button>
@@ -173,7 +187,7 @@ onBeforeUnmount(() => {
               修改昵称
             </button>
             <button class="weno-auth-nav__item" type="button" role="menuitem" @click="signOut">
-              退出登录
+              退出
             </button>
           </template>
         </div>
