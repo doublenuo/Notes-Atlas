@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 import type { AppConfig } from './config.js';
 import type { AuthDb, User } from './db.js';
 import { InvalidCodeError, MailDeliveryError, RateLimitError, ValidationError } from './errors.js';
-import { cleanNick, defaultNickFromEmail, normalizeEmail } from './nick.js';
+import { cleanNick, defaultNickFromEmail, normalizeEmail, qqAvatarUrl } from './nick.js';
 
 export interface Mailer {
   sendVerificationCode(email: string, code: string): Promise<void>;
@@ -155,11 +155,18 @@ export class EmailService {
 
   private findOrCreateUser(email: string, now: number): User {
     const existing = this.db.findUserByEmail(email);
-    if (existing) return existing;
+    if (existing) {
+      const qqAvatar = qqAvatarUrl(email);
+      if (qqAvatar && !existing.avatarUrl) {
+        this.db.updateAvatar(existing.id, qqAvatar, now);
+        return this.db.findUserById(existing.id) ?? existing;
+      }
+      return existing;
+    }
 
     const nick = cleanNick(defaultNickFromEmail(email)) || '读者';
     try {
-      return this.db.createUser({ email, nick, now });
+      return this.db.createUser({ email, nick, avatarUrl: qqAvatarUrl(email), now });
     } catch (error) {
       // 并发下可能已被另一个请求创建；重新读取。
       const raced = this.db.findUserByEmail(email);

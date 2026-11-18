@@ -36,6 +36,17 @@ function truncateNick(value: string): string {
   return Array.from(value).slice(0, 20).join('').trim();
 }
 
+const QQ_MAIL_RE = /^([1-9][0-9]{4,10})@(?:qq|vip\.qq)\.com$/;
+
+/**
+ * QQ 邮箱的公开头像地址。QQ 官方头像接口不需要登录，也不能反查昵称。
+ */
+export function qqAvatarUrl(email: string): string | null {
+  const match = QQ_MAIL_RE.exec(email.trim().toLowerCase());
+  if (!match) return null;
+  return `https://q1.qlogo.cn/g?b=qq&nk=${match[1]}&s=160`;
+}
+
 export function defaultNickFromEmail(email: string): string {
   const local = email.split('@')[0] ?? '';
   const value = truncateNick(cleanNick(local.split('+')[0] ?? ''));

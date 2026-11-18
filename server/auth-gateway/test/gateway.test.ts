@@ -261,6 +261,13 @@ describe('auth gateway', () => {
     expect(payload.data[1]?.avatar).toBe('https://example.com/custom.png');
   });
 
+  it('assigns a QQ avatar to email users', async () => {
+    current = createHarness();
+    await loginWithEmail(current, '2095672353@qq.com');
+    const user = current.db.findUserByEmail('2095672353@qq.com');
+    expect(user?.avatarUrl).toBe('https://q1.qlogo.cn/g?b=qq&nk=2095672353&s=160');
+  });
+
   it('revokes submissions immediately after logout', async () => {
     current = createHarness();
     const cookie = await loginWithEmail(current);

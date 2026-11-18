@@ -4,6 +4,7 @@ import { loadConfig } from './config.js';
 import { AuthDb } from './db.js';
 import { DryRunMailer, EmailService, SmtpMailer, type Mailer } from './email.js';
 import { GithubClient } from './github.js';
+import { qqAvatarUrl } from './nick.js';
 import { SessionService } from './session.js';
 
 const config = loadConfig();
@@ -15,12 +16,25 @@ const emailService = new EmailService(db, config, mailer);
 const github = new GithubClient(config);
 const app = createApp({ db, config, sessions, emailService, github });
 
+function backfillQqAvatars(): void {
+  const now = Math.floor(Date.now() / 1000);
+  let count = 0;
+  for (const user of db.listUsersWithoutAvatar()) {
+    const avatar = qqAvatarUrl(user.email);
+    if (!avatar) continue;
+    db.updateAvatar(user.id, avatar, now);
+    count += 1;
+  }
+  if (count > 0) console.info(`[gateway] 已为 ${count} 个 QQ 邮箱用户补全头像`);
+}
+
 function cleanup(): void {
   const now = Math.floor(Date.now() / 1000);
   db.deleteExpiredSessions(now);
   db.deleteExpiredEmailCodes(now);
 }
 
+backfillQqAvatars();
 cleanup();
 const timer = setInterval(cleanup, 60 * 60 * 1000);
 timer.unref();

@@ -176,6 +176,12 @@ export class AuthDb {
     return row ? toUser(row) : null;
   }
 
+  listUsersWithoutAvatar(): Array<{ id: number; email: string }> {
+    return this.raw
+      .prepare("SELECT id, email FROM users WHERE avatar_url IS NULL OR avatar_url = ''")
+      .all() as Array<{ id: number; email: string }>;
+  }
+
   listUserAvatars(): Array<{ email: string; avatarUrl: string }> {
     const rows = this.raw
       .prepare(
