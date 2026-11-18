@@ -101,7 +101,13 @@ export interface Connections {
   related: RelatedNote[];
 }
 
-export const EMPTY_CONNECTIONS: Connections = { backlinks: [], related: [] };
+export const EMPTY_CONNECTIONS: Connections = Object.freeze({
+  backlinks: [] as NoteRef[],
+  related: [] as RelatedNote[],
+});
+// 任务 4 的 fallback 会直接引用该常量，冻结防止被原地修改
+Object.freeze(EMPTY_CONNECTIONS.backlinks);
+Object.freeze(EMPTY_CONNECTIONS.related);
 
 interface PageMeta {
   rel: string;
@@ -119,14 +125,18 @@ interface PageMeta {
 }
 
 function toStringList(value: unknown): string[] {
-  if (typeof value === "string") return value.trim() ? [value.trim()] : [];
-  if (!Array.isArray(value)) return [];
-  return value.map((item) => String(item).trim()).filter(Boolean);
+  const items = Array.isArray(value) ? value : [value];
+  return items
+    .filter((item): item is string | number => typeof item === "string" || typeof item === "number")
+    .map((item) => String(item).trim())
+    .filter(Boolean);
 }
 
 function toTimestamp(value: unknown): number {
   if (value === undefined || value === null || value === "") return Number.NEGATIVE_INFINITY;
-  const time = value instanceof Date ? value.getTime() : new Date(String(value)).getTime();
+  // 直接交给 Date：字符串/数字毫秒/Date 都按各自语义解析；不能先 String()，
+  // 否则数字 0 会变成字符串 "0" 被解析成 2000 年。
+  const time = new Date(value as string | number | Date).getTime();
   return Number.isFinite(time) ? time : Number.NEGATIVE_INFINITY;
 }
 
@@ -156,21 +166,23 @@ function toNoteRef(meta: PageMeta): NoteRef {
 
 export function buildKnowledgeGraph(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
   try {
-    return build(docsRoot, pages);
+    // 统一为绝对根：相对 docsRoot 下 path.join 会重复拼根，令 ../ 目标静默丢失
+    const root = path.resolve(docsRoot);
+    return build(root, pages);
   } catch (error) {
     console.warn("[knowledgeGraph] 知识网络索引构建失败，已跳过：", error);
     return new Map();
   }
 }
 
-function build(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
-  const resolver = createResolver(docsRoot);
+function build(root: string, pages: PageInfo[]): Map<string, Connections> {
+  const resolver = createResolver(root);
   const metas = new Map<string, PageMeta>();
 
   for (const page of pages) {
     let raw: string;
     try {
-      raw = fs.readFileSync(path.join(docsRoot, page.rel), "utf8").replace(/\r\n?/g, "\n");
+      raw = fs.readFileSync(path.join(root, page.rel), "utf8").replace(/\r\n?/g, "\n");
     } catch {
       continue;
     }
@@ -181,9 +193,11 @@ function build(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
       data = parsed.data as Record<string, unknown>;
       body = parsed.content;
     } catch {
-      // 畸形 frontmatter：按无元数据正文继续，索引不阻断构建
+      // 畸形 frontmatter：置空正文，避免把 YAML 里的 [[...]] 当成出链产生幻影反链；
+      // 页面本身仍保留在图里，不阻断构建。
+      body = "";
     }
-    const layout = typeof data.layout === "string" ? data.layout : "";
+    const layout = data.layout;
     metas.set(page.rel, {
       rel: page.rel,
       url: pageUrl(page.url),
@@ -193,7 +207,9 @@ function build(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
       tags: toStringList(data.tags),
       categories: toStringList(data.categories),
       date: toTimestamp(data.date),
-      isArticle: data.article !== false && (layout === "" || layout === "doc"),
+      isArticle:
+        data.article !== false &&
+        (layout === undefined || layout === null || layout === "" || layout === "doc"),
       body,
       ownProse: ownProseLength(body),
       links: new Set<string>(),
@@ -203,7 +219,7 @@ function build(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
   // 出链：只从正文页提取，目标必须是 PAGES 中的页面
   for (const meta of metas.values()) {
     if (!meta.isArticle || !meta.body.trim()) continue;
-    const host = path.join(docsRoot, meta.rel);
+    const host = path.join(root, meta.rel);
     for (const target of extractWikiLinks(meta.body)) {
       const found = resolver(target, host);
       if (!found) continue;
@@ -227,7 +243,10 @@ function build(docsRoot: string, pages: PageInfo[]): Map<string, Connections> {
   for (const meta of metas.values()) {
     const sources = (backlinkSources.get(meta.rel) ?? [])
       .slice()
-      .sort((a, b) => compareDate(a.date, b.date) || a.rel.localeCompare(b.rel));
+      .sort(
+        (a, b) =>
+          compareDate(a.date, b.date) || (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0),
+      );
     graph.set(meta.rel, { backlinks: sources.map(toNoteRef), related: [] });
   }
   return graph;
