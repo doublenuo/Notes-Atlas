@@ -542,7 +542,8 @@ const submitComment = async (moment: Moment) => {
       mail: current.email,
       comment: `[[moment:${moment.id}]] ${text}`,
       ua: navigator.userAgent,
-      ...(target ? { pid: target.rootId || target.id, rid: target.id } : {}),
+      // Twikoo 的 pid 是直接父评论，rid 是根评论；两者都传对才能正确归组和显示「回复 @」
+      ...(target ? { pid: target.id, rid: target.rootId || target.id } : {}),
     })
 
     // 先乐观插入，避免评论服务刷新稍慢时输入框关闭却看不到新评论
