@@ -7,6 +7,8 @@ categories:
 tags:
   - 人形机器人
   - 运动控制
+
+sticky: 1
 ---
 
 # SuperMimic: Scaling Humanoid Whole-Body Control with One Differentiable World Model
