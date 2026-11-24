@@ -68,3 +68,32 @@ index aedfb68f0c7a975fc3870046d771a14583d5baa0..7d111ed3ae0eb6f2c6b8ef21dccff2de
      };
      const reloadTwikoo = (to) => {
        if (to) setTimeout(initTwikoo, timeout);
+diff --git a/es/components/theme/HomeBanner/src/HomeBannerFeature.vue2.mjs b/es/components/theme/HomeBanner/src/HomeBannerFeature.vue2.mjs
+index 9f1fe8acbd60c924bc545c0f65d593a9dc0105fa..516e73ef469373107f80cf94208ed1dd97a2a215 100644
+--- a/es/components/theme/HomeBanner/src/HomeBannerFeature.vue2.mjs
++++ b/es/components/theme/HomeBanner/src/HomeBannerFeature.vue2.mjs
+@@ -34,18 +34,12 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
+         timer = null;
+       }
+     };
+-    useWindowSize((width) => {
+-      const { featureCarousel } = bannerConfig.value;
+-      if (width <= 719) {
+-        isMobile.value = true;
+-        clearTimer();
+-        timer = setInterval(() => {
+-          active.value = (active.value + 1) % features.value.length;
+-        }, featureCarousel);
+-      } else {
+-        isMobile.value = false;
+-        clearTimer();
+-      }
++    // Notes-Atlas 定制：上游在 ≤719px 会 setInterval(featureCarousel=4000) 单卡轮播，
++    // 三项里只有一项可见且每 4s 切换，配合自定义样式时会引发布局抖动。这里直接不启动定时器，
++    // isMobile 恒为 false → 模板里 v-show 恒真，三项常显、无过渡、无重渲染。
++    useWindowSize(() => {
++      isMobile.value = false;
++      clearTimer();
+     });
+     onBeforeUnmount(() => {
+       clearTimer();

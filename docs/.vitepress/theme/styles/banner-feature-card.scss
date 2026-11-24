@@ -50,11 +50,61 @@
   }
 }
 
-// 移动端首页不展示 Banner 特性入口（文档 / 随笔 / 项目实践）：
-// 手机首屏空间有限，入口与导航菜单重复，隐藏后 Banner 更清爽，
-// 正文文章列表也能更早进入视野。桌面端保持原样。
-@media (max-width: 768px) {
+// 移动端改为三行紧凑入口，全部可见、可点（原本 ≤719px 是「一次只显示一张、每 4s
+// 自动轮播」，没有指示器，首屏只能看到「文档」，随笔/项目实践永远藏在后面）。
+// 轮播定时器已在 patches/vitepress-theme-teek@1.5.6.patch 里删除：HomeBannerFeature
+// 不再 setInterval，isMobile 恒 false，三张卡片直接常显，没有 v-show 内联 display:none，
+// 因此下面的 display 不需要 !important。
+@media (max-width: 719px) {
   .tk-banner-feature {
-    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+    padding: 16px 16px 4px;
+  }
+
+  .tk-banner-feature .tk-banner-feature__feature__item {
+    display: flex;
+    width: 100%;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    text-align: left;
+    backdrop-filter: blur(8px);
+
+    &:active {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    > a {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      width: 100%;
+      height: auto;
+      padding: 12px 14px;
+      text-align: left;
+    }
+
+    .feature-title {
+      flex: 0 0 auto;
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    .feature-details {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.5;
+      opacity: 0.82;
+      text-align: left;
+    }
   }
 }
